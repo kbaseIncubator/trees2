@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+#  author:  msneddon
+#  created: 5/21/2012
+
 use strict;
 use warnings;
 

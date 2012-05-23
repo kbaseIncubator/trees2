@@ -11,13 +11,17 @@ More to come....
 
 
 
+
+
+
 Deploying on KBase infrastructure
 ----------
 *as root, cd to /kb/dev_container/modules, a directory setup to checkout code for deployment
 *clone the repo to the kbase machine (git clone kbase@git.kbase.us:trees.git trees)
 *cd to the 'trees' directory
 *type 'make deploy', which will build and copy necessary files to the /deployment/services/trees directory
-
+*type 'make clean' to delete all deployed files (and any files you may have created in the deployed directory)
+*type 'make redeploy' to perform a fresh deployment
 
 
 Testing
