@@ -1,0 +1,43 @@
+#!/bin/bash
+#  Simple script which runs the kbase type compiler for us on the tree API spec files.  This file
+#  requires that you have checked out the latest type compiler code from one of these repos:
+#     (https://bitbucket.org/olson/kb_typecomp/overview) - latest version on mercurial repo
+#     (https://git.kbase.us/typecomp.git) - git version on kbase repo, may be out of date
+#
+#  To use this script, make sure the local paths to the typecomp libs are correctly specified
+#  below, then run this script from the directory it is in.
+#
+#  author:  msneddon
+#  created: 5/21/2012
+
+echo "running type_compiler to generate the tree server/client libs..."
+
+# SPECIFY TYPE COMPILER PATH HERE
+PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/kb_typecomp"
+
+# Name of type compiler perl executables - this should not have to change
+COMPILE_TYPESPEC='/scripts/compile_typespec.pl'
+GEN_JAVA_CLIENT='/scripts/gen_java_client.pl'
+
+# Specify input and output locations for the type compiler
+OUTPUT_DIR="../lib"
+SPEC_FILE="trees.spec"
+
+# We need to add the type compiler dependencies to the perl path
+export PERL5LIB="$PATH_TO_TC/lib/";
+echo "perl path set to $PERL5LIB"
+
+# actually run the type compiler
+RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} $SPEC_FILE $OUTPUT_DIR"
+echo "Running: \"perl ${RUN_CMD}\""
+perl $RUN_CMD
+
+# eventually we will want to generate java clients, but this code does not
+# appear to be fully functional yet
+#echo "----"
+#RUN_CMD="${PATH_TO_TC}${GEN_JAVA_CLIENT} $SPEC_FILE org.kbase.trees $OUTPUT_DIR"
+#echo "Running: \"perl ${RUN_CMD}\""
+#perl $RUN_CMD
+
+echo "----"
+echo "done."
