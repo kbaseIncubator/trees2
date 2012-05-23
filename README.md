@@ -33,6 +33,9 @@ if additional non-perl tests are added, the 'test' directory may be converted to
 
 No tests currently exist.  Again, more to come...
 
+To Do
+----------
+pretty much everything
 
 
 Authors

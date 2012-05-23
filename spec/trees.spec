@@ -29,10 +29,10 @@ module Trees
     typedef string newick_tree;
 
     /*
-    Meta data about a tree, such as when it was created, parameters used in its creation, the
-    alignment id used to build the tree, etc.
+    Meta data about a tree.
     */
     typedef structure {
+        /*some comment here*/
         kbase_id tree_id;
         kbase_id alignment_id;
         bool isActive;
