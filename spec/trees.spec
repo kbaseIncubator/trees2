@@ -11,6 +11,7 @@ module Trees
 {
     typedef int bool;
     typedef string timestamp;
+    typedef int position;
     
     /*
     A KBase ID is string starting with the characters "kb|".  KBase IDs are typed. The types are
@@ -23,13 +24,20 @@ module Trees
     /*
     Trees are represented in newick format (http://en.wikipedia.org/wiki/Newick_format) and are
     returned to you in this format by default.  All leaf nodes are by default indexed to a MSA row
-    element.  You can use the appropriate functionality to replace these IDs with other KBase Ids
-    instead, depending on how the tree was built.
+    element.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids
+    instead, depending on how the tree was built.  Internal nodes may or may not be labeled.  Nodes may
+    also be annotated with structured data
     */
     typedef string newick_tree;
+    
+    /*
+    String representation of an alignment, the precise syntax of which is not yet specified but will
+    likely be similar to alignments stored in SEED.
+    */
+    typedef string alignment;
 
     /*
-    Meta data about a tree.
+    Meta data about a tree, such as when it was created, parameters used in its creation, etc
     */
     typedef structure {
         /*some comment here*/
@@ -73,11 +81,26 @@ module Trees
     /*
     Returns a list of all IDs of all trees in the database that match the given flags (right now
     the only flag indicates if the tree is active or not, meaning the latest version of the tree,
-    but this should be extended to accept more args.
+    but this should be extended to accept more args and possible queries.
     */ 
-    funcdef all_tree_ids(string isActive) returns (list <kbase_id>);
+    funcdef all_tree_ids(bool isActive) returns (list <kbase_id>);
 
     
+    /*
+    Returns all tree IDs in which the entire portion of the given sequence (which can optionally
+    include start and end positions of the sequence) is used in the alignment which generates the
+    tree.
+    */
+    get_trees_with_entire_seq(kbase_id) returns (list<kbase_id>);
+    get_trees_with_entire_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
+    
+    /*
+    Returns all tree IDs in which some portion of the given sequence (which can optionally
+    include start and end positions of the sequence) is used in the alignment which generates the
+    tree.
+    */
+    get_trees_with_overlapping_seq(kbase_id) returns (list<kbase_id>);
+    get_trees_with_overlapping_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
     
     
     
