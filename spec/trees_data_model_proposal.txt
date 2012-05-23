@@ -1,0 +1,59 @@
+
+
+This is a working draft of a proposed schema for a CDM extension to support Trees
+and Multiple sequence alignments.
+
+
+Alignment
+-alignmentID (will be unique kbase id: 'kb|ali.XXXXX')
+-alignment (file/blob)
+-nSequences
+-metaInfoHash (e.g. name, human readable description, etc)
+-timestamp
+-isActive (either boolean or for our own reference, a version number)
+-alignmentMethod
+-alignmentParameters
+-alignmentProtocolDescription (human readable, how did you get here with these sequences? could be in a separate table)
+
+AlignmentRowComponent
+-alignmentID (needed for efficiency)
+-alignmentRow (maybe needed for efficiency)
+-alignmentRowID (will be unique kbase id: 'kb|ali.XXXXX.row.XXX')
+-concatenationOrder (ordering starting from left to right in alignment row)
+-label (text description copied from original fasta file)
+-sequenceID (MD5 for protein, probably contigChunk for DNA/RNA)
+-isProtein (bool)
+-begin
+-end
+
+Tree
+-treeID (will be a unique kbase id:  e.g. 'kb|tree.XXXX')
+-newick (leaf nodes provide a key into the AlignmentRowComponent table)
+-alignmentID
+-metaInfoHash (e.g. name, human readable description, etc)
+-timestamp
+-isActive (either boolean or for our own reference, a version number)
+-treeGenerationMethod
+-treeGenerationParameters
+
+
+==== Computed Tables for Performance
+
+Alignment2Tree
+-alignmentID
+-treeID
+
+Domain2Alignment
+-domainID
+-alignmentID
+-isComplete
+
+Protein2Alignment
+-MD5
+-alignmentID
+-isComplete
+
+ContigChunk2Alignment
+-contigChunkID
+-alignmentID
+-isComplete
