@@ -18,5 +18,5 @@ deploy-services:
 
 clean:
 	rm -rf $(SERVICE_DIR)
-        rm start_service stop_service
+	rm start_service stop_service
 	echo "OK ... Removed all deployed files."
