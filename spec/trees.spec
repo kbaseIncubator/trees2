@@ -34,7 +34,7 @@ module Trees
     String representation of an alignment, the precise syntax of which is not yet specified but will
     likely be similar to alignments stored in SEED.
     */
-    typedef string alignment;
+    typedef string fasta_alignment;
 
     /*
     Meta data about a tree, such as when it was created, parameters used in its creation, etc
