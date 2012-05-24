@@ -17,6 +17,7 @@ created 5/21/2012 - msneddon
 =cut
 
 #BEGIN_HEADER
+
 #END_HEADER
 
 sub new
@@ -87,7 +88,9 @@ sub get_tree
     my($self, $ctx, $tree_id) = @_;
     my($return);
     #BEGIN get_tree
-        #END get_tree
+    print "recieved get_tree call, doing nothing";
+    $return = "hello mr. tree.";
+    #END get_tree
     return($return);
 }
 
@@ -141,7 +144,9 @@ sub get_trees
     my($self, $ctx, $tree_ids) = @_;
     my($return);
     #BEGIN get_trees
-        #END get_trees
+    print "recieved get_trees call, doing nothing";
+    $return = "hello mr. tree.";
+    #END get_trees
     return($return);
 }
 
@@ -196,7 +201,9 @@ sub all_tree_ids
     my($self, $ctx, $isActive) = @_;
     my($return);
     #BEGIN all_tree_ids
-        #END all_tree_ids
+    print "recieved all_tree_ids, doing nothing";
+    $return = "hello mr. tree.";
+    #END all_tree_ids
     return($return);
 }
 
