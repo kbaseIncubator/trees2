@@ -13,7 +13,8 @@
 echo "running type_compiler to generate the tree server/client libs..."
 
 # SPECIFY TYPE COMPILER PATH HERE
-PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/kb_typecomp"
+#PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/kb_typecomp"
+PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/typecomp_from_kbase_git"
 
 # Name of type compiler perl executables - this should not have to change
 COMPILE_TYPESPEC='/scripts/compile_typespec.pl'
@@ -26,6 +27,16 @@ SPEC_FILE="trees.spec"
 # We need to add the type compiler dependencies to the perl path
 export PERL5LIB="$PATH_TO_TC/lib/";
 echo "perl path set to $PERL5LIB"
+
+# more options for the type compiler??  where are these actually documented?
+ #            -impl Bio::KBase::CDMI::%sImpl \
+ #           -service Bio::KBase::CDMI::Service \
+ #          -psgi CDMI.psgi \
+ #          -client Bio::KBase::CDMI::Client \
+ #          -js CDMI \
+ #          -py CDMI \
+ #          CDMI-API.spec CDMI-EntityAPI.spec .
+
 
 # actually run the type compiler
 RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} $SPEC_FILE $OUTPUT_DIR"

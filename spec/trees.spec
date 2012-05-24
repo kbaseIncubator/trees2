@@ -38,6 +38,7 @@ module Trees
 
     /*
     Meta data about a tree, such as when it was created, parameters used in its creation, etc
+    Is this actually needed?
     */
     typedef structure {
         /*some comment here*/
@@ -59,8 +60,6 @@ module Trees
         int tree_generation_method;
         string tree_generation_parameters;
     } alignment_meta_data;
-    
-    
     
     
     
@@ -91,19 +90,30 @@ module Trees
     include start and end positions of the sequence) is used in the alignment which generates the
     tree.
     */
-    get_trees_with_entire_seq(kbase_id) returns (list<kbase_id>);
-    get_trees_with_entire_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
+    funcdef get_trees_with_entire_seq(kbase_id seqence) returns (list<kbase_id>);
+    funcdef get_trees_with_entire_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
     
     /*
     Returns all tree IDs in which some portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the
     tree.
     */
-    get_trees_with_overlapping_seq(kbase_id) returns (list<kbase_id>);
-    get_trees_with_overlapping_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
+    funcdef get_trees_with_overlapping_seq(kbase_id sequence) returns (list<kbase_id>);
+    funcdef get_trees_with_overlapping_seq(kbase_id sequence, position beg, position end) returns (list<kbase_id>);
     
+    /*
+    Returns all tree IDs in which the entire portion of the given domain is used in the alignment
+    which generates the tree (usually the tree will be constructed based on this domain).
+    */
+    funcdef get_trees_with_entire_domain(kbase_id domain) returns (list<kbase_id>);
     
+    /*
+    Returns all tree IDs in which some portion of the given domain is used in the alignment
+    which generates the tree (usually the tree will be constructed based on a similar domain created
+    with an alternative method, so the entire domain may not be contained).
+    */
+    funcdef get_trees_with_overlapping_domain(kbase_id domain) returns (list<kbase_id>);
     
 
-    funcdef getTreeByLocusID(int number, kbase_id id) returns(list<string>);
+
 };
