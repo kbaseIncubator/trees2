@@ -7,7 +7,7 @@ and Multiple sequence alignments.
 Alignment
 -alignmentID (will be unique kbase id: 'kb|ali.XXXXX')
 -alignment (file/blob)
--nSequences
+-nRows (number of row in the alignment)
 -metaInfoHash (e.g. name, human readable description, etc)
 -timestamp
 -isActive (either boolean or for our own reference, a version number)

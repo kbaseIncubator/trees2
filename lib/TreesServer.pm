@@ -19,11 +19,11 @@ sub _build_valid_methods
         'get_trees' => 1,
         'all_tree_ids' => 1,
         'get_trees_with_entire_seq' => 1,
-        'get_trees_with_entire_seq' => 1,
-        'get_trees_with_overlapping_seq' => 1,
         'get_trees_with_overlapping_seq' => 1,
         'get_trees_with_entire_domain' => 1,
         'get_trees_with_overlapping_domain' => 1,
+        'substitute_node_labels_with_kbase_ids' => 1,
+        'extract_leaf_node_labels' => 1,
     };
     return $methods;
 }

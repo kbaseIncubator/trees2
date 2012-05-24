@@ -74,6 +74,7 @@ newick_tree is a string
 =item Description
 
 Returns the specified tree in newick format, or an empty string if the tree does not exist.
+Note: this function may not be needed if this functionality is provided by the auto-gen ER code
 todo: provide a way to automatically replace alignment row ids with kbase ids
 todo: provide a way to get meta data about this tree, possibly in a separate function
 
@@ -129,6 +130,7 @@ newick_tree is a string
 
 Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
 was not found.
+Note: this function may not be needed if this functionality is provided by the auto-gen ER code
 
 =back
 
@@ -183,6 +185,7 @@ kbase_id is a string
 Returns a list of all IDs of all trees in the database that match the given flags (right now
 the only flag indicates if the tree is active or not, meaning the latest version of the tree,
 but this should be extended to accept more args and possible queries.
+Note: this function may not be needed if this functionality is provided by the auto-gen ER code
 
 =back
 
@@ -202,7 +205,7 @@ sub all_tree_ids
 
 =head2 get_trees_with_entire_seq
 
-  $return = $obj->get_trees_with_entire_seq($seqence)
+  $return = $obj->get_trees_with_entire_seq($sequence, $beg, $end, $options)
 
 =over 4
 
@@ -211,9 +214,13 @@ sub all_tree_ids
 =begin html
 
 <pre>
-$seqence is a kbase_id
+$sequence is a kbase_id
+$beg is a position
+$end is a position
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
+position is an int
 
 </pre>
 
@@ -221,9 +228,13 @@ kbase_id is a string
 
 =begin text
 
-$seqence is a kbase_id
+$sequence is a kbase_id
+$beg is a position
+$end is a position
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
+position is an int
 
 
 =end text
@@ -235,6 +246,9 @@ kbase_id is a string
 Returns all tree IDs in which the entire portion of the given sequence (which can optionally
 include start and end positions of the sequence) is used in the alignment which generates the
 tree.
+todo: should beg/end just be included in some options hash?
+todo: define contents of options hash, which will allow more complex queries, such as returning
+      only active trees, or trees of a particuar hieght, etc...
 
 =back
 
@@ -242,63 +256,7 @@ tree.
 
 sub get_trees_with_entire_seq
 {
-    my($self, $ctx, $seqence) = @_;
-    my($return);
-    #BEGIN get_trees_with_entire_seq
-        #END get_trees_with_entire_seq
-    return($return);
-}
-
-
-
-
-=head2 get_trees_with_entire_seq
-
-  $return = $obj->get_trees_with_entire_seq($sequence, $beg, $end)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$sequence is a kbase_id
-$beg is a position
-$end is a position
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-position is an int
-
-</pre>
-
-=end html
-
-=begin text
-
-$sequence is a kbase_id
-$beg is a position
-$end is a position
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-position is an int
-
-
-=end text
-
-
-
-=item Description
-
-
-
-=back
-
-=cut
-
-sub get_trees_with_entire_seq
-{
-    my($self, $ctx, $sequence, $beg, $end) = @_;
+    my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_seq
         #END get_trees_with_entire_seq
@@ -310,7 +268,7 @@ sub get_trees_with_entire_seq
 
 =head2 get_trees_with_overlapping_seq
 
-  $return = $obj->get_trees_with_overlapping_seq($sequence)
+  $return = $obj->get_trees_with_overlapping_seq($sequence, $beg, $end, $options)
 
 =over 4
 
@@ -320,8 +278,12 @@ sub get_trees_with_entire_seq
 
 <pre>
 $sequence is a kbase_id
+$beg is a position
+$end is a position
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
+position is an int
 
 </pre>
 
@@ -330,8 +292,12 @@ kbase_id is a string
 =begin text
 
 $sequence is a kbase_id
+$beg is a position
+$end is a position
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
+position is an int
 
 
 =end text
@@ -350,63 +316,7 @@ tree.
 
 sub get_trees_with_overlapping_seq
 {
-    my($self, $ctx, $sequence) = @_;
-    my($return);
-    #BEGIN get_trees_with_overlapping_seq
-        #END get_trees_with_overlapping_seq
-    return($return);
-}
-
-
-
-
-=head2 get_trees_with_overlapping_seq
-
-  $return = $obj->get_trees_with_overlapping_seq($sequence, $beg, $end)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$sequence is a kbase_id
-$beg is a position
-$end is a position
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-position is an int
-
-</pre>
-
-=end html
-
-=begin text
-
-$sequence is a kbase_id
-$beg is a position
-$end is a position
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-position is an int
-
-
-=end text
-
-
-
-=item Description
-
-
-
-=back
-
-=cut
-
-sub get_trees_with_overlapping_seq
-{
-    my($self, $ctx, $sequence, $beg, $end) = @_;
+    my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
         #END get_trees_with_overlapping_seq
@@ -418,7 +328,7 @@ sub get_trees_with_overlapping_seq
 
 =head2 get_trees_with_entire_domain
 
-  $return = $obj->get_trees_with_entire_domain($domain)
+  $return = $obj->get_trees_with_entire_domain($domain, $options)
 
 =over 4
 
@@ -428,6 +338,7 @@ sub get_trees_with_overlapping_seq
 
 <pre>
 $domain is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -438,6 +349,7 @@ kbase_id is a string
 =begin text
 
 $domain is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -457,7 +369,7 @@ which generates the tree (usually the tree will be constructed based on this dom
 
 sub get_trees_with_entire_domain
 {
-    my($self, $ctx, $domain) = @_;
+    my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_domain
         #END get_trees_with_entire_domain
@@ -469,7 +381,7 @@ sub get_trees_with_entire_domain
 
 =head2 get_trees_with_overlapping_domain
 
-  $return = $obj->get_trees_with_overlapping_domain($domain)
+  $return = $obj->get_trees_with_overlapping_domain($domain, $options)
 
 =over 4
 
@@ -479,6 +391,7 @@ sub get_trees_with_entire_domain
 
 <pre>
 $domain is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -489,6 +402,7 @@ kbase_id is a string
 =begin text
 
 $domain is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -509,10 +423,120 @@ with an alternative method, so the entire domain may not be contained).
 
 sub get_trees_with_overlapping_domain
 {
-    my($self, $ctx, $domain) = @_;
+    my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
         #END get_trees_with_overlapping_domain
+    return($return);
+}
+
+
+
+
+=head2 substitute_node_labels_with_kbase_ids
+
+  $return = $obj->substitute_node_labels_with_kbase_ids($trees, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$trees is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$trees is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a list of kbase identifiers for a tree, substitutes the leaf node labels with actual kbase sequence
+identifiers.  If a particular alignment row maps to a single sequence, this is straightforward.  If an
+alignmnt row maps to multiple sequences, then the current behavior is not yet defined (likely will be
+a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
+parameters to be passed (parameter list is also currently not defined yet.)
+
+=back
+
+=cut
+
+sub substitute_node_labels_with_kbase_ids
+{
+    my($self, $ctx, $trees, $options) = @_;
+    my($return);
+    #BEGIN substitute_node_labels_with_kbase_ids
+        #END substitute_node_labels_with_kbase_ids
+    return($return);
+}
+
+
+
+
+=head2 extract_leaf_node_labels
+
+  $return = $obj->extract_leaf_node_labels($tree)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree is a newick_tree
+$return is a reference to a list where each element is a string
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree is a newick_tree
+$return is a reference to a list where each element is a string
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a tree, returns the list of labels of the leaves.  If the 'substitute_node_labels_with_kbase_ids' was already
+called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
+the tree.
+
+=back
+
+=cut
+
+sub extract_leaf_node_labels
+{
+    my($self, $ctx, $tree) = @_;
+    my($return);
+    #BEGIN extract_leaf_node_labels
+        #END extract_leaf_node_labels
     return($return);
 }
 
@@ -670,7 +694,7 @@ a string
 
 
 
-=head2 alignment
+=head2 fasta_alignment
 
 =over 4
 
@@ -711,7 +735,7 @@ a string
 =item Description
 
 Meta data about a tree, such as when it was created, parameters used in its creation, etc
-Is this actually needed?
+Is this actually needed? Or will this info be accessible through the auto generated methods?
 
 
 =item Definition
@@ -756,7 +780,8 @@ tree_generation_parameters has a value which is a string
 
 =item Description
 
-Meta data about an alignment, such as when it was created, parameters used in its creation, etc
+Meta data about an alignment, such as when it was created, parameters used in its creation, etc.
+Todo: determine if this object is necessary, and determine what it should contain
 
 
 =item Definition
@@ -768,6 +793,7 @@ a reference to a hash where the following keys are defined:
 alignment_id has a value which is a kbase_id
 isActive has a value which is a bool
 date_created has a value which is a timestamp
+n_rows has a value which is an int
 tree_generation_method has a value which is an int
 tree_generation_parameters has a value which is a string
 
@@ -781,6 +807,7 @@ a reference to a hash where the following keys are defined:
 alignment_id has a value which is a kbase_id
 isActive has a value which is a bool
 date_created has a value which is a timestamp
+n_rows has a value which is an int
 tree_generation_method has a value which is an int
 tree_generation_parameters has a value which is a string
 
