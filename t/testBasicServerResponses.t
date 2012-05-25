@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Test::More tests => 3;
+use Test::More tests => 12;
 
 use lib "../lib/";
 
@@ -22,12 +22,31 @@ my $tree_service_url = "http://140.221.92.133:5000";
 my $client = TreesClient->new($tree_service_url);
 ok(defined($client),"instantiating tree client");
 
+# HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
+# NOTE THAT THE PARAMETERS ARE JUST MADE UP AT THIS POINT
+my $func_calls = {  get_tree => ["kb|t123"],
+                    get_trees => [ ["kb|t1","kb|t2","kb|t4"] ],
+                    all_tree_ids => [ "1" ],
+                    get_trees_with_entire_seq => ["kb|g44.1", "1", "50", "opts"],
+                    get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", "opts"],
+                    get_trees_with_entire_domain => ["kb|d33.1", "opts"],
+                    get_trees_with_overlapping_domain => ["kb|d33.1", "opts"],
+                    substitute_node_labels_with_kbase_ids => ["tree","opts"],
+                    extract_leaf_node_labels => ["tree"]
+                 };
 
-my $result = $client->get_tree("123");
-if(defined($result)) {
-	print "gots \"$result\" !\n";
-} else {
-	print "epic fail\n";
+# LOOP THROUGH ALL THE REMOTE CALLS AND MAKE SURE WE GOT SOMETHING
+my $method_name;
+for $method_name (keys %$func_calls) {
+        #print "==========\n$method_name => @{ $func_calls->{$method_name}}\n";
+        #my $n_args = scalar @{ $func_calls->{$method_name}};
+        my $result;
+        {
+            no strict "refs";
+            $result = $client->$method_name(@{ $func_calls->{$method_name}});
+        }
+        ok($result,"looking for a response from \"$method_name\"");
 }
+
 
 done_testing();
