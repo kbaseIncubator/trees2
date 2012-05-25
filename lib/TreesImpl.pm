@@ -88,8 +88,7 @@ sub get_tree
     my($self, $ctx, $tree_id) = @_;
     my($return);
     #BEGIN get_tree
-    print "recieved get_tree call, doing nothing";
-    $return = "hello mr. tree.";
+        $return = "hello mr. tree., sent from get_tree";
     #END get_tree
     return($return);
 }
@@ -144,8 +143,7 @@ sub get_trees
     my($self, $ctx, $tree_ids) = @_;
     my($return);
     #BEGIN get_trees
-    print "recieved get_trees call, doing nothing";
-    $return = "hello mr. tree.";
+        $return = "hello mr. tree., sent from get_trees";
     #END get_trees
     return($return);
 }
@@ -201,8 +199,7 @@ sub all_tree_ids
     my($self, $ctx, $isActive) = @_;
     my($return);
     #BEGIN all_tree_ids
-    print "recieved all_tree_ids, doing nothing";
-    $return = "hello mr. tree.";
+        $return = "hello mr. tree., sent from all_tree_ids";
     #END all_tree_ids
     return($return);
 }
@@ -266,7 +263,8 @@ sub get_trees_with_entire_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_seq
-        #END get_trees_with_entire_seq
+        $return = "hello mr. tree., sent from get_trees_with_entire_seq";
+    #END get_trees_with_entire_seq
     return($return);
 }
 
@@ -326,7 +324,8 @@ sub get_trees_with_overlapping_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
-        #END get_trees_with_overlapping_seq
+        $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
+    #END get_trees_with_overlapping_seq
     return($return);
 }
 
@@ -379,7 +378,8 @@ sub get_trees_with_entire_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_domain
-        #END get_trees_with_entire_domain
+        $return = "hello mr. tree., sent from get_trees_with_entire_domain";
+    #END get_trees_with_entire_domain
     return($return);
 }
 
@@ -433,7 +433,8 @@ sub get_trees_with_overlapping_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
-        #END get_trees_with_overlapping_domain
+        $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
+    #END get_trees_with_overlapping_domain
     return($return);
 }
 
@@ -491,7 +492,8 @@ sub substitute_node_labels_with_kbase_ids
     my($self, $ctx, $trees, $options) = @_;
     my($return);
     #BEGIN substitute_node_labels_with_kbase_ids
-        #END substitute_node_labels_with_kbase_ids
+        $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
+    #END substitute_node_labels_with_kbase_ids
     return($return);
 }
 
@@ -543,7 +545,8 @@ sub extract_leaf_node_labels
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN extract_leaf_node_labels
-        #END extract_leaf_node_labels
+        $return = "hello mr. tree., sent from extract_leaf_node_labels";
+    #END extract_leaf_node_labels
     return($return);
 }
 
