@@ -17,9 +17,11 @@ use Test::More tests => 6;
 #  NOTE: this test points to the legacy client lib for JSON::RPC v0.97 or greater
 #        remove the extra Legacy directory for versions JSON::RPC v0.96 or earlier
 use_ok("JSON::RPC::Legacy::Client");
+#use_ok("JSON::RPC::Client");
 
 # MAKE A CONNECTION
 my $client = new JSON::RPC::Legacy::Client;
+#my $client = new JSON::RPC::Client;
 my $tree_service_url = "http://140.221.92.133:5000";
 
 # MAKE AN RPC CALL
