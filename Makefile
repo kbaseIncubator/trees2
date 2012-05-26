@@ -14,7 +14,7 @@ redeploy: clean deploy-services
 deploy-services:
 	echo '#!/bin/sh\necho trying to start tree service.' > ./start_service
 	echo 'export PERL5LIB=$(SERVICE_DIR)/lib' >> ./start_service
-	echo "nohup $(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) $(SERVICE_DIR)/lib/Trees.psgi >>& $(SERVICE_DIR)/service.log &" >> ./start_service
+	echo "exec $(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) $(SERVICE_DIR)/lib/Trees.psgi" >> ./start_service
 	echo 'echo tree service is listening.\n' >> ./start_service
 	echo '#!/bin/sh\necho trying to stop tree services.' > ./stop_service
 	echo "pid_file=$(SERVICE_DIR)/service.pid" >> ./stop_service
