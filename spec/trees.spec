@@ -120,14 +120,14 @@ module Trees
     Returns all tree IDs in which the entire portion of the given domain is used in the alignment
     which generates the tree (usually the tree will be constructed based on this domain).
     */
-    funcdef get_trees_with_entire_domain(kbase_id domain, mapping<string,string> options) returns (list<kbase_id>);
+    funcdef get_trees_with_entire_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
     
     /*
     Returns all tree IDs in which some portion of the given domain is used in the alignment
     which generates the tree (usually the tree will be constructed based on a similar domain created
     with an alternative method, so the entire domain may not be contained).
     */
-    funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string> options) returns (list<kbase_id>);
+    funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
     
 
 
