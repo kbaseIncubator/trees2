@@ -7,13 +7,16 @@ and Multiple sequence alignments.
 Alignment
 -alignmentID (will be unique kbase id: 'kb|ali.XXXXX')
 -alignment (file/blob)
--nRows (number of row in the alignment)
+-nRows (number of rows in the alignment)
 -metaInfoHash (e.g. name, human readable description, etc)
 -timestamp
 -isActive (either boolean or for our own reference, a version number)
--alignmentMethod
--alignmentParameters
--alignmentProtocolDescription (human readable, how did you get here with these sequences? could be in a separate table)
+-isConcatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
+-alignmentMethod (string that either maps to another dataase, to capture workflows, or is a simple method name)
+-alignmentParameters (hash that stores parameter values used in the alignment)
+-alignmentProtocolDescription (human readable, how did you get here with these sequences? could also map to a separate table)
+-source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
+-source_db_id (for indicating the ID in the db where this alignment originated from)
 
 AlignmentRowComponent
 -alignmentID (needed for efficiency)
@@ -35,9 +38,12 @@ Tree
 -isActive (either boolean or for our own reference, a version number)
 -treeGenerationMethod
 -treeGenerationParameters
+-source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
+-source_db_id (for indicating the ID in the db where this alignment originated from)
 
 
-==== Computed Tables for Performance
+
+==== Computed Tables for Performance ???
 
 Alignment2Tree
 -alignmentID
