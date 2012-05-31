@@ -5,6 +5,7 @@ and Multiple sequence alignments.
 
 
 Alignment
+=====================================
 -alignmentID (will be unique kbase id: 'kb|ali.XXXXX')
 -alignment (file/blob)
 -nRows (number of rows in the alignment)
@@ -18,18 +19,25 @@ Alignment
 -source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
 -source_db_id (for indicating the ID in the db where this alignment originated from)
 
+
+
 AlignmentRowComponent
+=====================================
 -alignmentID (needed for efficiency)
 -alignmentRow (maybe needed for efficiency)
 -alignmentRowID (will be unique kbase id: 'kb|ali.XXXXX.row.XXX')
 -concatenationOrder (ordering starting from left to right in alignment row)
 -label (text description copied from original fasta file)
 -sequenceID (MD5 for protein, probably contigChunk for DNA/RNA)
+-kbaseID (kbaseID for the sequence that was actually used in the alignment)
 -isProtein (bool)
 -begin
 -end
 
+
+
 Tree
+=====================================
 -treeID (will be a unique kbase id:  e.g. 'kb|tree.XXXX')
 -newick (leaf nodes provide a key into the AlignmentRowComponent table)
 -alignmentID
