@@ -1,0 +1,156 @@
+<Database>
+    <Title>trees</Title>
+    
+    <Issues>
+    working draft of the ER model for storing trees and MSAs
+    </Issues>
+    
+    
+    <Regions></Regions>
+    
+    
+    <Entities>
+        
+        <Entity name="Tree" keyType="string">
+            <DisplayInfo theme="navy">
+                <RegionInfo name="Models" row="4" col="3" />
+            </DisplayInfo>
+            <Notes>A tree built from a multiple sequence alignment.</Notes>
+            <Fields>
+                <Field name="treeID" type="string">
+                    <Notes>A unique kbase id: eg 'kb|tree.XXXX'</Notes>
+                </Field>
+                <Field name="newick" type="text">
+                    <Notes>leaf nodes provide a key into the AlignmentRowComponent table</Notes>
+                </Field>
+                <Field name="alignmentID" type="string">
+                    <Notes>maps this tree to an alignment, needed primarily for convenience</Notes>
+                </Field>
+                <Field name="timestamp" type="date">
+                    <Notes>time of creation (of original tree, or of kbase version?)</Notes>
+                </Field>
+                <Field name="metaInfoHash" type="text">
+                    <Notes>e.g. name, human readable description, etc</Notes>
+                </Field>
+                <Field name="isActive" type="int">
+                    <Notes></Notes>
+                </Field>
+                <Field name="treeGenerationMethod" type="string">
+                    <Notes></Notes>
+                </Field>
+                <Field name="treeGenerationParameters" type="text">
+                    <Notes></Notes>
+                </Field>
+                <Field name="source_db" type="string">
+                    <Notes></Notes>
+                </Field>
+                <Field name="source_db_id" type="string">
+                    <Notes></Notes>
+                </Field>
+            </Fields>
+        </Entity>
+        
+        <Entity name="Alignment" keyType="string">
+            <DisplayInfo theme="navy">
+                <RegionInfo name="Models" row="4" col="3" />
+            </DisplayInfo>
+            <Notes>An alignment of sequences (usually </Notes>
+            <Fields>
+                <Field name="alignmentID" type="string">
+                    <Notes>will be unique kbase id: 'kb|ali.XXXXX'</Notes>
+                </Field>
+                <Field name="alignment" type="string">
+                    <Notes>Ref to file storing the alignment (using SHOCK?)</Notes>
+                </Field>
+                <Field name="nRows" type="int">
+                    <Notes>number of rows in the alignment</Notes>
+                </Field>
+                <Field name="metaInfoHash" type="text">
+                    <Notes>e.g. name, human readable description, etc</Notes>
+                </Field>
+                <Field name="timestamp" type="time">
+                    <Notes></Notes>
+                </Field>
+                <Field name="isActive" type="int">
+                    <Notes></Notes>
+                </Field>
+                <Field name="isConcatenation" type="int">
+                    <Notes>boolean value that indicates if leaves map to single sequences, or multiple sequences</Notes>
+                </Field>
+                <Field name="alignmentMethod" type="string">
+                    <Notes>string that either maps to another dataase, to capture workflows, or is a simple method name</Notes>
+                </Field>
+                <Field name="alignmentParameters" type="text">
+                    <Notes>hash that stores parameter values used in the alignment</Notes>
+                </Field>
+                <Field name="alignmentProtocolDescription" type="text">
+                    <Notes>human readable, how did you get here with these sequences? could also map to a separate table</Notes>
+                </Field>
+                <Field name="source_db" type="string">
+                    <Notes>for indicating the ID in the db where this alignment originated from</Notes>
+                </Field>
+                <Field name="source_db_id" type="string">
+                    <Notes>for indicating the ID in the db where this alignment originated from</Notes>
+                </Field>
+            </Fields>
+        </Entity>
+        
+        <Entity name="AlignmentRowComponent" keyType="string">
+            <DisplayInfo theme="navy">
+                <RegionInfo name="Models" row="4" col="3" />
+            </DisplayInfo>
+            <Notes>Individual components that make up rows in the alignment</Notes>
+            <Fields>
+                <Field name="alignmentID" type="char">
+                    <Notes>needed for efficiency</Notes>
+                </Field>
+                <Field name="alignmentRow" type="float">
+                    <Notes>maybe needed for efficiency</Notes>
+                </Field>
+                <Field name="alignmentRowID" type="string">
+                    <Notes>will be unique kbase id: 'kb|ali.XXXXX.row.XXX'</Notes>
+                </Field>
+                <Field name="concatenationOrder" type="int">
+                    <Notes>ordering starting from left to right in alignment row</Notes>
+                </Field>
+                <Field name="label" type="text">
+                    <Notes>text description copied from original fasta file</Notes>
+                </Field>
+                <Field name="sequenceID" type="string">
+                    <Notes>MD5 for protein, probably contigChunk for DNA/RNA</Notes>
+                </Field>
+                <Field name="kbaseID" type="string">
+                    <Notes>kbaseID for the sequence that was actually used in the alignment</Notes>
+                </Field>
+                <Field name="isProtein" type="boolean">
+                    <Notes></Notes>
+                </Field>
+                <Field name="begin" type="int">
+                    <Notes></Notes>
+                </Field>
+                <Field name="end" type="int">
+                    <Notes></Notes>
+                </Field>
+            </Fields>
+        </Entity>        
+        
+    </Entities>
+    
+    
+    
+    <Relationships>
+        <Relationship name="UsedToBuild" from="Alignment" to="Tree"
+                      arity="1M" converse="WasBuiltFrom">
+            <Notes>This relationship connects Trees and the Multiple Sequence Alignments used to create them.</Notes>
+        </Relationship>
+        <Relationship name="IsComposedOf" from="Alignment" to="AlignmentRowComponent"
+                      arity="1M" converse="Composes">
+            <Notes>This relationship connects Trees and the Multiple Sequence Alignments used to create them.</Notes>
+        </Relationship>
+    </Relationships>
+    
+    
+    
+    <Shapes>
+    </Shapes>
+</Database>
