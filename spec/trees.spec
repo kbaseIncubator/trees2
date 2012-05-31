@@ -44,10 +44,13 @@ module Trees
         /*some comment here*/
         kbase_id tree_id;
         kbase_id alignment_id;
-        bool isActive;
+        string meta_info_hash;
+        bool is_active;
         timestamp date_created;
         int tree_generation_method;
         string tree_generation_parameters;
+        string source_db;
+        string source_db_id;
     } tree_meta_data;
 
     /*
@@ -56,7 +59,8 @@ module Trees
     */
     typedef structure {
         kbase_id alignment_id;
-        bool isActive;
+        bool is_active;
+        bool is_concatenation;
         timestamp date_created;
         int n_rows;
         int tree_generation_method;
@@ -67,22 +71,53 @@ module Trees
     
     
     
+    -alignment (file/blob)
+-nRows (number of rows in the alignment)
+-metaInfoHash (e.g. name, human readable description, etc)
+-timestamp
+-isActive (either boolean or for our own reference, a version number)
+-isConcatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
+-alignmentMethod (string that either maps to another dataase, to capture workflows, or is a simple method name)
+-alignmentParameters (hash that stores parameter values used in the alignment)
+-alignmentProtocolDescription (human readable, how did you get here with these sequences? could also map to a separate table)
+-source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
+-source_db_id (for indicating the ID in the db where this alignment originated from)
+
+    
+    
+    
+    
     
 
     /*
-    Returns the specified tree in newick format, or an empty string if the tree does not exist.
-    Note: this function may not be needed if this functionality is provided by the auto-gen ER code
-    todo: provide a way to automatically replace alignment row ids with kbase ids
-    todo: provide a way to get meta data about this tree, possibly in a separate function
+    Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
+    hash provides a way to return the tree with different labels replaced.
+    
+        options = [
+            FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
+        ]
+ 
+    The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
+    tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
+    with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
+    only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
+    row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
+    is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
+    other options???
+    
+    Note: the options hash will be the same as for other functions which provide substitution cababilities 
+    
+    todo: provide a way to get meta data about this tree, possibly in a separate function, but may
+    not be needed if this is provided by the ER model.
     */
-    funcdef get_tree(kbase_id tree_id) returns (newick_tree);
+    funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (newick_tree);
     
     /*
     Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
     was not found.
     Note: this function may not be needed if this functionality is provided by the auto-gen ER code
     */    
-    funcdef get_trees(list<kbase_id> tree_ids) returns (list<newick_tree>);
+    funcdef get_trees(list<kbase_id> tree_ids, mapping<string,string> options) returns (list<newick_tree>);
     
     /*
     Returns a list of all IDs of all trees in the database that match the given flags (right now
@@ -90,10 +125,15 @@ module Trees
     but this should be extended to accept more args and possible queries.
     Note: this function may not be needed if this functionality is provided by the auto-gen ER code
     */ 
-    funcdef all_tree_ids(bool isActive) returns (list <kbase_id>);
+    funcdef all_tree_ids(bool is_active) returns (list <kbase_id>);
 
 
-
+    /*
+    Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
+    the given tree.
+    Note: may not be needed if this functionality is possible via the ER model
+    */
+    funcdef get_kbase_ids_from_alignment_row(kbase_id alignment_id, int row_number) returns (list<kbase_id>);
 
 
 
@@ -152,6 +192,19 @@ module Trees
     the tree.
     */
     funcdef extract_leaf_node_labels(newick_tree tree) returns (list<string>);
+
+    /*
+    Given a tree and a sequence in kbase, attempt to map that sequence onto the tree
+    */
+    funcdef add_node_to_tree(kbase_id tree_id, kbase_id sequence_id, mapping<string,string> options) returns (newick_tree);
+
+    /*
+    Not sure if we want this, but would allow users to submit a set of sequences, then build a tree.  Here, options
+    would support the various alignment options, trimming options, tree-building algorithms.
+    todo: this isn't well thought out -> do we return alignments as well?  do we support building MSAs?
+    */
+    funcdef build_tree_from_sequences(list<kbase_id> sequences, mapping<string,string>options) returns (newick_tree);
+    funcdef build_tree_from_fasta(list<string> fasta_files, mapping<string,string>options) returns (newick_tree);
 
 
     /* additional helper functions to be determined based on use-cases */
