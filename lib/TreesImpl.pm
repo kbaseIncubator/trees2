@@ -42,7 +42,7 @@ sub new
 
 =head2 get_tree
 
-  $return = $obj->get_tree($tree_id)
+  $return = $obj->get_tree($tree_id, $options)
 
 =over 4
 
@@ -52,6 +52,7 @@ sub new
 
 <pre>
 $tree_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a newick_tree
 kbase_id is a string
 newick_tree is a string
@@ -63,6 +64,7 @@ newick_tree is a string
 =begin text
 
 $tree_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a newick_tree
 kbase_id is a string
 newick_tree is a string
@@ -74,10 +76,25 @@ newick_tree is a string
 
 =item Description
 
-Returns the specified tree in newick format, or an empty string if the tree does not exist.
-Note: this function may not be needed if this functionality is provided by the auto-gen ER code
-todo: provide a way to automatically replace alignment row ids with kbase ids
-todo: provide a way to get meta data about this tree, possibly in a separate function
+Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
+hash provides a way to return the tree with different labels replaced.
+
+    options = [
+        FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
+    ]
+ 
+The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
+tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
+with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
+only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
+row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
+is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
+other options???
+
+Note: the options hash will be the same as for other functions which provide substitution cababilities 
+
+todo: provide a way to get meta data about this tree, possibly in a separate function, but may
+not be needed if this is provided by the ER model.
 
 =back
 
@@ -85,10 +102,10 @@ todo: provide a way to get meta data about this tree, possibly in a separate fun
 
 sub get_tree
 {
-    my($self, $ctx, $tree_id) = @_;
+    my($self, $ctx, $tree_id, $options) = @_;
     my($return);
     #BEGIN get_tree
-            $return = "hello mr. tree., sent from get_tree";
+                $return = "hello mr. tree., sent from get_tree";
     #END get_tree
     return($return);
 }
@@ -98,7 +115,7 @@ sub get_tree
 
 =head2 get_trees
 
-  $return = $obj->get_trees($tree_ids)
+  $return = $obj->get_trees($tree_ids, $options)
 
 =over 4
 
@@ -108,6 +125,7 @@ sub get_tree
 
 <pre>
 $tree_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a newick_tree
 kbase_id is a string
 newick_tree is a string
@@ -119,6 +137,7 @@ newick_tree is a string
 =begin text
 
 $tree_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a newick_tree
 kbase_id is a string
 newick_tree is a string
@@ -140,10 +159,10 @@ Note: this function may not be needed if this functionality is provided by the a
 
 sub get_trees
 {
-    my($self, $ctx, $tree_ids) = @_;
+    my($self, $ctx, $tree_ids, $options) = @_;
     my($return);
     #BEGIN get_trees
-            $return = "hello mr. tree., sent from get_trees";
+                $return = "hello mr. tree., sent from get_trees";
     #END get_trees
     return($return);
 }
@@ -153,7 +172,7 @@ sub get_trees
 
 =head2 all_tree_ids
 
-  $return = $obj->all_tree_ids($isActive)
+  $return = $obj->all_tree_ids($is_active)
 
 =over 4
 
@@ -162,7 +181,7 @@ sub get_trees
 =begin html
 
 <pre>
-$isActive is a bool
+$is_active is a bool
 $return is a reference to a list where each element is a kbase_id
 bool is an int
 kbase_id is a string
@@ -173,7 +192,7 @@ kbase_id is a string
 
 =begin text
 
-$isActive is a bool
+$is_active is a bool
 $return is a reference to a list where each element is a kbase_id
 bool is an int
 kbase_id is a string
@@ -196,11 +215,65 @@ Note: this function may not be needed if this functionality is provided by the a
 
 sub all_tree_ids
 {
-    my($self, $ctx, $isActive) = @_;
+    my($self, $ctx, $is_active) = @_;
     my($return);
     #BEGIN all_tree_ids
-            $return = "hello mr. tree., sent from all_tree_ids";
+                $return = "hello mr. tree., sent from all_tree_ids";
     #END all_tree_ids
+    return($return);
+}
+
+
+
+
+=head2 get_kbase_ids_from_alignment_row
+
+  $return = $obj->get_kbase_ids_from_alignment_row($alignment_id, $row_number)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$alignment_id is a kbase_id
+$row_number is an int
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$alignment_id is a kbase_id
+$row_number is an int
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
+the given tree.
+Note: may not be needed if this functionality is possible via the ER model
+
+=back
+
+=cut
+
+sub get_kbase_ids_from_alignment_row
+{
+    my($self, $ctx, $alignment_id, $row_number) = @_;
+    my($return);
+    #BEGIN get_kbase_ids_from_alignment_row
+        #END get_kbase_ids_from_alignment_row
     return($return);
 }
 
@@ -263,7 +336,7 @@ sub get_trees_with_entire_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_seq
-            $return = "hello mr. tree., sent from get_trees_with_entire_seq";
+                $return = "hello mr. tree., sent from get_trees_with_entire_seq";
     #END get_trees_with_entire_seq
     return($return);
 }
@@ -324,7 +397,7 @@ sub get_trees_with_overlapping_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
-            $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
+                $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
     #END get_trees_with_overlapping_seq
     return($return);
 }
@@ -378,7 +451,7 @@ sub get_trees_with_entire_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_domain
-            $return = "hello mr. tree., sent from get_trees_with_entire_domain";
+                $return = "hello mr. tree., sent from get_trees_with_entire_domain";
     #END get_trees_with_entire_domain
     return($return);
 }
@@ -433,7 +506,7 @@ sub get_trees_with_overlapping_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
-            $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
+                $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
     #END get_trees_with_overlapping_domain
     return($return);
 }
@@ -492,7 +565,7 @@ sub substitute_node_labels_with_kbase_ids
     my($self, $ctx, $trees, $options) = @_;
     my($return);
     #BEGIN substitute_node_labels_with_kbase_ids
-            $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
+                $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
     #END substitute_node_labels_with_kbase_ids
     return($return);
 }
@@ -545,8 +618,229 @@ sub extract_leaf_node_labels
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN extract_leaf_node_labels
-            $return = "hello mr. tree., sent from extract_leaf_node_labels";
+                $return = "hello mr. tree., sent from extract_leaf_node_labels";
     #END extract_leaf_node_labels
+    return($return);
+}
+
+
+
+
+=head2 add_node_to_tree
+
+  $return = $obj->add_node_to_tree($tree_id, $sequence_id, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree_id is a kbase_id
+$sequence_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree_id is a kbase_id
+$sequence_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a tree and a sequence in kbase, attempt to map that sequence onto the tree.  This function could have
+multiple prototypes allowing users to compare / build trees with new sequences
+
+=back
+
+=cut
+
+sub add_node_to_tree
+{
+    my($self, $ctx, $tree_id, $sequence_id, $options) = @_;
+    my($return);
+    #BEGIN add_node_to_tree
+        #END add_node_to_tree
+    return($return);
+}
+
+
+
+
+=head2 run_sifter
+
+  $return = $obj->run_sifter($tree_id, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+If / when we want to support sifter, we should support a simple function that allows us to run sifter on a given
+tree in the DB, in which we pass options giving sifter the particular base annotations to query from.
+todo: determine if and how such annotations could be back propogated to the CDM.
+
+=back
+
+=cut
+
+sub run_sifter
+{
+    my($self, $ctx, $tree_id, $options) = @_;
+    my($return);
+    #BEGIN run_sifter
+        #END run_sifter
+    return($return);
+}
+
+
+
+
+=head2 build_tree_from_sequences
+
+  $return = $obj->build_tree_from_sequences($sequences, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$sequences is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$sequences is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+kbase_id is a string
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Not sure if we want this, but would allow users to submit a set of sequences, then build a tree.  Here, options
+would support the various alignment options, trimming options, tree-building algorithms.
+todo: this isn't well thought out -> do we return alignments as well?  do we support building MSAs?
+
+=back
+
+=cut
+
+sub build_tree_from_sequences
+{
+    my($self, $ctx, $sequences, $options) = @_;
+    my($return);
+    #BEGIN build_tree_from_sequences
+        #END build_tree_from_sequences
+    return($return);
+}
+
+
+
+
+=head2 build_tree_from_fasta
+
+  $return = $obj->build_tree_from_fasta($fasta_files, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$fasta_files is a reference to a list where each element is a string
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+newick_tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$fasta_files is a reference to a list where each element is a string
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a newick_tree
+newick_tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub build_tree_from_fasta
+{
+    my($self, $ctx, $fasta_files, $options) = @_;
+    my($return);
+    #BEGIN build_tree_from_fasta
+        #END build_tree_from_fasta
     return($return);
 }
 
@@ -756,10 +1050,13 @@ Is this actually needed? Or will this info be accessible through the auto genera
 a reference to a hash where the following keys are defined:
 tree_id has a value which is a kbase_id
 alignment_id has a value which is a kbase_id
-isActive has a value which is a bool
+meta_info_hash has a value which is a string
+is_active has a value which is a bool
 date_created has a value which is a timestamp
 tree_generation_method has a value which is an int
 tree_generation_parameters has a value which is a string
+source_db has a value which is a string
+source_db_id has a value which is a string
 
 </pre>
 
@@ -770,10 +1067,13 @@ tree_generation_parameters has a value which is a string
 a reference to a hash where the following keys are defined:
 tree_id has a value which is a kbase_id
 alignment_id has a value which is a kbase_id
-isActive has a value which is a bool
+meta_info_hash has a value which is a string
+is_active has a value which is a bool
 date_created has a value which is a timestamp
 tree_generation_method has a value which is an int
 tree_generation_parameters has a value which is a string
+source_db has a value which is a string
+source_db_id has a value which is a string
 
 
 =end text
@@ -801,11 +1101,16 @@ Todo: determine if this object is necessary, and determine what it should contai
 <pre>
 a reference to a hash where the following keys are defined:
 alignment_id has a value which is a kbase_id
-isActive has a value which is a bool
+meta_info_hash has a value which is a string
+is_active has a value which is a bool
+is_concatenation has a value which is a bool
 date_created has a value which is a timestamp
 n_rows has a value which is an int
-tree_generation_method has a value which is an int
-tree_generation_parameters has a value which is a string
+alignment_method has a value which is an int
+alignment_parameters has a value which is a string
+alignment_protocol_description has a value which is a string
+source_db has a value which is a string
+source_db_id has a value which is a string
 
 </pre>
 
@@ -815,11 +1120,16 @@ tree_generation_parameters has a value which is a string
 
 a reference to a hash where the following keys are defined:
 alignment_id has a value which is a kbase_id
-isActive has a value which is a bool
+meta_info_hash has a value which is a string
+is_active has a value which is a bool
+is_concatenation has a value which is a bool
 date_created has a value which is a timestamp
 n_rows has a value which is an int
-tree_generation_method has a value which is an int
-tree_generation_parameters has a value which is a string
+alignment_method has a value which is an int
+alignment_parameters has a value which is a string
+alignment_protocol_description has a value which is a string
+source_db has a value which is a string
+source_db_id has a value which is a string
 
 
 =end text

@@ -33,12 +33,27 @@ sub new
 
 
 
-=head2 $result = get_tree(tree_id)
+=head2 $result = get_tree(tree_id, options)
 
-Returns the specified tree in newick format, or an empty string if the tree does not exist.
-Note: this function may not be needed if this functionality is provided by the auto-gen ER code
-todo: provide a way to automatically replace alignment row ids with kbase ids
-todo: provide a way to get meta data about this tree, possibly in a separate function
+Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
+hash provides a way to return the tree with different labels replaced.
+
+    options = [
+        FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
+    ]
+ 
+The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
+tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
+with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
+only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
+row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
+is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
+other options???
+
+Note: the options hash will be the same as for other functions which provide substitution cababilities 
+
+todo: provide a way to get meta data about this tree, possibly in a separate function, but may
+not be needed if this is provided by the ER model.
 
 =cut
 
@@ -46,7 +61,7 @@ sub get_tree
 {
     my($self, @args) = @_;
 
-    @args == 1 or die "Invalid argument count (expecting 1)";
+    @args == 2 or die "Invalid argument count (expecting 2)";
     my $result = $self->{client}->call($self->{url}, {
 	method => "Trees.get_tree",
 	params => \@args,
@@ -65,7 +80,7 @@ sub get_tree
 
 
 
-=head2 $result = get_trees(tree_ids)
+=head2 $result = get_trees(tree_ids, options)
 
 Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
 was not found.
@@ -77,7 +92,7 @@ sub get_trees
 {
     my($self, @args) = @_;
 
-    @args == 1 or die "Invalid argument count (expecting 1)";
+    @args == 2 or die "Invalid argument count (expecting 2)";
     my $result = $self->{client}->call($self->{url}, {
 	method => "Trees.get_trees",
 	params => \@args,
@@ -96,7 +111,7 @@ sub get_trees
 
 
 
-=head2 $result = all_tree_ids(isActive)
+=head2 $result = all_tree_ids(is_active)
 
 Returns a list of all IDs of all trees in the database that match the given flags (right now
 the only flag indicates if the tree is active or not, meaning the latest version of the tree,
@@ -122,6 +137,37 @@ sub all_tree_ids
 	}
     } else {
 	die "Error invoking all_tree_ids: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = get_kbase_ids_from_alignment_row(alignment_id, row_number)
+
+Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
+the given tree.
+Note: may not be needed if this functionality is possible via the ER model
+
+=cut
+
+sub get_kbase_ids_from_alignment_row
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.get_kbase_ids_from_alignment_row",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking get_kbase_ids_from_alignment_row: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking get_kbase_ids_from_alignment_row: " . $self->{client}->status_line;
     }
 }
 
@@ -312,6 +358,127 @@ sub extract_leaf_node_labels
 	}
     } else {
 	die "Error invoking extract_leaf_node_labels: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = add_node_to_tree(tree_id, sequence_id, options)
+
+Given a tree and a sequence in kbase, attempt to map that sequence onto the tree.  This function could have
+multiple prototypes allowing users to compare / build trees with new sequences
+
+=cut
+
+sub add_node_to_tree
+{
+    my($self, @args) = @_;
+
+    @args == 3 or die "Invalid argument count (expecting 3)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.add_node_to_tree",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking add_node_to_tree: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking add_node_to_tree: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = run_sifter(tree_id, options)
+
+If / when we want to support sifter, we should support a simple function that allows us to run sifter on a given
+tree in the DB, in which we pass options giving sifter the particular base annotations to query from.
+todo: determine if and how such annotations could be back propogated to the CDM.
+
+=cut
+
+sub run_sifter
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.run_sifter",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking run_sifter: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking run_sifter: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = build_tree_from_sequences(sequences, options)
+
+Not sure if we want this, but would allow users to submit a set of sequences, then build a tree.  Here, options
+would support the various alignment options, trimming options, tree-building algorithms.
+todo: this isn't well thought out -> do we return alignments as well?  do we support building MSAs?
+
+=cut
+
+sub build_tree_from_sequences
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.build_tree_from_sequences",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking build_tree_from_sequences: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking build_tree_from_sequences: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = build_tree_from_fasta(fasta_files, options)
+
+
+
+=cut
+
+sub build_tree_from_fasta
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.build_tree_from_fasta",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking build_tree_from_fasta: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking build_tree_from_fasta: " . $self->{client}->status_line;
     }
 }
 
