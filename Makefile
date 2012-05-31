@@ -1,7 +1,7 @@
 TARGET ?= /kb/deployment
 KB_RUNTIME ?= /kb/runtime
 SERVICE = trees
-PORT = 5000
+PORT = 5004
 SERVICE_DIR = $(TARGET)/services/$(SERVICE)
 PID_FILE = $(SERVICE_DIR)/service.pid
 
