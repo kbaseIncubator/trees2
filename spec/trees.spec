@@ -59,34 +59,17 @@ module Trees
     */
     typedef structure {
         kbase_id alignment_id;
+        string meta_info_hash;
         bool is_active;
         bool is_concatenation;
         timestamp date_created;
         int n_rows;
-        int tree_generation_method;
-        string tree_generation_parameters;
+        int alignment_method;
+        string alignment_parameters;
+        string alignment_protocol_description;
+        string source_db;
+        string source_db_id;
     } alignment_meta_data;
-    
-    
-    
-    
-    
-    -alignment (file/blob)
--nRows (number of rows in the alignment)
--metaInfoHash (e.g. name, human readable description, etc)
--timestamp
--isActive (either boolean or for our own reference, a version number)
--isConcatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
--alignmentMethod (string that either maps to another dataase, to capture workflows, or is a simple method name)
--alignmentParameters (hash that stores parameter values used in the alignment)
--alignmentProtocolDescription (human readable, how did you get here with these sequences? could also map to a separate table)
--source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
--source_db_id (for indicating the ID in the db where this alignment originated from)
-
-    
-    
-    
-    
     
 
     /*
