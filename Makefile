@@ -27,7 +27,7 @@ deploy-services:
 	echo "pid=\"cat \$$pid_file\"\nkill -9 \$$pid\n" >> ./stop_service
 	chmod +x start_service stop_service
 	mkdir -p $(SERVICE_DIR)
-        mkdir -p $(SERVICE_DIR)/log
+	mkdir -p $(SERVICE_DIR)/log
 	cp -rv . $(SERVICE_DIR)/
 	echo "OK ... Done Deploying Tree Services."
 
