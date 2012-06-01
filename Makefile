@@ -16,9 +16,9 @@ redeploy: clean deploy-services
 deploy-services:
 	echo '#!/bin/sh\necho starting tree services.' > ./start_service
 	echo 'export PERL5LIB=$(SERVICE_DIR)/lib' >> ./start_service
-	echo "exec $(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) --daemonize \" >> ./start_service
-	echo "\t--access-log $(ACCESS_LOG_FILE) \" >>./start_service
-	echo "\t--error-log $(ERR_LOG_FILE) \" >> ./start_service
+	echo "exec $(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) --daemonize \ " >> ./start_service
+	echo "\t--access-log $(ACCESS_LOG_FILE) \ " >>./start_service
+	echo "\t--error-log $(ERR_LOG_FILE) \ " >> ./start_service
 	echo "\t$(SERVICE_DIR)/lib/Trees.psgi" >> ./start_service
 	echo 'echo tree service is listening.\n' >> ./start_service
 	echo '#!/bin/sh\necho trying to stop tree services.' > ./stop_service
