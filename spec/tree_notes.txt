@@ -1,0 +1,28 @@
+
+
+2012, June 4
+Meeting with Fangfang, Keith, and Michael
+=======================================
+
+- Should we use ER model calls or direct SQL calls?  What database/server do we connect to? ask Bruce.
+- Current SEED had performance issues in looking up IDs at leaves, solved by Bob's caching scheme
+- How do we ensure performance / how do we have tables precomputed for performance?  And if we have
+such tables, how do we ensure that it is kept up do date?  ask Bob.
+- How do we link to existing entities / relationships in the system?  Simply use kbase ids wih the ID
+sever as a hook to access other data.
+- How do we validate trees?  Provide a service that accepts a tree and validates node labels point to
+a valid object, returning errors or warnings if labels are not found.  Might be able to validate trees
+in different ways based on what the IDs point to.
+-How do we deal with private or local data that is added/deleted? How do we work with the Tinystore?
+First we will ignore adding/removing trees from the datastore, even though some users will want this
+capability to share tree information.  We will assume that users will query, get a tree, work with the
+tree locally, perhaps sending the tree back and forth to decorate it, etc.
+-How will we store alignments?  As flat files which effectively deals with white space, and can be compressed
+-How are we going to modify the tree-building workflow?  At some point, will KBase have its own workflow
+
+next steps:
+1) mike, keith, gavin: talk to Tom about details of the CDS and TinyStore, and how kbase plans to allow us to query against it
+2) fangfang: talk to Bob about getting a development environment for working with the ER model
+3) fangfang, mike, keith: provide ER diagram to Bruce
+4) all: describe use cases to accompany the API spec, and to circulate to potential tree users
+5) Fangfang is meeting with Gary on June 26 to get feedback - we need complete proposal by then (and ideally sent around earlier)
