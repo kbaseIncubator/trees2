@@ -6,16 +6,16 @@ and Multiple sequence alignments.
 
 Alignment
 =====================================
--alignmentID (will be unique kbase id: 'kb|ali.XXXXX')
--alignment (file/blob)
--nRows (number of rows in the alignment)
--metaInfoHash (e.g. name, human readable description, etc)
+-id (will be unique kbase id: 'kb|ali.XXXXX')
+-fasta_alignment (file/blob)
+-n_rows (number of rows in the alignment)
+-metadata ("key1:val1,key2:val2,...", e.g. name, human readable description, etc)
 -timestamp
--isActive (either boolean or for our own reference, a version number)
--isConcatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
--alignmentMethod (string that either maps to another dataase, to capture workflows, or is a simple method name)
--alignmentParameters (hash that stores parameter values used in the alignment)
--alignmentProtocolDescription (human readable, how did you get here with these sequences? could also map to a separate table)
+-active (either boolean or for our own reference, a version number)
+-is_concatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
+-method (string that either maps to another dataase, to capture workflows, or is a simple method name)
+-parameters (hash that stores parameter values used in the alignment)
+-protocol (human readable, how did you get here with these sequences? could also map to a separate table)
 -source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
 -source_db_id (for indicating the ID in the db where this alignment originated from)
 
@@ -23,14 +23,14 @@ Alignment
 
 AlignmentRowComponent
 =====================================
--alignmentID (needed for efficiency)
--alignmentRow (maybe needed for efficiency)
--alignmentRowID (will be unique kbase id: 'kb|ali.XXXXX.row.XXX')
--concatenationOrder (ordering starting from left to right in alignment row)
+-id (will be unique kbase id: 'kb|ali.XXXXX.row.XXX')
+-alignment_id 
+-alignment_row (row number in alignment)
+-concatenation_order (ordering starting from left to right in alignment row)
 -label (text description copied from original fasta file)
--sequenceID (MD5 for protein, probably contigChunk for DNA/RNA)
--kbaseID (kbaseID for the sequence that was actually used in the alignment)
--isProtein (bool)
+-sequence_id (MD5 for protein, probably contigChunk for DNA/RNA)
+-kbase_id (kbaseID for the sequence that was actually used in the alignment)
+-is_protein (bool)
 -begin
 -end
 
@@ -38,14 +38,14 @@ AlignmentRowComponent
 
 Tree
 =====================================
--treeID (will be a unique kbase id:  e.g. 'kb|tree.XXXX')
--newick (leaf nodes provide a key into the AlignmentRowComponent table)
--alignmentID
--metaInfoHash (e.g. name, human readable description, etc)
+-id (will be a unique kbase id:  e.g. 'kb|tree.XXXX')
+-newick_tree (file/blob, leaf nodes provide a key into the AlignmentRowComponent table)
+-alignment_id
+-metadata ("key1:val1,key2:val2,...", e.g. name, human readable description, etc)
 -timestamp
--isActive (either boolean or for our own reference, a version number)
--treeGenerationMethod
--treeGenerationParameters
+-active (either boolean or for our own reference, a version number)
+-method
+-parameters
 -source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
 -source_db_id (for indicating the ID in the db where this alignment originated from)
 

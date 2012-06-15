@@ -5,16 +5,15 @@ typedef string rectangle;
 
 typedef structure {
 	string id;
-	string alignmentID nullable;
-	string alignment nullable;
-	int nRows nullable;
-	string metaInfoHash nullable;
-	 timestamp nullable;
-	int isActive nullable;
-	int isConcatenation nullable;
-	string alignmentMethod nullable;
-	string alignmentParameters nullable;
-	string alignmentProtocolDescription nullable;
+	string fasta_alignment nullable;
+	int n_rows nullable;
+	string metadata nullable;
+	string timestamp nullable;
+	int active nullable;
+	int is_concatenation nullable;
+	string method nullable;
+	string parameters nullable;
+	string protocol nullable;
 	string source_db nullable;
 	string source_db_id nullable;
 } fields_Alignment ;
@@ -26,22 +25,22 @@ It has the following fields:
 =over 4
 
 
-=item alignmentID
+=item id
 
 will be unique kbase id: 'kb|ali.XXXXX'
 
 
-=item alignment
+=item fasta_alignment
 
 Ref to file storing the alignment (using SHOCK?)
 
 
-=item nRows
+=item n_rows
 
 number of rows in the alignment
 
 
-=item metaInfoHash
+=item metadata
 
 e.g. name, human readable description, etc
 
@@ -51,27 +50,27 @@ e.g. name, human readable description, etc
 
 
 
-=item isActive
+=item active
 
 
 
 
-=item isConcatenation
+=item is_concatenation
 
 boolean value that indicates if leaves map to single sequences, or multiple sequences
 
 
-=item alignmentMethod
+=item method
 
 string that either maps to another dataase, to capture workflows, or is a simple method name
 
 
-=item alignmentParameters
+=item parameters
 
 hash that stores parameter values used in the alignment
 
 
-=item alignmentProtocolDescription
+=item protocol
 
 human readable, how did you get here with these sequences? could also map to a separate table
 
@@ -98,14 +97,13 @@ funcdef all_entities_Alignment(int start, int count, list<string> fields)
 
 typedef structure {
 	string id;
-	string alignmentID nullable;
-	float alignmentRow nullable;
-	string alignmentRowID nullable;
-	int concatenationOrder nullable;
+	string alignment_id nullable;
+	int alignment_row nullable;
+	int concatenation_order nullable;
 	string label nullable;
-	string sequenceID nullable;
-	string kbaseID nullable;
-	int isProtein nullable;
+	string sequence_id nullable;
+	string kbase_id nullable;
+	int is_protein nullable;
 	int begin nullable;
 	int end nullable;
 } fields_AlignmentRowComponent ;
@@ -117,22 +115,23 @@ It has the following fields:
 =over 4
 
 
-=item alignmentID
-
-needed for efficiency
-
-
-=item alignmentRow
-
-maybe needed for efficiency
-
-
-=item alignmentRowID
+=item id
 
 will be unique kbase id: 'kb|ali.XXXXX.row.XXX'
 
 
-=item concatenationOrder
+
+=item alignment_id
+
+maybe needed for efficiency
+
+
+=item alignment_row
+
+number of row in the alignment
+
+
+=item concatenation_order
 
 ordering starting from left to right in alignment row
 
@@ -142,17 +141,17 @@ ordering starting from left to right in alignment row
 text description copied from original fasta file
 
 
-=item sequenceID
+=item sequence_id
 
 MD5 for protein, probably contigChunk for DNA/RNA
 
 
-=item kbaseID
+=item kbase_id
 
 kbaseID for the sequence that was actually used in the alignment
 
 
-=item isProtein
+=item is_protein
 
 
 
@@ -179,14 +178,13 @@ funcdef all_entities_AlignmentRowComponent(int start, int count, list<string> fi
 
 typedef structure {
 	string id;
-	string treeID nullable;
-	string newick nullable;
-	string alignmentID nullable;
+	string newick_tree nullable;
+	string alignment_id nullable;
 	string timestamp nullable;
-	string metaInfoHash nullable;
-	int isActive nullable;
-	string treeGenerationMethod nullable;
-	string treeGenerationParameters nullable;
+	string metadata nullable;
+	int active nullable;
+	string method nullable;
+	string parameters nullable;
 	string source_db nullable;
 	string source_db_id nullable;
 } fields_Tree ;
@@ -198,17 +196,17 @@ It has the following fields:
 =over 4
 
 
-=item treeID
+=item id
 
 A unique kbase id: eg 'kb|tree.XXXX'
 
 
-=item newick
+=item newick_tree
 
 leaf nodes provide a key into the AlignmentRowComponent table
 
 
-=item alignmentID
+=item alignment_id
 
 maps this tree to an alignment, needed primarily for convenience
 
@@ -218,22 +216,22 @@ maps this tree to an alignment, needed primarily for convenience
 time of creation (of original tree, or of kbase version?)
 
 
-=item metaInfoHash
+=item metadata
 
 e.g. name, human readable description, etc
 
 
-=item isActive
+=item active
 
 
 
 
-=item treeGenerationMethod
+=item method
 
 
 
 
-=item treeGenerationParameters
+=item parameters
 
 
 
