@@ -1,0 +1,107 @@
+
+
+This is a working draft of a proposed schema for a CDM extension to support Trees
+and Multiple sequence alignments.
+
+v2 - 2012-06-26
+
+Alignment
+=====================================
+-kb_alignment_id (will be unique kbase id: 'kb|ali.XXXXX')
+-fasta_alignment (file/blob; first word of every sequence definition must be unique in file)
+-n_rows (number of rows in the alignment)
+-n_cols (number of columns in the alignment; allows assessing coverage in rows)
+-active (either boolean or for our own reference, a version number)
+-superseded_by (recommended replacement; may be next in a series, not most recent)
+-is_concatenation (boolean value that indicates if leaves map to single sequences, or multiple sequences)
+-is_protein (bool)
+-timestamp
+-method (string that either maps to another dataase, to capture workflows, or is a simple method name)
+-parameters (string, e.g., the program option values used)
+-protocol (human readable, how did you get here with these sequences? could also map to a separate table)
+-source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
+-source_db_alignment_id (for indicating the ID in the db where this alignment originated from)
+
+
+AlignmentMetaData
+=====================================
+-kb_alignment_id
+-key
+-value
+
+
+AlignmentRowDescription
+=====================================
+-kb_alignment_id
+-alignment_row (row number in alignment)
+-row_id (first word of description copied from original fasta file; must be unique in alignment)
+-row_description (text description copied from original fasta file)
+-n_components
+-start_pos_in_alignment (1-based value providing the column in the alignment where this sequence row begins)
+-end_pos_in_alignment (1-based value providing the column in the alignment where this sequence row ends)
+
+
+AlignmentRowComponent
+=====================================
+-kb_alignment_id
+-alignment_row (row number in alignment)
+-concatenation_order (ordering starting from left to right in alignment row)
+-sequence_id (MD5 for protein, probably contigChunk for DNA/RNA)
+-sequence_source_db
+-sequence_source_db_id
+-begin (the alignment includes the original sequence starting at this postion, 1-based)
+-end (the alignment includes the original sequence ending at this postion, 1-based)
+-untrimmed_source_sequence_len
+-start_pos_in_alignment (integer value providing a coordinate/mapping to the starting column in the alignment where this sequence component begins)
+-end_pos_in_alignment (integer value providing a coordinate/mapping to the ending column in the alignment where this sequence component ends)
+
+
+Tree
+=====================================
+-kb_tree_id (will be a unique kbase id: e.g. 'kb|tree.XXXX')
+-newick_tree (file/blob; first word in leaf node name is leaf_id, must be unique in tree, and be identical to the corresponding row_id key in the AlignmentRowDescription table; if tree includes [ and/or ] inside a comment, there must be a rule for parsing)
+-kb_alignment_id
+-timestamp
+-active (either boolean or for our own reference, a version number)
+-superseded_by (recommended replacement; may be next in a series, not most recent)
+-method (program or source)
+-protocol (human readable summary)
+-source_db (for indicating, if needed, where this alignment originated from, eg MO, SEED)
+-source_db_tree_id (for indicating the ID in the db where this alignment originated from)
+
+
+TreeMetaData
+=====================================
+-kb_tree_id (will be a unique kbase id: e.g. 'kb|tree.XXXX')
+-key
+-value
+
+
+TreeNodeMetaData (provides a method to annotate nodes without associated alignment)
+=====================================
+-kb_tree_id (will be a unique kbase id: e.g. 'kb|tree.XXXX')
+-node_id (includes leaf ids)
+-key (is_leaf could be used to ensure that all labeled nodes are indexed)
+-value
+
+
+==== Computed Tables for Performance ???
+
+Alignment2Tree
+-alignmentID
+-treeID
+
+Domain2Alignment
+-domainID
+-alignmentID
+-isComplete
+
+Protein2Alignment
+-MD5
+-alignmentID
+-isComplete
+
+ContigChunk2Alignment
+-contigChunkID
+-alignmentID
+-isComplete
