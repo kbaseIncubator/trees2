@@ -55,7 +55,7 @@ AlignmentRowComponent
 -sequence_source_db_id (id in the external database where this sequence can be found)
 -begin (the alignment includes the original sequence starting at this postion, 1-based)
 -end (the alignment includes the original sequence ending at this postion, 1-based)
--untrimmed_source_sequence_len (integer indicating)
+-untrimmed_source_sequence_len (integer indicating length of original sequence)
 -start_pos_in_alignment (integer value providing a coordinate/mapping to the starting column in the alignment where this sequence component begins)
 -end_pos_in_alignment (integer value providing a coordinate/mapping to the ending column in the alignment where this sequence component ends)
 
