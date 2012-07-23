@@ -74,7 +74,12 @@ sub DESTROY {
     }
 }
 
+*toNewick = *KBTreeUtilc::KBTree_toNewick;
+*writeNewickToFile = *KBTreeUtilc::KBTree_writeNewickToFile;
+*removeNodesByNameAndSimplify = *KBTreeUtilc::KBTree_removeNodesByNameAndSimplify;
+*printTree = *KBTreeUtilc::KBTree_printTree;
 *getNodeCount = *KBTreeUtilc::KBTree_getNodeCount;
+*getLeafCount = *KBTreeUtilc::KBTree_getLeafCount;
 sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);

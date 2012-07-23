@@ -36,11 +36,43 @@ public class KBTree {
   }
 
   public KBTree(String newickString) {
-    this(KBTreeUtilJNI.new_KBTree(newickString), true);
+    this(KBTreeUtilJNI.new_KBTree__SWIG_0(newickString), true);
+  }
+
+  public KBTree(String newickString, boolean verbose) {
+    this(KBTreeUtilJNI.new_KBTree__SWIG_1(newickString, verbose), true);
+  }
+
+  public String toNewick() {
+    return KBTreeUtilJNI.KBTree_toNewick__SWIG_0(swigCPtr, this);
+  }
+
+  public String toNewick(long style) {
+    return KBTreeUtilJNI.KBTree_toNewick__SWIG_1(swigCPtr, this, style);
+  }
+
+  public boolean writeNewickToFile(String filename) {
+    return KBTreeUtilJNI.KBTree_writeNewickToFile__SWIG_0(swigCPtr, this, filename);
+  }
+
+  public boolean writeNewickToFile(String filename, long style) {
+    return KBTreeUtilJNI.KBTree_writeNewickToFile__SWIG_1(swigCPtr, this, filename, style);
+  }
+
+  public void removeNodesByNameAndSimplify(String nodeNames) {
+    KBTreeUtilJNI.KBTree_removeNodesByNameAndSimplify(swigCPtr, this, nodeNames);
+  }
+
+  public void printTree() {
+    KBTreeUtilJNI.KBTree_printTree(swigCPtr, this);
   }
 
   public long getNodeCount() {
     return KBTreeUtilJNI.KBTree_getNodeCount(swigCPtr, this);
+  }
+
+  public long getLeafCount() {
+    return KBTreeUtilJNI.KBTree_getLeafCount(swigCPtr, this);
   }
 
 }

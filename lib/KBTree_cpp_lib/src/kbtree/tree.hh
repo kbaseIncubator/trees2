@@ -44,6 +44,7 @@
 #include <queue>
 #include <algorithm>
 #include <cstddef>
+#include <iostream>
 
 
 /// A node in the tree, combining links to other nodes as well as the actual data.
@@ -117,6 +118,7 @@ class tree {
 				void         skip_children(bool skip);
 				/// Number of children of the node pointed to by the iterator.
 				unsigned int number_of_children() const;
+				bool has_parent() const;
 
 				sibling_iterator begin() const;
 				sibling_iterator end() const;
@@ -282,6 +284,7 @@ class tree {
 
 		/// Return iterator to the parent of a node.
 		template<typename	iter> static iter parent(iter);
+
 		/// Return iterator to the previous sibling of a node.
 		template<typename iter> iter previous_sibling(iter) const;
 		/// Return iterator to the next sibling of a node.
@@ -625,11 +628,12 @@ iter tree<T, tree_node_allocator>::erase(iter it)
 		cur->next_sibling->prev_sibling=cur->prev_sibling;
 		}
 
-//	kp::destructor(&cur->data);
+	//	kp::destructor(&cur->data);
 	alloc_.destroy(cur);
-   alloc_.deallocate(cur,1);
+	alloc_.deallocate(cur,1);
 	return ret;
-	}
+}
+
 
 template<class T, class tree_node_allocator>
 template<class iter>
@@ -2135,9 +2139,13 @@ unsigned int tree<T, tree_node_allocator>::iterator_base::number_of_children() c
 		pos=pos->next_sibling;
 		}
 	return ret;
-	}
-
-
+}
+template <class T, class tree_node_allocator>
+bool tree<T, tree_node_allocator>::iterator_base::has_parent() const
+{
+	if(this->node->parent==NULL) return false;
+	return true;
+}
 
 // Pre-order iterator
 
@@ -2765,24 +2773,27 @@ tree<T, tree_node_allocator>::leaf_iterator::leaf_iterator(const sibling_iterato
 
 template <class T, class tree_node_allocator>
 typename tree<T, tree_node_allocator>::leaf_iterator& tree<T, tree_node_allocator>::leaf_iterator::operator++()
-   {
+{
 	assert(this->node!=0);
 	if(this->node->first_child!=0) { // current node is no longer leaf (children got added)
-		 while(this->node->first_child) 
+		 while(this->node->first_child) {
 			  this->node=this->node->first_child;
 		 }
+	}
 	else {
-		 while(this->node->next_sibling==0) { 
+		 while(this->node->next_sibling==0) {
 			  if (this->node->parent==0) return *this;
 			  this->node=this->node->parent;
 			  if (top_node != 0 && this->node==top_node) return *this;
-			  }
+		 }
 		 this->node=this->node->next_sibling;
-		 while(this->node->first_child)
+		 while(this->node->first_child) {
 			  this->node=this->node->first_child;
 		 }
+	}
+	assert(this->node!=0);
 	return *this;
-   }
+}
 
 template <class T, class tree_node_allocator>
 typename tree<T, tree_node_allocator>::leaf_iterator& tree<T, tree_node_allocator>::leaf_iterator::operator--()

@@ -1551,6 +1551,29 @@ SWIGEXPORT void SWIG_init (CV *cv, CPerlObj *);
 #include <string>
 
 
+#include <stdexcept>
+
+
+#include <string>
+
+double SwigSvToNumber(SV* sv) {
+    return SvIOK(sv) ? double(SvIVX(sv)) : SvNVX(sv);
+}
+std::string SwigSvToString(SV* sv) {
+    STRLEN len;
+    char *ptr = SvPV(sv, len);
+    return std::string(ptr, len);
+}
+void SwigSvFromString(SV* sv, const std::string& s) {
+    sv_setpvn(sv,s.data(),s.size());
+}
+
+
+#include <map>
+#include <algorithm>
+#include <stdexcept>
+
+
 #include "kbtree/kbtree.hh"
 
 
@@ -1638,6 +1661,190 @@ SWIG_AsPtr_std_string SWIG_PERL_DECL_ARGS_2(SV * obj, std::string **val)
 }
 
 
+SWIGINTERN int
+SWIG_AsVal_bool SWIG_PERL_DECL_ARGS_2(SV *obj, bool* val)
+{
+  if (obj == &PL_sv_yes) {
+    if (val) *val = true;
+    return SWIG_OK;
+  } else if (obj == &PL_sv_no) { 
+    if (val) *val = false;
+    return SWIG_OK;
+  } else {
+    if (val) *val = SvTRUE(obj) ? true : false;
+    return SWIG_AddCast(SWIG_OK);    
+  }
+}
+
+
+SWIGINTERNINLINE SV *
+SWIG_FromCharPtrAndSize(const char* carray, size_t size)
+{
+  SV *obj = sv_newmortal();
+  if (carray) {
+    sv_setpvn(obj, carray, size);
+  } else {
+    sv_setsv(obj, &PL_sv_undef);
+  }
+  return obj;
+}
+
+
+SWIGINTERNINLINE SV *
+SWIG_From_std_string  SWIG_PERL_DECL_ARGS_1(const std::string& s)
+{
+  return SWIG_FromCharPtrAndSize(s.data(), s.size());
+}
+
+
+#include <limits.h>
+#if !defined(SWIG_NO_LLONG_MAX)
+# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
+#   define LLONG_MAX __LONG_LONG_MAX__
+#   define LLONG_MIN (-LLONG_MAX - 1LL)
+#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+# endif
+#endif
+
+
+SWIGINTERN int
+SWIG_AsVal_double SWIG_PERL_DECL_ARGS_2(SV *obj, double *val)
+{
+  if (SvNIOK(obj)) {
+    if (val) *val = SvNV(obj);
+    return SWIG_OK;
+  } else if (SvIOK(obj)) {
+    if (val) *val = (double) SvIV(obj);
+    return SWIG_AddCast(SWIG_OK);
+  } else {
+    const char *nptr = SvPV_nolen(obj);
+    if (nptr) {
+      char *endptr;
+      double v;
+      errno = 0;
+      v = strtod(nptr, &endptr);
+      if (errno == ERANGE) {
+	errno = 0;
+	return SWIG_OverflowError;
+      } else {
+	if (*endptr == '\0') {
+	  if (val) *val = v;
+	  return SWIG_Str2NumCast(SWIG_OK);
+	}
+      }
+    }
+  }
+  return SWIG_TypeError;
+}
+
+
+#include <float.h>
+
+
+#include <math.h>
+
+
+SWIGINTERNINLINE int
+SWIG_CanCastAsInteger(double *d, double min, double max) {
+  double x = *d;
+  if ((min <= x && x <= max)) {
+   double fx = floor(x);
+   double cx = ceil(x);
+   double rd =  ((x - fx) < 0.5) ? fx : cx; /* simple rint */
+   if ((errno == EDOM) || (errno == ERANGE)) {
+     errno = 0;
+   } else {
+     double summ, reps, diff;
+     if (rd < x) {
+       diff = x - rd;
+     } else if (rd > x) {
+       diff = rd - x;
+     } else {
+       return 1;
+     }
+     summ = rd + x;
+     reps = diff/summ;
+     if (reps < 8*DBL_EPSILON) {
+       *d = rd;
+       return 1;
+     }
+   }
+  }
+  return 0;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_long SWIG_PERL_DECL_ARGS_2(SV *obj, unsigned long *val) 
+{
+  if (SvUOK(obj)) {
+    UV v = SvUV(obj);
+    if (v <= ULONG_MAX) {
+      if (val) *val = v;
+      return SWIG_OK;
+    }
+    return SWIG_OverflowError;
+  } else if (SvIOK(obj)) {
+    IV v = SvIV(obj);
+    if (v >= 0 && v <= ULONG_MAX) {
+      if (val) *val = v;
+      return SWIG_OK;
+    }
+    return SWIG_OverflowError;
+  } else {
+    int dispatch = 0;
+    const char *nptr = SvPV_nolen(obj);
+    if (nptr) {
+      char *endptr;
+      unsigned long v;
+      errno = 0;
+      v = strtoul(nptr, &endptr,0);
+      if (errno == ERANGE) {
+	errno = 0;
+	return SWIG_OverflowError;
+      } else {
+	if (*endptr == '\0') {
+	  if (val) *val = v;
+	  return SWIG_Str2NumCast(SWIG_OK);
+	}
+      }
+    }
+    if (!dispatch) {
+      double d;
+      int res = SWIG_AddCast(SWIG_AsVal_double SWIG_PERL_CALL_ARGS_2(obj,&d));
+      if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, 0, ULONG_MAX)) {
+	if (val) *val = (unsigned long)(d);
+	return res;
+      }
+    }
+  }
+  return SWIG_TypeError;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_int SWIG_PERL_DECL_ARGS_2(SV * obj, unsigned int *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long SWIG_PERL_CALL_ARGS_2(obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v > UINT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< unsigned int >(v);
+    }
+  }  
+  return res;
+}
+
+
+SWIGINTERNINLINE SV *
+SWIG_From_bool  SWIG_PERL_DECL_ARGS_1(bool value)
+{
+  return boolSV(value);
+}
+
+
 SWIGINTERNINLINE SV *
 SWIG_From_unsigned_SS_long  SWIG_PERL_DECL_ARGS_1(unsigned long value)
 {
@@ -1685,7 +1892,7 @@ SWIGCLASS_STATIC int swig_magic_readonly(pTHX_ SV *SWIGUNUSEDPARM(sv), MAGIC *SW
 #ifdef __cplusplus
 extern "C" {
 #endif
-XS(_wrap_new_KBTree) {
+XS(_wrap_new_KBTree__SWIG_0) {
   {
     std::string *arg1 = 0 ;
     int res1 = SWIG_OLDOBJ ;
@@ -1718,6 +1925,119 @@ XS(_wrap_new_KBTree) {
 }
 
 
+XS(_wrap_new_KBTree__SWIG_1) {
+  {
+    std::string *arg1 = 0 ;
+    bool arg2 ;
+    int res1 = SWIG_OLDOBJ ;
+    bool val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    KBTreeLib::KBTree *result = 0 ;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: new_KBTree(newickString,verbose);");
+    }
+    {
+      std::string *ptr = (std::string *)0;
+      res1 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), &ptr);
+      if (!SWIG_IsOK(res1)) {
+        SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_KBTree" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_KBTree" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      arg1 = ptr;
+    }
+    ecode2 = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_KBTree" "', argument " "2"" of type '" "bool""'");
+    } 
+    arg2 = static_cast< bool >(val2);
+    result = (KBTreeLib::KBTree *)new KBTreeLib::KBTree((std::string const &)*arg1,arg2);
+    ST(argvi) = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_KBTreeLib__KBTree, SWIG_OWNER | SWIG_SHADOW); argvi++ ;
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    
+    XSRETURN(argvi);
+  fail:
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_new_KBTree) {
+  dXSARGS;
+  
+  {
+    unsigned long _index = 0;
+    SWIG_TypeRank _rank = 0; 
+    if (items == 1) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        int res = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), (std::string**)(0));
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 1;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_1:
+    
+    if (items == 2) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        int res = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), (std::string**)(0));
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(1), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 2;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_2:
+    
+  dispatch:
+    switch(_index) {
+    case 1:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_new_KBTree__SWIG_0); return;
+    case 2:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_new_KBTree__SWIG_1); return;
+    }
+  }
+  
+  croak("No matching function for overloaded 'new_KBTree'");
+  XSRETURN(0);
+}
+
+
 XS(_wrap_delete_KBTree) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
@@ -1735,6 +2055,397 @@ XS(_wrap_delete_KBTree) {
     }
     arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
     delete arg1;
+    ST(argvi) = sv_newmortal();
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_toNewick__SWIG_0) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_toNewick(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_toNewick" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    result = (arg1)->toNewick();
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_toNewick__SWIG_1) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    unsigned int arg2 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    unsigned int val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_toNewick(self,style);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_toNewick" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    ecode2 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "KBTree_toNewick" "', argument " "2"" of type '" "unsigned int""'");
+    } 
+    arg2 = static_cast< unsigned int >(val2);
+    result = (arg1)->toNewick(arg2);
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    
+    XSRETURN(argvi);
+  fail:
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_toNewick) {
+  dXSARGS;
+  
+  {
+    unsigned long _index = 0;
+    SWIG_TypeRank _rank = 0; 
+    if (items == 1) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 1;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_1:
+    
+    if (items == 2) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 2;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_2:
+    
+  dispatch:
+    switch(_index) {
+    case 1:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_toNewick__SWIG_0); return;
+    case 2:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_toNewick__SWIG_1); return;
+    }
+  }
+  
+  croak("No matching function for overloaded 'KBTree_toNewick'");
+  XSRETURN(0);
+}
+
+
+XS(_wrap_KBTree_writeNewickToFile__SWIG_0) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    std::string *arg2 = 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int res2 = SWIG_OLDOBJ ;
+    int argvi = 0;
+    bool result;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_writeNewickToFile(self,filename);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_writeNewickToFile" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    {
+      std::string *ptr = (std::string *)0;
+      res2 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(1), &ptr);
+      if (!SWIG_IsOK(res2)) {
+        SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "KBTree_writeNewickToFile" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "KBTree_writeNewickToFile" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      arg2 = ptr;
+    }
+    result = (bool)(arg1)->writeNewickToFile((std::string const &)*arg2);
+    ST(argvi) = SWIG_From_bool  SWIG_PERL_CALL_ARGS_1(static_cast< bool >(result)); argvi++ ;
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    XSRETURN(argvi);
+  fail:
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_writeNewickToFile__SWIG_1) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    std::string *arg2 = 0 ;
+    unsigned int arg3 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int res2 = SWIG_OLDOBJ ;
+    unsigned int val3 ;
+    int ecode3 = 0 ;
+    int argvi = 0;
+    bool result;
+    dXSARGS;
+    
+    if ((items < 3) || (items > 3)) {
+      SWIG_croak("Usage: KBTree_writeNewickToFile(self,filename,style);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_writeNewickToFile" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    {
+      std::string *ptr = (std::string *)0;
+      res2 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(1), &ptr);
+      if (!SWIG_IsOK(res2)) {
+        SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "KBTree_writeNewickToFile" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "KBTree_writeNewickToFile" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      arg2 = ptr;
+    }
+    ecode3 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(2), &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "KBTree_writeNewickToFile" "', argument " "3"" of type '" "unsigned int""'");
+    } 
+    arg3 = static_cast< unsigned int >(val3);
+    result = (bool)(arg1)->writeNewickToFile((std::string const &)*arg2,arg3);
+    ST(argvi) = SWIG_From_bool  SWIG_PERL_CALL_ARGS_1(static_cast< bool >(result)); argvi++ ;
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_writeNewickToFile) {
+  dXSARGS;
+  
+  {
+    unsigned long _index = 0;
+    SWIG_TypeRank _rank = 0; 
+    if (items == 2) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        int res = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(1), (std::string**)(0));
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 1;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_1:
+    
+    if (items == 3) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        int res = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(1), (std::string**)(0));
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(2), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 2;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_2:
+    
+  dispatch:
+    switch(_index) {
+    case 1:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_writeNewickToFile__SWIG_0); return;
+    case 2:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_writeNewickToFile__SWIG_1); return;
+    }
+  }
+  
+  croak("No matching function for overloaded 'KBTree_writeNewickToFile'");
+  XSRETURN(0);
+}
+
+
+XS(_wrap_KBTree_removeNodesByNameAndSimplify) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    std::string *arg2 = 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int res2 = SWIG_OLDOBJ ;
+    int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_removeNodesByNameAndSimplify(self,nodeNames);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_removeNodesByNameAndSimplify" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    {
+      std::string *ptr = (std::string *)0;
+      res2 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(1), &ptr);
+      if (!SWIG_IsOK(res2)) {
+        SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "KBTree_removeNodesByNameAndSimplify" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "KBTree_removeNodesByNameAndSimplify" "', argument " "2"" of type '" "std::string const &""'"); 
+      }
+      arg2 = ptr;
+    }
+    (arg1)->removeNodesByNameAndSimplify((std::string const &)*arg2);
+    ST(argvi) = sv_newmortal();
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    XSRETURN(argvi);
+  fail:
+    
+    if (SWIG_IsNewObj(res2)) delete arg2;
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_printTree) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_printTree(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_printTree" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    (arg1)->printTree();
     ST(argvi) = sv_newmortal();
     
     XSRETURN(argvi);
@@ -1763,6 +2474,34 @@ XS(_wrap_KBTree_getNodeCount) {
     }
     arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
     result = (unsigned int)((KBTreeLib::KBTree const *)arg1)->getNodeCount();
+    ST(argvi) = SWIG_From_unsigned_SS_int  SWIG_PERL_CALL_ARGS_1(static_cast< unsigned int >(result)); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_getLeafCount) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    unsigned int result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_getLeafCount(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_getLeafCount" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    result = (unsigned int)(arg1)->getLeafCount();
     ST(argvi) = SWIG_From_unsigned_SS_int  SWIG_PERL_CALL_ARGS_1(static_cast< unsigned int >(result)); argvi++ ;
     
     XSRETURN(argvi);
@@ -1807,7 +2546,12 @@ static swig_variable_info swig_variables[] = {
 static swig_command_info swig_commands[] = {
 {"KBTreeUtilc::new_KBTree", _wrap_new_KBTree},
 {"KBTreeUtilc::delete_KBTree", _wrap_delete_KBTree},
+{"KBTreeUtilc::KBTree_toNewick", _wrap_KBTree_toNewick},
+{"KBTreeUtilc::KBTree_writeNewickToFile", _wrap_KBTree_writeNewickToFile},
+{"KBTreeUtilc::KBTree_removeNodesByNameAndSimplify", _wrap_KBTree_removeNodesByNameAndSimplify},
+{"KBTreeUtilc::KBTree_printTree", _wrap_KBTree_printTree},
 {"KBTreeUtilc::KBTree_getNodeCount", _wrap_KBTree_getNodeCount},
+{"KBTreeUtilc::KBTree_getLeafCount", _wrap_KBTree_getLeafCount},
 {0,0}
 };
 /* -----------------------------------------------------------------------------

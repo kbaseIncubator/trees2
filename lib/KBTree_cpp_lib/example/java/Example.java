@@ -11,5 +11,7 @@ public class Example {
         String treeString = "((A,C)D,A)E;";
         KBTree t = new KBTree(treeString);
         System.out.println("node count="+t.getNodeCount());
+        
+        System.out.println("node count="+t.toNewick());
     }
 }

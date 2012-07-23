@@ -214,6 +214,14 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 #include <string>
 
 
+#include <stdexcept>
+
+
+#include <map>
+#include <algorithm>
+#include <stdexcept>
+
+
 #include "kbtree/kbtree.hh"
 
 
@@ -221,7 +229,7 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 extern "C" {
 #endif
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   jlong jresult = 0 ;
   std::string *arg1 = 0 ;
   KBTreeLib::KBTree *result = 0 ;
@@ -243,6 +251,30 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree(JNIEnv *jenv,
 }
 
 
+SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2) {
+  jlong jresult = 0 ;
+  std::string *arg1 = 0 ;
+  bool arg2 ;
+  KBTreeLib::KBTree *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  if(!jarg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  }
+  const char *arg1_pstr = (const char *)jenv->GetStringUTFChars(jarg1, 0); 
+  if (!arg1_pstr) return 0;
+  std::string arg1_str(arg1_pstr);
+  arg1 = &arg1_str;
+  jenv->ReleaseStringUTFChars(jarg1, arg1_pstr); 
+  arg2 = jarg2 ? true : false; 
+  result = (KBTreeLib::KBTree *)new KBTreeLib::KBTree((std::string const &)*arg1,arg2);
+  *(KBTreeLib::KBTree **)&jresult = result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
@@ -250,6 +282,122 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jen
   (void)jcls;
   arg1 = *(KBTreeLib::KBTree **)&jarg1; 
   delete arg1;
+}
+
+
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (arg1)->toNewick();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  unsigned int arg2 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  result = (arg1)->toNewick(arg2);
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  jboolean jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string *arg2 = 0 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return 0;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  result = (bool)(arg1)->writeNewickToFile((std::string const &)*arg2);
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jlong jarg3) {
+  jboolean jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string *arg2 = 0 ;
+  unsigned int arg3 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return 0;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  arg3 = (unsigned int)jarg3; 
+  result = (bool)(arg1)->writeNewickToFile((std::string const &)*arg2,arg3);
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1removeNodesByNameAndSimplify(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return ;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return ;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  (arg1)->removeNodesByNameAndSimplify((std::string const &)*arg2);
+}
+
+
+SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  (arg1)->printTree();
 }
 
 
@@ -263,6 +411,21 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getNodeCount(JNIE
   (void)jarg1_;
   arg1 = *(KBTreeLib::KBTree **)&jarg1; 
   result = (unsigned int)((KBTreeLib::KBTree const *)arg1)->getNodeCount();
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getLeafCount(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (unsigned int)(arg1)->getLeafCount();
   jresult = (jlong)result; 
   return jresult;
 }

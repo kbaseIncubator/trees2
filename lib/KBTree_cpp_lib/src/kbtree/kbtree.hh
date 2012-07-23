@@ -22,7 +22,7 @@ namespace KBTreeLib {
 
 	class KBTree;
 
-	/**
+	/*! Encapsulates all information needed about nodes in a KBTree
 	 * Lightweight class to store node labels, distance to parent, and associated comments of the node.
 	 * You should not have to access this class directly in most cases - instead interact with the
 	 * KBTree object methods instead.
@@ -30,32 +30,44 @@ namespace KBTreeLib {
 	class KBNode
 	{
 		public:
-			KBNode();
-			~KBNode();
-			/** grant access of protected variables to Trees */
 			friend class KBTree;
 
-			std::string getLabel() const { return label; };
+			KBNode();   /*!< Create an empty node with empty, non-null strings for name, comments, labels.  Distance to parent is NAN.  */
+			~KBNode();  /*!< Delete an empty node  */
+
+			/*! Returns the full node labeled string as it was ORIGINALLY parsed */
+			std::string getOriginalLabel() const { return original_label; };
+
+			/*! Returns the name of the node (from parsing the original label) */
 			std::string getName() const { return name; };
+
+			/*! Returns the distance from this node to its parent (from parsing the original label), or NAN if no distance was set */
 			double getDistanceToParent() const { return distanceToParent; };
 
-			/*
-			 * @param unisigned int style
+			/*! Return a string representation of this Node based on the output style.
+			 * @param[in] style Specifies what parts of the node to print to the string.
 			 */
-			std::string getLabelFromComponents(unsigned int style=0);
+			std::string getLabelFromComponents(unsigned int style);
+
+			static const unsigned int NAME_AND_DISTANCE;             /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int NAME_DISTANCE_AND_COMMENTS;    /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int NAME_ONLY;                     /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int DISTANCE_ONLY;                 /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int STRUCTURE_ONLY;                /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int ORIGINAL_LABEL;                /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
 
 		protected:
-			/* set all pointers to null, all strings to empty, can be used for initialization */
-			void clear();
-
-			std::string label; /* the full raw node label including the name, comments, distance, etc */
-			std::string name; /* the actual name of the node */
-			std::string pre_name_decoration;   /* comments enclosed in [...] before the node name */
-			std::string post_name_decoration;  /* comments enclosed in [...] after the node name */
-			std::string pre_dist_decoration;   /* comments enclosed in [...] before the distance label */
-			std::string post_dist_decoration;  /* comments enclosed in [...] after the distance label */
-			double distanceToParent; /* stores distance to parent if it is defined for this node, if not defined then it is set to NAN */
+			void clear();                      /*!< set all pointers to null, all strings to empty.  This is method is also used for initialization */
+			std::string original_label;        /*!< The full, original node label that was parsed, including the name, comments, distance, etc.  */
+			std::string name;                  /*!< The parsed name of the node  */
+			std::string pre_name_decoration;   /*!< Comments enclosed in [...] before the node name  */
+			std::string post_name_decoration;  /*!< Comments enclosed in [...] after the node name  */
+			std::string pre_dist_decoration;   /*!< Comments enclosed in [...] before the distance label  */
+			std::string post_dist_decoration;  /*!< comments enclosed in [...] after the distance label  */
+			double distanceToParent;           /*!< Stores distance to parent if it is defined for this node, if not defined then it is set to NAN  */
 	};
+
+
 
 	/**
 	 * Class for manipulating trees
@@ -63,6 +75,7 @@ namespace KBTreeLib {
 	class KBTree {
 		public:
 			KBTree(const string &newickString);
+			KBTree(const string &newickString, bool verbose);
 			~KBTree();
 
 			/** allows nodes to count themselves in a tree when the node is created */
@@ -71,8 +84,14 @@ namespace KBTreeLib {
 			void initializeFromNewick(const std::string &newick);
 
 			std::string toNewick();
+			std::string toNewick(unsigned int style);
+
+
+			bool writeNewickToFile(const std::string &filename) { return false; };
+			bool writeNewickToFile(const std::string &filename,unsigned int style) { return false; };
 
 			unsigned int getNodeCount() const { return nodeCount; };
+            unsigned int getLeafCount();
 
 
 			// @todo implement this function
@@ -115,9 +134,12 @@ namespace KBTreeLib {
 			 * @param std::map<std::string,std::string> &nodeNames - hash listing names of nodes to remove.  Keys are the names, values are not used.
 			 */
 			void removeNodesByNameAndSimplify(std::map<std::string,std::string> &nodeNames);
+			void removeNodesByNameAndSimplify(const std::string &nodeNames);
+
 
 			void printOutNamesAllPossibleTraversals(ostream &o);
 
+			void printTree();
 			/**
 			 * Prints the tree to the given output stream in an indented format.  Used primarily for debugging.
 			 */
@@ -129,17 +151,20 @@ namespace KBTreeLib {
 			//////////////////// NEWICK PARSING METHODS ///////////////////////////
 			/** recursive parsing of a string assuming newick format.  Do not call this method directly outside of KBTree */
 			void parseNewick(const std::string &newickString, unsigned int &k, tree<KBNode>::iterator &currentNode);
-			static bool getNextLabel(const std::string &newickString, unsigned int &k, KBNode &node);
-			static bool getNextLabelWithoutComments(const std::string &newickString, unsigned int &k, KBNode &node);
-			static void passLeadingWhiteSpace(const std::string &newickString, unsigned int &k);
+			bool getNextLabel(const std::string &newickString, unsigned int &k, KBNode &node);
+			bool getNextLabelWithoutComments(const std::string &newickString, unsigned int &k, KBNode &node);
+			void passLeadingWhiteSpace(const std::string &newickString, unsigned int &k);
 
 			//////////////////// BASIC TREE DATA STRUCTURES ///////////////////////////
 			unsigned int nodeCount;
 			tree <KBNode> tr;
 
 		private:
+
+			bool verbose;
+
 			/** Internal recursive function called from public toNewick() method.  Never call this method directly **/
-			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString);
+			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString,unsigned int style);
 
 
 	};
@@ -239,7 +264,8 @@ namespace KBTreeLib {
 
 	/**
 	 * this method determines if we have any special characters in the string, and if so, we put quotes around it
-	 * and escape out any double quotes, and return the string.
+	 * and escape out any double quotes, and return the string.  This function is used when returning a newick
+	 * string.
 	 */
 	std::string getQuotedString(const std::string& s);
 
