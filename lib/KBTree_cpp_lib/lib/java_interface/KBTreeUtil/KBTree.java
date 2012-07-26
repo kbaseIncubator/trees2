@@ -43,6 +43,10 @@ public class KBTree {
     this(KBTreeUtilJNI.new_KBTree__SWIG_1(newickString, verbose), true);
   }
 
+  public KBTree(String newickString, boolean verbose, boolean assumeBootstrapNames) {
+    this(KBTreeUtilJNI.new_KBTree__SWIG_2(newickString, verbose, assumeBootstrapNames), true);
+  }
+
   public String toNewick() {
     return KBTreeUtilJNI.KBTree_toNewick__SWIG_0(swigCPtr, this);
   }

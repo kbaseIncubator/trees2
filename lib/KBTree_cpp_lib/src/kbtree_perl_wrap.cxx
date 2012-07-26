@@ -1968,6 +1968,59 @@ XS(_wrap_new_KBTree__SWIG_1) {
 }
 
 
+XS(_wrap_new_KBTree__SWIG_2) {
+  {
+    std::string *arg1 = 0 ;
+    bool arg2 ;
+    bool arg3 ;
+    int res1 = SWIG_OLDOBJ ;
+    bool val2 ;
+    int ecode2 = 0 ;
+    bool val3 ;
+    int ecode3 = 0 ;
+    int argvi = 0;
+    KBTreeLib::KBTree *result = 0 ;
+    dXSARGS;
+    
+    if ((items < 3) || (items > 3)) {
+      SWIG_croak("Usage: new_KBTree(newickString,verbose,assumeBootstrapNames);");
+    }
+    {
+      std::string *ptr = (std::string *)0;
+      res1 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), &ptr);
+      if (!SWIG_IsOK(res1)) {
+        SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_KBTree" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_KBTree" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      arg1 = ptr;
+    }
+    ecode2 = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_KBTree" "', argument " "2"" of type '" "bool""'");
+    } 
+    arg2 = static_cast< bool >(val2);
+    ecode3 = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(2), &val3);
+    if (!SWIG_IsOK(ecode3)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_KBTree" "', argument " "3"" of type '" "bool""'");
+    } 
+    arg3 = static_cast< bool >(val3);
+    result = (KBTreeLib::KBTree *)new KBTreeLib::KBTree((std::string const &)*arg1,arg2,arg3);
+    ST(argvi) = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_KBTreeLib__KBTree, SWIG_OWNER | SWIG_SHADOW); argvi++ ;
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    
+    
+    XSRETURN(argvi);
+  fail:
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
 XS(_wrap_new_KBTree) {
   dXSARGS;
   
@@ -2024,12 +2077,54 @@ XS(_wrap_new_KBTree) {
     }
   check_2:
     
+    if (items == 3) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        int res = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), (std::string**)(0));
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_3;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(1), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_3;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_bool SWIG_PERL_CALL_ARGS_2(ST(2), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_3;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 3;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_3:
+    
   dispatch:
     switch(_index) {
     case 1:
       PUSHMARK(MARK); SWIG_CALLXS(_wrap_new_KBTree__SWIG_0); return;
     case 2:
       PUSHMARK(MARK); SWIG_CALLXS(_wrap_new_KBTree__SWIG_1); return;
+    case 3:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_new_KBTree__SWIG_2); return;
     }
   }
   

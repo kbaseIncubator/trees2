@@ -275,6 +275,32 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_11(JN
 }
 
 
+SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_12(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2, jboolean jarg3) {
+  jlong jresult = 0 ;
+  std::string *arg1 = 0 ;
+  bool arg2 ;
+  bool arg3 ;
+  KBTreeLib::KBTree *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  if(!jarg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  }
+  const char *arg1_pstr = (const char *)jenv->GetStringUTFChars(jarg1, 0); 
+  if (!arg1_pstr) return 0;
+  std::string arg1_str(arg1_pstr);
+  arg1 = &arg1_str;
+  jenv->ReleaseStringUTFChars(jarg1, arg1_pstr); 
+  arg2 = jarg2 ? true : false; 
+  arg3 = jarg3 ? true : false; 
+  result = (KBTreeLib::KBTree *)new KBTreeLib::KBTree((std::string const &)*arg1,arg2,arg3);
+  *(KBTreeLib::KBTree **)&jresult = result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   

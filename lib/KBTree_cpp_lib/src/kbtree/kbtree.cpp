@@ -31,6 +31,7 @@
 #include "kbtree.hh"
 #include "tree.hh"
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -114,6 +115,7 @@ void KBNode::clear()
 	this->pre_dist_decoration="";
 	this->post_dist_decoration="";
 	this->distanceToParent=NAN;
+	this->bootstrapValue=NAN;
 }
 
 std::string KBNode::getLabelFromComponents(unsigned int style) {
@@ -121,11 +123,13 @@ std::string KBNode::getLabelFromComponents(unsigned int style) {
 	string constructedLabel = "";
 	if(style==NAME_AND_DISTANCE) { //name:distance, distance left blank if no distance
 		constructedLabel=getQuotedString(name);
+		if(name.size()==0 && !isnan(bootstrapValue)) { constructedLabel+=toString(bootstrapValue); }
 		if(!isnan(distanceToParent)) {
 			constructedLabel+= (":"+toString(distanceToParent));
 		}
 	} else if (style==NAME_ONLY) { //name
 		constructedLabel=getQuotedString(name);
+		if(name.size()==0 && !isnan(bootstrapValue)) { constructedLabel+=toString(bootstrapValue); }
 	} else if (style==DISTANCE_ONLY) { //:distance, left blank if no distance
 		if(!isnan(distanceToParent)) {
 			constructedLabel+= (":"+toString(distanceToParent));
@@ -133,6 +137,7 @@ std::string KBNode::getLabelFromComponents(unsigned int style) {
 	} else if (style==NAME_DISTANCE_AND_COMMENTS) { //name:distance + all comments, leave nothing out
 		if(pre_name_decoration.size()>0) { constructedLabel+=("["+getQuotedString(pre_name_decoration)+"]"); }
 		constructedLabel+=getQuotedString(name);
+		if(name.size()==0 && !isnan(bootstrapValue)) { constructedLabel+=toString(bootstrapValue); }
 		if(post_name_decoration.size()>0) { constructedLabel+=("["+getQuotedString(post_name_decoration)+"]"); }
 		if(pre_dist_decoration.size()>0 || !isnan(distanceToParent)) {
 			constructedLabel+=":";
@@ -157,12 +162,21 @@ KBTree::KBTree(const std::string &newickString)
 {
 	this->nodeCount=0;
 	this->verbose=false;
+	this->assumeBootstrapNames=false;
 	this->initializeFromNewick(newickString);
 }
 KBTree::KBTree(const std::string &newickString,bool verbose)
 {
 	this->nodeCount=0;
 	this->verbose=verbose;
+	this->assumeBootstrapNames=false;
+	this->initializeFromNewick(newickString);
+}
+KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrapNames)
+{
+	this->nodeCount=0;
+	this->verbose=verbose;
+	this->assumeBootstrapNames=assumeBootstrapNames;
 	this->initializeFromNewick(newickString);
 }
 
@@ -219,9 +233,15 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 		k++;
 	}
 
-	// If we get here, then we are at a leaf node, so label it and look for children
-	//getNextLabelWithoutComments(newickString,k,(*currentNode));
+	// If we get here, then we are ready to label it
 	getNextLabel(newickString,k,(*currentNode));
+
+	// if it is an internal node and has a name and we are assuming that internal node names are bootstrap values,
+	// then update the parsing. (note that this is the case for most MO trees)
+	if(this->assumeBootstrapNames && currentNode.number_of_children()>0 && (*currentNode).getName().size()>0) {
+		(*currentNode).bootstrapValue = convertToDouble((*currentNode).name);
+		(*currentNode).name="";
+	}
 
 	//again make sure we can go further
 	if( k >= newickString.length() ) return;
@@ -531,6 +551,11 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 				// if we are a leaf node, then just erase
 				if(tr.number_of_children(node)==0) {
 					if(verbose) { cout<<"KBTREE--   REMOVING LEAF NODE NAMED: '"<<(*node).getName()<<"'"<<endl;}
+					map<string,string>::iterator nodeIter=nodeNames.find((*node).getName());
+					if( (nodeIter->second).size()!=0) {
+						cout<<"what's happn'n?"<<endl;
+					}
+					nodeIter->second="+";
 					tr.erase(node); nodeCount--;
 				}
 				// if we have children, then we must replace this node with its child
@@ -590,7 +615,20 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
 	}
 }
 
-
+bool KBTree::writeNewickToFile(const std::string &filename) {
+	return writeNewickToFile(filename,KBNode::NAME_AND_DISTANCE);
+}
+bool KBTree::writeNewickToFile(const std::string &filename,unsigned int style) {
+	ofstream outputFileStream;
+	outputFileStream.open(filename.c_str());
+	if(!outputFileStream.is_open()) {
+		cerr<<"!!KBTREE ERROR-- CANNOT OPEN OUTPUT STREAM TO FILE: '"<<filename<<"'"<<endl;
+		return false;
+	}
+	outputFileStream << toNewick(style);
+	outputFileStream.close();
+	return true;
+}
 
 
 

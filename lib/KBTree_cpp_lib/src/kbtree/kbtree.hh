@@ -44,6 +44,9 @@ namespace KBTreeLib {
 			/*! Returns the distance from this node to its parent (from parsing the original label), or NAN if no distance was set */
 			double getDistanceToParent() const { return distanceToParent; };
 
+			/*! Returns the bootstrap value of this node (from parsing the original label), or NAN if no distance was set */
+			double getBootstrapValue() const { return bootstrapValue; };
+
 			/*! Return a string representation of this Node based on the output style.
 			 * @param[in] style Specifies what parts of the node to print to the string.
 			 */
@@ -65,6 +68,7 @@ namespace KBTreeLib {
 			std::string pre_dist_decoration;   /*!< Comments enclosed in [...] before the distance label  */
 			std::string post_dist_decoration;  /*!< comments enclosed in [...] after the distance label  */
 			double distanceToParent;           /*!< Stores distance to parent if it is defined for this node, if not defined then it is set to NAN  */
+			double bootstrapValue;             /*!< Stores bootstrap value (which is parsed ONLY if activated from internal node names), if not defined then it is set to NAN  */
 	};
 
 
@@ -76,6 +80,7 @@ namespace KBTreeLib {
 		public:
 			KBTree(const string &newickString);
 			KBTree(const string &newickString, bool verbose);
+            KBTree(const std::string &newickString, bool verbose, bool assumeBootstrapNames);
 			~KBTree();
 
 			/** allows nodes to count themselves in a tree when the node is created */
@@ -87,8 +92,8 @@ namespace KBTreeLib {
 			std::string toNewick(unsigned int style);
 
 
-			bool writeNewickToFile(const std::string &filename) { return false; };
-			bool writeNewickToFile(const std::string &filename,unsigned int style) { return false; };
+			bool writeNewickToFile(const std::string &filename);
+			bool writeNewickToFile(const std::string &filename,unsigned int style);
 
 			unsigned int getNodeCount() const { return nodeCount; };
             unsigned int getLeafCount();
@@ -162,6 +167,7 @@ namespace KBTreeLib {
 		private:
 
 			bool verbose;
+			bool assumeBootstrapNames;
 
 			/** Internal recursive function called from public toNewick() method.  Never call this method directly **/
 			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString,unsigned int style);

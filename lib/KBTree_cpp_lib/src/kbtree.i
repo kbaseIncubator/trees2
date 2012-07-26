@@ -13,6 +13,7 @@ namespace KBTreeLib {
         public:
             KBTree(const std::string &newickString);
             KBTree(const std::string &newickString, bool verbose);
+            KBTree(const std::string &newickString, bool verbose, bool assumeBootstrapNames);
             ~KBTree();
             
             /*  Returns a newick string representation of the tree */
