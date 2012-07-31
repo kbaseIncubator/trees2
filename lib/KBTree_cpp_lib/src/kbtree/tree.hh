@@ -349,8 +349,8 @@ class tree {
 		/// Move 'source' node (plus its children) to become the next sibling of 'target'.
 		template<typename iter> iter move_after(iter target, iter source);
 		/// Move 'source' node (plus its children) to become the previous sibling of 'target'.
-      template<typename iter> iter move_before(iter target, iter source);
-      sibling_iterator move_before(sibling_iterator target, sibling_iterator source);
+		template<typename iter> iter move_before(iter target, iter source);
+		sibling_iterator move_before(sibling_iterator target, sibling_iterator source);
 		/// Move 'source' node (plus its children) to become the node at 'target' (erasing the node at 'target').
 		template<typename iter> iter move_ontop(iter target, iter source);
 
@@ -420,9 +420,9 @@ class tree {
 			public:
 				bool operator()(const typename tree<T, tree_node_allocator>::iterator_base& one,
 									 const typename tree<T, tree_node_allocator>::iterator_base& two) const
-					{
+				{
 					return one.node < two.node;
-					}
+				}
 		};
 		tree_node *head, *feet;    // head/feet are always dummy; if an iterator points to them it is invalid
 	private:
@@ -437,9 +437,9 @@ class tree {
 				compare_nodes(StrictWeakOrdering comp) : comp_(comp) {};
 				
 				bool operator()(const tree_node *a, const tree_node *b) 
-					{
+				{
 					return comp_(a->data, b->data);
-					}
+				}
 			private:
 				StrictWeakOrdering comp_;
 		};
@@ -608,7 +608,7 @@ void tree<T, tree_node_allocator>::erase_children(const iterator_base& it)
 template<class T, class tree_node_allocator> 
 template<class iter>
 iter tree<T, tree_node_allocator>::erase(iter it)
-	{
+{
 	tree_node *cur=it.node;
 	assert(cur!=head);
 	iter ret=it;
@@ -617,18 +617,22 @@ iter tree<T, tree_node_allocator>::erase(iter it)
 	erase_children(it);
 	if(cur->prev_sibling==0) {
 		cur->parent->first_child=cur->next_sibling;
-		}
+	}
 	else {
 		cur->prev_sibling->next_sibling=cur->next_sibling;
-		}
+	}
 	if(cur->next_sibling==0) {
 		cur->parent->last_child=cur->prev_sibling;
-		}
+	}
 	else {
 		cur->next_sibling->prev_sibling=cur->prev_sibling;
-		}
-
-	//	kp::destructor(&cur->data);
+	}
+	// clear pointers so that we don't accidentily use cleared memory
+	cur->first_child=0;
+	cur->last_child=0;
+	cur->next_sibling=0;
+	cur->parent=0;
+	cur->prev_sibling=0;
 	alloc_.destroy(cur);
 	alloc_.deallocate(cur,1);
 	return ret;

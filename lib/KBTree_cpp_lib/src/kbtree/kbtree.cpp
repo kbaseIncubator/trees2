@@ -213,7 +213,7 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 
 	// if we get to an open parenthesis, then create a child and recurse down
 	if( newickString.at(k)==OPEN_PARAN ) {
-		cout<<"OPEN"<<endl;printPos(newickString,k);
+		//cout<<"OPEN"<<endl;printPos(newickString,k);
 		// note here that the begin iterator points to the first child of the current node
 		tree<KBNode>::iterator newChild = tr.insert(currentNode.begin(),KBNode());
 		this->nodeCount++;
@@ -237,7 +237,7 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 	// and return back up the hierarchy
 	if( k >= newickString.length() ) { return; }
 	if (newickString.at(k)==CLOSE_PARAN) {
-		cout<<"CLOSE"<<endl;printPos(newickString,k);
+		//cout<<"CLOSE"<<endl;printPos(newickString,k);
 		k++;
 		return;
 	}
@@ -247,7 +247,7 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 
 	// If we get to a comma, then the current node has some siblings, so recurse on the sibling node
 	if (newickString.at(k)==COMMA) {
-		cout<<"COMMA"<<endl;printPos(newickString,k);
+		//cout<<"COMMA"<<endl;printPos(newickString,k);
 		tree<KBNode>::iterator newSibling = tr.insert_after(currentNode,KBNode());
 		this->nodeCount++;
 		k++;
@@ -531,7 +531,12 @@ void KBTree::removeNodesByNameAndSimplify(const std::string &nodeNames)
 		next = nodeNames.find_first_of( delimiters, current );
 		name = nodeNames.substr( current, next - current );
 		trim(name);
-		nodeNameMap.insert(pair<string,string>(name,""));
+		if(name.size()==0) { continue; }
+		if(nodeNameMap.find(name)==nodeNameMap.end()) {
+			nodeNameMap.insert(pair<string,string>(name,""));
+		} else {
+			cout<<"++KBTREE WARNING--  YOU PROVIDED TWO NODES TO BE REMOVED IN THE LIST THAT HAVE THE SAME NAME: '"<<name<<"'"<<endl;
+		}
 	}
 	while (next != string::npos);
 	removeNodesByNameAndSimplify(nodeNameMap);
@@ -542,21 +547,23 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 {
 	// loop through the nodes in a depth-first, post-order traversal
 	// thus, as we look at each node, we can assume all nodes below have been processed
-	tree<KBNode>::post_order_iterator node;
-	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
+	bool nodeWasErased=false;
+	tree<KBNode>::post_order_iterator node = tr.begin_post();
+	while(node!=tr.end_post()) {
 		// look for this node in the removal list (only if it has some non-empty name)
 		if((*node).getName().size()>0) {
-
 			map<string,string>::iterator nodeIter=nodeNames.find((*node).getName());
 			if( nodeIter!=nodeNames.end() ) {
+				if( (nodeIter->second).size()!=0) {
+					if(verbose) { cout<<"++KBTREE WARNING--   MORE THAN ONE NODE NAMED: '"<<(*node).getName()<<"' IS BEING REMOVED"<<endl;}
+				}
+				nodeIter->second="+";
 				// if we are a leaf node, then just erase
 				if(tr.number_of_children(node)==0) {
 					if(verbose) { cout<<"KBTREE--   REMOVING LEAF NODE NAMED: '"<<(*node).getName()<<"'"<<endl;}
-					if( (nodeIter->second).size()!=0) {
-						cout<<"what's happn'n?"<<endl;
-					}
-					nodeIter->second="+";
-					tr.erase(node); nodeCount--;
+					tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
+					tr.erase(nodeToBeAxed); nodeCount--;
+					nodeWasErased=true;
 				}
 				// if we have children, then we must replace this node with its child
 				else {
@@ -567,8 +574,9 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 						for(tree<KBNode>::sibling_iterator child=node.begin(); child!=tr.end(child); child++) {
 							(*child).distanceToParent += distFromThisNodeToParent;
 						}
-						tr.erase_and_reparent_children(node);
-						nodeCount--;
+						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
+						tr.erase_and_reparent_children(nodeToBeAxed); nodeCount--;
+						nodeWasErased=true;
 					} else {
 						cerr<<"!!KBTREE ERROR-- CANNOT REMOVE ROOT NODE FROM TREE."<<endl;
 						exit(1);
@@ -582,24 +590,38 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 				if(((*node).getName()).size()==0) {
 					if(tr.number_of_children(node)==0) {
 						if(verbose) { cout<<"KBTREE--   REMOVING UNAMED LEAF NODE"<<endl;}
-						tr.erase(node); nodeCount--;
+						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
+						tr.erase(nodeToBeAxed); nodeCount--;
+						nodeWasErased=true;
 					}
 					else if (tr.number_of_children(node)==1) {
-
 						if(verbose) { cout<<"KBTREE--   REMOVING UNAMED INTERNAL NODE WITH ONE CHILD"<<endl;}
 						// manage distances! distance from the removal node's parent to it's new child should be the sum of the
 						// distances (so that the total distance to the leaf nodes are conserved).  So update that first.  Note
 						// that if we are here, there is only one possible child, so we only have to update that single child.
 						double distFromThisNodeToParent = (*node).distanceToParent;
 						(*(node.begin())).distanceToParent += distFromThisNodeToParent;
-						tr.erase_and_reparent_children(node);
-						nodeCount--;
+						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
+						tr.erase_and_reparent_children(nodeToBeAxed); nodeCount--;
+						nodeWasErased=true;
 					}
 
 				}
 			}
 		}
+		// finally, check if the current node was erased, and handle accordingly
+		if(nodeWasErased) {
+			nodeWasErased=false;
+		} else {
+			node++; // only advance here if the node was not erased (if it was, the iter was already advanced)
+		}
 	}
+	for(std::map<std::string,std::string>::iterator it=nodeNames.begin();it!=nodeNames.end();it++) {
+		if(it->second.size()==0) {
+			cout<<"++KBTREE WARNING--   UNABLE TO FIND AND REMOVE NODE NAMED: '"<<it->first<<"'"<<endl;
+		}
+	}
+
 }
 
 void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
