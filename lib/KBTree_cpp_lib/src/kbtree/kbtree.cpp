@@ -213,7 +213,7 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 
 	// if we get to an open parenthesis, then create a child and recurse down
 	if( newickString.at(k)==OPEN_PARAN ) {
-		//cout<<"OPEN"<<endl;printPos(newickString,k);
+		cout<<"OPEN"<<endl;printPos(newickString,k);
 		// note here that the begin iterator points to the first child of the current node
 		tree<KBNode>::iterator newChild = tr.insert(currentNode.begin(),KBNode());
 		this->nodeCount++;
@@ -224,18 +224,8 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 		}
 	}
 
-	// if we get to the end, then exit recursion
-	if( k >= newickString.length() ) return;
-
-	// if we get to a close parenthesis, then go on to the next position in the string
-	if (newickString.at(k)==CLOSE_PARAN) {
-		//cout<<"CLOSE"<<endl;printPos(newickString,k);
-		k++;
-	}
-
 	// If we get here, then we are ready to label it
 	getNextLabel(newickString,k,(*currentNode));
-
 	// if it is an internal node and has a name and we are assuming that internal node names are bootstrap values,
 	// then update the parsing. (note that this is the case for most MO trees)
 	if(this->assumeBootstrapNames && currentNode.number_of_children()>0 && (*currentNode).getName().size()>0) {
@@ -243,12 +233,21 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 		(*currentNode).name="";
 	}
 
+	// if we get to a close parenthesis, then go on to the next position in the string
+	// and return back up the hierarchy
+	if( k >= newickString.length() ) { return; }
+	if (newickString.at(k)==CLOSE_PARAN) {
+		cout<<"CLOSE"<<endl;printPos(newickString,k);
+		k++;
+		return;
+	}
+
 	//again make sure we can go further
 	if( k >= newickString.length() ) return;
 
 	// If we get to a comma, then the current node has some siblings, so recurse on the sibling node
 	if (newickString.at(k)==COMMA) {
-		//cout<<"COMMA"<<endl;printPos(newickString,k);
+		cout<<"COMMA"<<endl;printPos(newickString,k);
 		tree<KBNode>::iterator newSibling = tr.insert_after(currentNode,KBNode());
 		this->nodeCount++;
 		k++;
@@ -547,11 +546,12 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
 		// look for this node in the removal list (only if it has some non-empty name)
 		if((*node).getName().size()>0) {
-			if( nodeNames.find((*node).getName())!=nodeNames.end() ) {
+
+			map<string,string>::iterator nodeIter=nodeNames.find((*node).getName());
+			if( nodeIter!=nodeNames.end() ) {
 				// if we are a leaf node, then just erase
 				if(tr.number_of_children(node)==0) {
 					if(verbose) { cout<<"KBTREE--   REMOVING LEAF NODE NAMED: '"<<(*node).getName()<<"'"<<endl;}
-					map<string,string>::iterator nodeIter=nodeNames.find((*node).getName());
 					if( (nodeIter->second).size()!=0) {
 						cout<<"what's happn'n?"<<endl;
 					}
