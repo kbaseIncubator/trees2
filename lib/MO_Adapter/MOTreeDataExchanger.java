@@ -557,7 +557,7 @@ public class MOTreeDataExchanger {
 			BW_containsProtein.write(ai.parent_seq_length.get(k)+"\t");     // parent-seq-len	 M	 the length of the untrimmed sequence for quick reference of the coverage of this alignment
 			BW_containsProtein.write(ai.row_start_pos_in_alignment.get(k)+"\t");   // beg-pos-in-aln	 M	 integer value providing a coordinate/mapping to the starting column in the alignment where this sequence component begins
 			BW_containsProtein.write(ai.row_end_pos_in_alignment.get(k)+"\t");     // end-pos-in-aln	 M	 integer value providing a coordinate/mapping to the ending column in the alignment where this sequence component ends
-			BW_containsProtein.write("kbfeature\t");                           // kb-feature-id	 O	 associated kbase feature id, e.g., when intending to refer to a particular genome
+			BW_containsProtein.write(ai.feature_reference.get(k)+"\t");                           // kb-feature-id	 O	 associated kbase feature id, e.g., when intending to refer to a particular genome
 			BW_containsProtein.write("\n");
 			currentRow++;
 		}
