@@ -21,14 +21,15 @@ import KBTreeUtil.KBTreeUtil;
 public class MOTreeDataExchanger {
 
 
-    //	public static String pathToDumpDir = "/Users/msneddon/Desktop/mo_tree_dump/current/dump";
-    //	public static String pathToAlnDir = "/Users/msneddon/Desktop/mo_tree_dump/current/OriginalFASTA/alignments";
-    //	public static String pathToLociFile = "/Users/msneddon/Desktop/public_loci_with_kbaseIds.txt";
-    //	public static String pathToIdFile = "/Users/msneddon/Desktop/assigned_kbase_id_list.txt";
-        public static String pathToDumpDir = "/homes/oakland/msneddon/mo_tree_dump/dumpCOG";
-        public static String pathToAlnDir = "/homes/oakland/msneddon/mo_tree_dump/alignmentsCOG/alignments";
-        public static String pathToLociFile = "/homes/oakland/msneddon/mo_tree_dump/public_loci_with_kbaseIds.txt";
+	//public static String pathToDumpDir = "/Users/msneddon/Desktop/mo_tree_dump/current/dump";
+	//public static String pathToAlnDir = "/Users/msneddon/Desktop/mo_tree_dump/current/OriginalFASTA/alignments";
+	//public static String pathToLociFile = "/Users/msneddon/Desktop/public_loci_with_kbaseIds.txt";
+	//public static String pathToIdFile = "/Users/msneddon/Desktop/assigned_kbase_id_list.txt";
+    public static String pathToDumpDir = "/homes/oakland/msneddon/mo_tree_dump/dumpCOG";
+    public static String pathToAlnDir = "/homes/oakland/msneddon/mo_tree_dump/alignmentsCOG/alignments";
+    public static String pathToLociFile = "/homes/oakland/msneddon/mo_tree_dump/public_loci_with_kbaseIds.txt";
 	public static String pathToIdFile = "/homes/oakland/msneddon/mo_tree_dump/assigned_kbase_id_list.txt";
+	
 	public static long timestampInSecondsSinceEpoch;
 	public static boolean use_KB_DB = false;
 	public static LocusLookup publicLoci;
@@ -200,7 +201,7 @@ public class MOTreeDataExchanger {
 					BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
 					BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
 					BW_aln.write("MO_Pipeline\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_aln.write("param?\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+					BW_aln.write("\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_aln.write("based on "+name+"\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MO\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
@@ -215,7 +216,7 @@ public class MOTreeDataExchanger {
 					BW_trees.write("sequnce_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
 					BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
 					BW_trees.write("MO_Pipeline\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_trees.write("param?\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+					BW_trees.write("\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_trees.write("based on "+name+"\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_trees.write("MO\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					BW_trees.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
