@@ -34,7 +34,7 @@ use_ok("JSON::RPC::Legacy::Client");
 use_ok("TreesClient");
 
 # MAKE A CONNECTION
-my $tree_service_url = "http://140.221.92.133:5000";
+my $tree_service_url = "http://140.221.92.55:7047";
 my $client = TreesClient->new($tree_service_url);
 ok(defined($client),"instantiating tree client");
 

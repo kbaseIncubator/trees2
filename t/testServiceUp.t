@@ -22,7 +22,8 @@ use_ok("JSON::RPC::Legacy::Client");
 # MAKE A CONNECTION
 my $client = new JSON::RPC::Legacy::Client;
 #my $client = new JSON::RPC::Client;
-my $tree_service_url = "http://140.221.92.133:5000";
+my $tree_service_url = "http://140.221.92.55:7047";
+print "looking at URL: ".$tree_service_url."\n";
 
 # MAKE AN RPC CALL
 my $callobj = {
@@ -31,6 +32,7 @@ my $callobj = {
 };
 my $res = $client->call($tree_service_url, $callobj);
 ok($client->status_line =~ m/^200/,"test valid rpc call");
+print $client->status_line."\n";
 ok($res,"test valid rpc call returned something");
 if($res) { ok(!$res->is_error,"test valid rpc call returned a json" ); }
 else {ok(0,"test valid rpc call returned a json"); }
