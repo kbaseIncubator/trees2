@@ -32,7 +32,7 @@ deploy-services:
 	echo "pid_file=$(PID_FILE)" >> ./stop_service
 	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_service
 	echo "\techo \"No pid file: \$$pid_file found for service $(SERVICE).\"\n\texit 1\nfi" >> ./stop_service
-	echo "pid=\$$(cat \$$pid_file)\nkill -9 \$$pid\n" >> ./stop_service
+	echo "pid=\$$(cat \$$pid_file)\nkill \$$pid\n" >> ./stop_service
 	chmod +x start_service stop_service
 	mkdir -p $(SERVICE_DIR)
 	mkdir -p $(SERVICE_DIR)/log
