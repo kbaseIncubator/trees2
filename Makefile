@@ -2,6 +2,7 @@
 TARGET ?= /kb/deployment
 KB_RUNTIME ?= /kb/runtime
 SERVICE = trees
+PSGI_FILENAME = Trees.psgi
 PORT = 7047
 
 #do not make changes below this line
@@ -24,7 +25,7 @@ deploy-services:
 	echo "$(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
-	echo "  $(SERVICE_DIR)/lib/$(SERVICE).psgi" >> ./start_service
+	echo "  $(SERVICE_DIR)/lib/$(PSGI_FILENAME)" >> ./start_service
 	echo "echo $(SERVICE) service is listening on port $(PORT).\n" >> ./start_service
 	echo '#!/bin/sh' > ./stop_service
 	echo "echo trying to stop $(SERVICE) services." >> ./stop_service
