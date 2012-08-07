@@ -21,7 +21,7 @@ redeploy: clean deploy-services
 deploy-services:
 	echo '#!/bin/sh' > ./start_service
 	echo "echo starting $(SERVICE) services." >> ./start_service
-	echo 'export PERL5LIB=$$PERL5LIB:$(SERVICE_DIR)/lib' >> ./start_service
+	echo 'export PERL5LIB=$$PERL5LIB:$(SERVICE_DIR)/lib:/kb/deployment/lib' >> ./start_service
 	echo "$(KB_RUNTIME)/bin/starman --listen :$(PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
