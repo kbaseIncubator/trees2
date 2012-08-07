@@ -21,8 +21,7 @@ deploy: deploy-services
 redeploy: clean deploy-services
 
 build-cpp-libs:
-	cd "lib/KBTree_cpp_lib"
-	make all
+	cd "$(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib"; make all
 
 deploy-services:
 	echo '#!/bin/sh' > ./start_service

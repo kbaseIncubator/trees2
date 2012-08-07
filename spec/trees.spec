@@ -26,7 +26,7 @@ module Trees
     returned to you in this format by default.  All leaf nodes are by default indexed to a MSA row
     element.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids
     instead, depending on how the tree was built.  Internal nodes may or may not be labeled.  Nodes may
-    also be annotated with structured data
+    also be annotated with structured data.
     */
     typedef string newick_tree;
     
