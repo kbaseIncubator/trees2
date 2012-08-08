@@ -13,8 +13,8 @@ use lib "../lib/";
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
 # NOTE THAT THE PARAMETERS ARE JUST MADE UP AT THE MOMENT
-my $func_calls = {  get_tree => ["kb|t123"],
-                    get_trees => [ ["kb|t1","kb|t2","kb|t4"] ],
+my $func_calls = {  get_tree => ["kb|t123", [FORMAT =>'first']],
+                    get_trees => [ ["kb|t1","kb|t2","kb|t4"], [FORMAT =>'first']],
                     all_tree_ids => [ "1" ],
                     get_trees_with_entire_seq => ["kb|g44.1", "1", "50", "opts"],
                     get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", "opts"],
@@ -45,6 +45,7 @@ for $method_name (keys %$func_calls) {
         #print "==========\n$method_name => @{ $func_calls->{$method_name}}\n";
         #my $n_args = scalar @{ $func_calls->{$method_name}};
         my $result;
+        print "calling function: \"$method_name\"\n";
         {
             no strict "refs";
             $result = $client->$method_name(@{ $func_calls->{$method_name}});

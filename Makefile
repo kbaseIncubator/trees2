@@ -16,9 +16,9 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 
 all:
 
-deploy: deploy-services
+deploy: build-cpp-libs deploy-services
 
-redeploy: clean deploy-services
+redeploy: clean build-cpp-libs deploy-services
 
 build-cpp-libs:
 	cd "$(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib"; make all
@@ -42,9 +42,9 @@ deploy-services:
 	mkdir -p $(SERVICE_DIR)
 	mkdir -p $(SERVICE_DIR)/log
 	cp -rv . $(SERVICE_DIR)/
-	echo "OK ... Done deploying $(SERVICE_PORT) services."
+	echo "OK ... Done deploying $(SERVICE) services."
 
 clean:
 	rm -rfv $(SERVICE_DIR)
-	rm start_service stop_service
+	rm -f start_service stop_service
 	echo "OK ... Removed all deployed files."
