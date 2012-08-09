@@ -24,11 +24,12 @@ namespace KBTreeLib {
 			bool writeNewickToFile(const std::string &filename);
 			bool writeNewickToFile(const std::string &filename,unsigned int style);
 			
-			///////////////////////////////
-			//NEEDED FUNCTIONS
-			// REPLACE AND SIMPLIFY NODES
-			//
-			//void removeNodesByNameAndSimplify(std::map<std::string,std::string>& nodeNames);
+			
+			/* given a list of node names (concatenated as name1;name2;name3), this function
+			removes any node with an exact matching name from the tree, then simplifies the
+			tree by removing any internal nodes with a single child and any leaf nodes without
+			a name.  Distances are recomputed so that the distance between existing nodes
+			in the original tree and the final tree are conserved. */
 			void removeNodesByNameAndSimplify(const std::string &nodeNames);
 			
 			
@@ -40,6 +41,9 @@ namespace KBTreeLib {
             
             /* returns the total number of leaf nodes (aka tips) in the tree */			
             unsigned int getLeafCount();
+            
+            /* returns a string of all the leaf node names, concatenated as name1;name2;name3; */
+            std::string getAllLeafNames();
     };
     
 };

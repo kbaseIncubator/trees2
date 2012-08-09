@@ -13,6 +13,15 @@ $t->printTree();
 
 print $t->toNewick(4)."\n";
 
+print $t->getAllLeafNames()."\n";
+
+# get all the names of the leaves
+my $leaf_names = $t->getAllLeafNames();
+my @values = split(';', $leaf_names);
+foreach my $val (@values) {
+    print "$val\n";
+}
+
 $t->removeNodesByNameAndSimplify("D");
 $nodeCount = $t->getNodeCount();
 print $t->getNodeCount()."\n";

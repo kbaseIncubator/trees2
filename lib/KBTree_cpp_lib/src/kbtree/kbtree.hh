@@ -104,10 +104,12 @@ namespace KBTreeLib {
 			// @todo implement this function
 			bool validateNewickString(string &infoMssg) {return false;};
 
+
 			/**
-			 * returns a string array with a list of all the names of the leaves in this tree.
-			 * return values are assigned the input parameter references, which should
-			 */
+			* returns a string with a list of all the names of the leaves in this tree
+			* concatenated as node1;node2;node3; ...
+			*/
+			std::string getAllLeafNames();
 			void getAllLeafNames(vector<string> &names);
 
 

@@ -13,10 +13,10 @@ TreesClient
 
 Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.  What follows is the current
-version of the tree/MSA API proposal.
+Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
+last updated 8/9/12
 
 =cut
 
@@ -300,64 +300,64 @@ sub get_trees_with_overlapping_domain
 
 
 
-=head2 $result = substitute_node_labels_with_kbase_ids(trees, options)
+=head2 $result = substitute_node_names_with_kbase_ids(trees, options)
 
 Given a list of kbase identifiers for a tree, substitutes the leaf node labels with actual kbase sequence
 identifiers.  If a particular alignment row maps to a single sequence, this is straightforward.  If an
 alignmnt row maps to multiple sequences, then the current behavior is not yet defined (likely will be
 a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
-parameters to be passed (parameter list is also currently not defined yet.)
+parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
 
 =cut
 
-sub substitute_node_labels_with_kbase_ids
+sub substitute_node_names_with_kbase_ids
 {
     my($self, @args) = @_;
 
     @args == 2 or die "Invalid argument count (expecting 2)";
     my $result = $self->{client}->call($self->{url}, {
-	method => "Trees.substitute_node_labels_with_kbase_ids",
+	method => "Trees.substitute_node_names_with_kbase_ids",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
-	    die "Error invoking substitute_node_labels_with_kbase_ids: " . $result->error_message;
+	    die "Error invoking substitute_node_names_with_kbase_ids: " . $result->error_message;
 	} else {
 	    return $result->result;
 	}
     } else {
-	die "Error invoking substitute_node_labels_with_kbase_ids: " . $self->{client}->status_line;
+	die "Error invoking substitute_node_names_with_kbase_ids: " . $self->{client}->status_line;
     }
 }
 
 
 
 
-=head2 $result = extract_leaf_node_labels(tree)
+=head2 $result = extract_leaf_node_names(tree)
 
-Given a tree, returns the list of labels of the leaves.  If the 'substitute_node_labels_with_kbase_ids' was already
+Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already
 called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
 the tree.
 
 =cut
 
-sub extract_leaf_node_labels
+sub extract_leaf_node_names
 {
     my($self, @args) = @_;
 
     @args == 1 or die "Invalid argument count (expecting 1)";
     my $result = $self->{client}->call($self->{url}, {
-	method => "Trees.extract_leaf_node_labels",
+	method => "Trees.extract_leaf_node_names",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
-	    die "Error invoking extract_leaf_node_labels: " . $result->error_message;
+	    die "Error invoking extract_leaf_node_names: " . $result->error_message;
 	} else {
 	    return $result->result;
 	}
     } else {
-	die "Error invoking extract_leaf_node_labels: " . $self->{client}->status_line;
+	die "Error invoking extract_leaf_node_names: " . $self->{client}->status_line;
     }
 }
 
@@ -366,8 +366,8 @@ sub extract_leaf_node_labels
 
 =head2 $result = add_node_to_tree(tree_id, sequence_id, options)
 
-Given a tree and a sequence in kbase, attempt to map that sequence onto the tree.  This function could have
-multiple prototypes allowing users to compare / build trees with new sequences
+Given a tree and a sequence in kbase, attempt to map that sequence onto the tree, returning the newick representation
+of the tree.
 
 =cut
 
@@ -388,37 +388,6 @@ sub add_node_to_tree
 	}
     } else {
 	die "Error invoking add_node_to_tree: " . $self->{client}->status_line;
-    }
-}
-
-
-
-
-=head2 $result = run_sifter(tree_id, options)
-
-If / when we want to support sifter, we should support a simple function that allows us to run sifter on a given
-tree in the DB, in which we pass options giving sifter the particular base annotations to query from.
-todo: determine if and how such annotations could be back propogated to the CDM.
-
-=cut
-
-sub run_sifter
-{
-    my($self, @args) = @_;
-
-    @args == 2 or die "Invalid argument count (expecting 2)";
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Trees.run_sifter",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    die "Error invoking run_sifter: " . $result->error_message;
-	} else {
-	    return $result->result;
-	}
-    } else {
-	die "Error invoking run_sifter: " . $self->{client}->status_line;
     }
 }
 

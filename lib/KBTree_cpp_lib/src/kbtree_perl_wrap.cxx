@@ -2607,6 +2607,34 @@ XS(_wrap_KBTree_getLeafCount) {
 }
 
 
+XS(_wrap_KBTree_getAllLeafNames) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_getAllLeafNames(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_getAllLeafNames" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    result = (arg1)->getAllLeafNames();
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
@@ -2647,6 +2675,7 @@ static swig_command_info swig_commands[] = {
 {"KBTreeUtilc::KBTree_printTree", _wrap_KBTree_printTree},
 {"KBTreeUtilc::KBTree_getNodeCount", _wrap_KBTree_getNodeCount},
 {"KBTreeUtilc::KBTree_getLeafCount", _wrap_KBTree_getLeafCount},
+{"KBTreeUtilc::KBTree_getAllLeafNames", _wrap_KBTree_getAllLeafNames},
 {0,0}
 };
 /* -----------------------------------------------------------------------------

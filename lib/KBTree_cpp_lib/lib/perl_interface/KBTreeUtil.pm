@@ -80,6 +80,7 @@ sub DESTROY {
 *printTree = *KBTreeUtilc::KBTree_printTree;
 *getNodeCount = *KBTreeUtilc::KBTree_getNodeCount;
 *getLeafCount = *KBTreeUtilc::KBTree_getLeafCount;
+*getAllLeafNames = *KBTreeUtilc::KBTree_getAllLeafNames;
 sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);

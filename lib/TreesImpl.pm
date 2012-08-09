@@ -9,15 +9,16 @@ Trees
 
 Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.  What follows is the current
-version of the tree/MSA API proposal.
+Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
+last updated 8/9/12
 
 =cut
 
 #BEGIN_HEADER
-
+use lib "KBTree_cpp_lib/lib/perl_interface";
+use KBTreeUtil;
 #END_HEADER
 
 sub new
@@ -105,7 +106,7 @@ sub get_tree
     my($self, $ctx, $tree_id, $options) = @_;
     my($return);
     #BEGIN get_tree
-                $return = "hello mr. tree., sent from get_tree";
+                    $return = "hello mr. tree., sent from get_tree";
     #END get_tree
     return($return);
 }
@@ -162,7 +163,7 @@ sub get_trees
     my($self, $ctx, $tree_ids, $options) = @_;
     my($return);
     #BEGIN get_trees
-                $return = "hello mr. tree., sent from get_trees";
+                    $return = "hello mr. tree., sent from get_trees";
     #END get_trees
     return($return);
 }
@@ -218,7 +219,7 @@ sub all_tree_ids
     my($self, $ctx, $is_active) = @_;
     my($return);
     #BEGIN all_tree_ids
-                $return = "hello mr. tree., sent from all_tree_ids";
+                    $return = "hello mr. tree., sent from all_tree_ids";
     #END all_tree_ids
     return($return);
 }
@@ -336,7 +337,7 @@ sub get_trees_with_entire_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_seq
-                $return = "hello mr. tree., sent from get_trees_with_entire_seq";
+                    $return = "hello mr. tree., sent from get_trees_with_entire_seq";
     #END get_trees_with_entire_seq
     return($return);
 }
@@ -397,7 +398,7 @@ sub get_trees_with_overlapping_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
-                $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
+                    $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
     #END get_trees_with_overlapping_seq
     return($return);
 }
@@ -451,7 +452,7 @@ sub get_trees_with_entire_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_domain
-                $return = "hello mr. tree., sent from get_trees_with_entire_domain";
+                    $return = "hello mr. tree., sent from get_trees_with_entire_domain";
     #END get_trees_with_entire_domain
     return($return);
 }
@@ -506,7 +507,7 @@ sub get_trees_with_overlapping_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
-                $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
+                    $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
     #END get_trees_with_overlapping_domain
     return($return);
 }
@@ -514,9 +515,9 @@ sub get_trees_with_overlapping_domain
 
 
 
-=head2 substitute_node_labels_with_kbase_ids
+=head2 substitute_node_names_with_kbase_ids
 
-  $return = $obj->substitute_node_labels_with_kbase_ids($trees, $options)
+  $return = $obj->substitute_node_names_with_kbase_ids($trees, $options)
 
 =over 4
 
@@ -554,28 +555,27 @@ Given a list of kbase identifiers for a tree, substitutes the leaf node labels w
 identifiers.  If a particular alignment row maps to a single sequence, this is straightforward.  If an
 alignmnt row maps to multiple sequences, then the current behavior is not yet defined (likely will be
 a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
-parameters to be passed (parameter list is also currently not defined yet.)
+parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
 
 =back
 
 =cut
 
-sub substitute_node_labels_with_kbase_ids
+sub substitute_node_names_with_kbase_ids
 {
     my($self, $ctx, $trees, $options) = @_;
     my($return);
-    #BEGIN substitute_node_labels_with_kbase_ids
-                $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
-    #END substitute_node_labels_with_kbase_ids
+    #BEGIN substitute_node_names_with_kbase_ids
+        #END substitute_node_names_with_kbase_ids
     return($return);
 }
 
 
 
 
-=head2 extract_leaf_node_labels
+=head2 extract_leaf_node_names
 
-  $return = $obj->extract_leaf_node_labels($tree)
+  $return = $obj->extract_leaf_node_names($tree)
 
 =over 4
 
@@ -585,8 +585,9 @@ sub substitute_node_labels_with_kbase_ids
 
 <pre>
 $tree is a newick_tree
-$return is a reference to a list where each element is a string
+$return is a reference to a list where each element is a node_name
 newick_tree is a string
+node_name is a string
 
 </pre>
 
@@ -595,8 +596,9 @@ newick_tree is a string
 =begin text
 
 $tree is a newick_tree
-$return is a reference to a list where each element is a string
+$return is a reference to a list where each element is a node_name
 newick_tree is a string
+node_name is a string
 
 
 =end text
@@ -605,7 +607,7 @@ newick_tree is a string
 
 =item Description
 
-Given a tree, returns the list of labels of the leaves.  If the 'substitute_node_labels_with_kbase_ids' was already
+Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already
 called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
 the tree.
 
@@ -613,13 +615,16 @@ the tree.
 
 =cut
 
-sub extract_leaf_node_labels
+sub extract_leaf_node_names
 {
     my($self, $ctx, $tree) = @_;
     my($return);
-    #BEGIN extract_leaf_node_labels
-                $return = "hello mr. tree., sent from extract_leaf_node_labels";
-    #END extract_leaf_node_labels
+    #BEGIN extract_leaf_node_names
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $leaf_names = $kb_tree->getAllLeafNames();
+    my @leaf_name_list = split(';', $leaf_names);
+    $return = \@leaf_name_list;
+    #END extract_leaf_node_names
     return($return);
 }
 
@@ -664,8 +669,8 @@ newick_tree is a string
 
 =item Description
 
-Given a tree and a sequence in kbase, attempt to map that sequence onto the tree.  This function could have
-multiple prototypes allowing users to compare / build trees with new sequences
+Given a tree and a sequence in kbase, attempt to map that sequence onto the tree, returning the newick representation
+of the tree.
 
 =back
 
@@ -677,62 +682,6 @@ sub add_node_to_tree
     my($return);
     #BEGIN add_node_to_tree
         #END add_node_to_tree
-    return($return);
-}
-
-
-
-
-=head2 run_sifter
-
-  $return = $obj->run_sifter($tree_id, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$tree_id is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a newick_tree
-kbase_id is a string
-newick_tree is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$tree_id is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a newick_tree
-kbase_id is a string
-newick_tree is a string
-
-
-=end text
-
-
-
-=item Description
-
-If / when we want to support sifter, we should support a simple function that allows us to run sifter on a given
-tree in the DB, in which we pass options giving sifter the particular base annotations to query from.
-todo: determine if and how such annotations could be back propogated to the CDM.
-
-=back
-
-=cut
-
-sub run_sifter
-{
-    my($self, $ctx, $tree_id, $options) = @_;
-    my($return);
-    #BEGIN run_sifter
-        #END run_sifter
     return($return);
 }
 
@@ -975,7 +924,70 @@ Trees are represented in newick format (http://en.wikipedia.org/wiki/Newick_form
 returned to you in this format by default.  All leaf nodes are by default indexed to a MSA row
 element.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids
 instead, depending on how the tree was built.  Internal nodes may or may not be labeled.  Nodes may
-also be annotated with structured data
+also be annotated with structured data.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 node_name
+
+=over 4
+
+
+
+=item Description
+
+The string representation of the parsed node name (may be a kbase_id, but does not have to).  Note, this
+is not the full label (which may include comments or distances)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 phyloXML_tree
+
+=over 4
+
+
+
+=item Description
+
+A string representation of a tree in phyloXML format.
 
 
 =item Definition

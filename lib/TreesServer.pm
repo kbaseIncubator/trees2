@@ -18,12 +18,16 @@ sub _build_valid_methods
         'get_tree' => 1,
         'get_trees' => 1,
         'all_tree_ids' => 1,
+        'get_kbase_ids_from_alignment_row' => 1,
         'get_trees_with_entire_seq' => 1,
         'get_trees_with_overlapping_seq' => 1,
         'get_trees_with_entire_domain' => 1,
         'get_trees_with_overlapping_domain' => 1,
-        'substitute_node_labels_with_kbase_ids' => 1,
-        'extract_leaf_node_labels' => 1,
+        'substitute_node_names_with_kbase_ids' => 1,
+        'extract_leaf_node_names' => 1,
+        'add_node_to_tree' => 1,
+        'build_tree_from_sequences' => 1,
+        'build_tree_from_fasta' => 1,
     };
     return $methods;
 }
