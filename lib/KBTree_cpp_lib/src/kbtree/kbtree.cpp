@@ -656,8 +656,8 @@ bool KBTree::writeNewickToFile(const std::string &filename,unsigned int style) {
 
 std::string KBTree::getAllLeafNames()
 {
-	std:string leafNames="";
-	tree<KBNode>::iterator leafIter;
+	std::string leafNames="";
+	tree<KBNode>::leaf_iterator leafIter;
 	for(leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
 		string name = (*leafIter).getName();
 		if(name.size()>0) { leafNames += name; leafNames+=";"; }
@@ -667,7 +667,7 @@ std::string KBTree::getAllLeafNames()
 }
 
 void KBTree::getAllLeafNames(vector<string> &names) {
-	tree<KBNode>::iterator leafIter;
+	tree<KBNode>::leaf_iterator leafIter;
 	names.reserve((size_t)(1+getNodeCount()/2)); //assume full binary tree of leaves
 	for(leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
 		string name = (*leafIter).getName();

@@ -1,4 +1,11 @@
 #!/usr/bin/perl
+#  
+#  The purpose of this test is to make sure we recieve some response from the server for the list of functions
+#  given.  Each of these functions listed should return some value, but the actual value is not checked here.
+#  Thus, this test is ideal for making sure you are actually recieving something from a service call even if
+#  that service is not yet implemented yet.
+#
+#  If you add functionality to the Tree service API, you should add an appropriate test here.
 #
 #  author:  msneddon
 #  created: 5/21/2012
@@ -20,8 +27,8 @@ my $func_calls = {  get_tree => ["kb|t123", [FORMAT =>'first']],
                     get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", "opts"],
                     get_trees_with_entire_domain => ["kb|d33.1", "opts"],
                     get_trees_with_overlapping_domain => ["kb|d33.1", "opts"],
-                    substitute_node_labels_with_kbase_ids => ["tree","opts"],
-                    extract_leaf_node_labels => ["tree"]
+                    substitute_node_names_with_kbase_ids => ["tree","opts"],
+                    extract_leaf_node_names => ["(a,b)c;"]
                  };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
