@@ -2,10 +2,10 @@
 /*
 Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.  What follows is the current
-version of the tree/MSA API proposal.
+Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
+last updated 8/9/12
 */
 module Trees
 {
@@ -29,6 +29,19 @@ module Trees
     also be annotated with structured data.
     */
     typedef string newick_tree;
+    
+    /*
+    The string representation of the parsed node name (may be a kbase_id, but does not have to).  Note, this
+    is not the full label (which may include comments or distances)
+    */
+    typedef string node_name;
+    
+    /*
+    A string representation of a tree in phyloXML format.
+    */
+    typedef string phyloXML_tree;
+
+    
     
     /*
     String representation of an alignment, the precise syntax of which is not yet specified but will
@@ -156,28 +169,25 @@ module Trees
 
 
 
-
-
-
-
     /*
     Given a list of kbase identifiers for a tree, substitutes the leaf node labels with actual kbase sequence
     identifiers.  If a particular alignment row maps to a single sequence, this is straightforward.  If an
     alignmnt row maps to multiple sequences, then the current behavior is not yet defined (likely will be
     a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
-    parameters to be passed (parameter list is also currently not defined yet.)
+    parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
     */
-    funcdef substitute_node_labels_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);
+    funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);
 
     /*
-    Given a tree, returns the list of labels of the leaves.  If the 'substitute_node_labels_with_kbase_ids' was already
+    Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already
     called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
     the tree.
     */
-    funcdef extract_leaf_node_labels(newick_tree tree) returns (list<string>);
+    funcdef extract_leaf_node_names(newick_tree tree) returns (list<node_name>);
 
     /*
-    Given a tree and a sequence in kbase, attempt to map that sequence onto the tree
+    Given a tree and a sequence in kbase, attempt to map that sequence onto the tree, returning the newick representation
+    of the tree.
     */
     funcdef add_node_to_tree(kbase_id tree_id, kbase_id sequence_id, mapping<string,string> options) returns (newick_tree);
 
@@ -190,7 +200,11 @@ module Trees
     funcdef build_tree_from_fasta(list<string> fasta_files, mapping<string,string>options) returns (newick_tree);
 
 
-    /* additional helper functions to be determined based on use-cases */
+
+
+    /*
+    
+
 
 
 };

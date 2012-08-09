@@ -12,19 +12,17 @@
 
 echo "running type_compiler to generate the tree server/client libs..."
 
-# SPECIFY TYPE COMPILER PATH HERE
+# SPECIFY LOCAL TYPE COMPILER PATH HERE
 #PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/kb_typecomp"
 PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/typecomp_from_kbase_git"
 
 # Name of type compiler perl executables - this should not have to change
 COMPILE_TYPESPEC='/scripts/compile_typespec.pl'
-COMPILE_DB='/scripts/compile_dbd_to_typespec.pl'
 GEN_JAVA_CLIENT='/scripts/gen_java_client.pl'
 
 # Specify input and output locations for the type compiler
 OUTPUT_DIR="../lib"
 SPEC_FILE="trees.spec"
-DB_FILE="ERDB_Model/trees_er.xml"
 
 # We need to add the type compiler dependencies to the perl path
 export PERL5LIB="$PATH_TO_TC/lib/";
@@ -46,23 +44,6 @@ RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} $SPEC_FILE $OUTPUT_DIR"
 echo "Running: \"perl ${RUN_CMD}\""
 perl $RUN_CMD
 
-# actually run the compiler on the database ???  where is the doc??
-# here is an example:
-# dbd=/home/parrello/CdmiData/Published/KSaplingDBD.xml
-# /home/olson/kb_test/bin/compile_dbd_to_typespec CDMI_API CDMI_EntityAPI $dbd CDMI-EntityAPI.spec  \
-#	Bio/KBase/CDMI/CDMI_EntityAPIImpl.pm er_scripts
-#"Usage: $0 module-name DBD-xml-file spec-file impl-file\n"
-echo "----"
-RUN_CMD="${PATH_TO_TC}${COMPILE_DB} TreesBasicAPI $DB_FILE TreesBasicAPI.spec $OUTPUT_DIR/TreesBasicAPI_Impl.pm"
-echo "Running: \"perl ${RUN_CMD}\""
-perl $RUN_CMD
-
-# actually run the type compiler
-echo "----"
-RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} TreesBasicAPI.spec $OUTPUT_DIR"
-echo "Running: \"perl ${RUN_CMD}\""
-perl $RUN_CMD
-
 # eventually we will want to generate java clients, but this code does not
 # appear to be fully functional yet
 #echo "----"
@@ -72,3 +53,26 @@ perl $RUN_CMD
 
 echo "----"
 echo "done."
+
+
+########### DEPRECATED BELOW THIS LINE: THIS CODE CREATED BASIC CALLS FROM XML FILE, BUT THIS IS NOW
+########### DONE IN THE CDMI-API WITH ALL THE OTHER BASIC CDMI-API FUNCTIONS
+#
+#DB_FILE="ERDB_Model/trees_er.xml"
+#COMPILE_DB='/scripts/compile_dbd_to_typespec.pl'
+#
+# actually run the compiler on the database ???  where is the doc??
+# here is an example:
+# dbd=/home/parrello/CdmiData/Published/KSaplingDBD.xml
+# /home/olson/kb_test/bin/compile_dbd_to_typespec CDMI_API CDMI_EntityAPI $dbd CDMI-EntityAPI.spec  \
+#	Bio/KBase/CDMI/CDMI_EntityAPIImpl.pm er_scripts
+#"Usage: $0 module-name DBD-xml-file spec-file impl-file\n"
+#echo "----"
+#RUN_CMD="${PATH_TO_TC}${COMPILE_DB} TreesBasicAPI $DB_FILE TreesBasicAPI.spec $OUTPUT_DIR/TreesBasicAPI_Impl.pm"
+#echo "Running: \"perl ${RUN_CMD}\""
+#perl $RUN_CMD
+# actually run the type compiler
+#echo "----"
+#RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} TreesBasicAPI.spec $OUTPUT_DIR"
+#echo "Running: \"perl ${RUN_CMD}\""
+#perl $RUN_CMD

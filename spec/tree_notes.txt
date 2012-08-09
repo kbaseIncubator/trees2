@@ -57,3 +57,10 @@ Discussion of the Exchange format led to the following points / questions:
 13) new trees and alignments are assumed active until they are turned inactive manually (api should provide access to modify this field)
 14) ask keith if there is a flag that says if a gene is in a tree or not: Answer: no, but can use locus2tree for that information.
 
+2012, July/August
+===========================================
+-Gary Olsen entered conversation, and iterated over the exchange format and data model with Fangfang and Michael
+-Aggreed exchange format and data model was generated (see ERDB_Model/trees_data_model_proposa_v2.txt for latest version)
+-Bruce took data model and added the entities/relationships to the CDM
+
+
