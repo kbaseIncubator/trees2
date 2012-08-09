@@ -840,7 +840,13 @@ sub replace_node_names
     my($self, $ctx, $tree, $replacements) = @_;
     my($return);
     #BEGIN replace_node_names
-    $return = "not working yet.";
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $replacement_str="";
+    foreach my $key ( keys %$replacements ) {
+        $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
+    }
+    $kb_tree->replaceNodeNames($replacement_str);
+    $return = $kb_tree->toNewick(1); # 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
     #END replace_node_names
     return($return);
 }
@@ -898,7 +904,7 @@ sub replace_node_names_and_simplify
     my($return);
     #BEGIN replace_node_names_and_simplify
     my $kb_tree = new KBTreeUtil::KBTree($tree);
-    my $nodes_to_remove;
+    my $nodes_to_remove="";
     foreach my $val (@$removal_list) {
         $nodes_to_remove=$nodes_to_remove.$val.";";
     }
