@@ -41,9 +41,41 @@ To run tests, enter the 't' directory and run any of the available scripts (whic
 Each test script has documentation indicating 
 
 
-To Do
+To Do (Task list, created Aug 8, 2012)
 ----------
-*pretty much everything
+1) Write Loader scripts for importing data in the exchange format into the CDS
+2) Load MO Trees (which involves finishing the processing of raw alignment and tree files, and handling the species tree)
+3) Load SEED Trees (should be more straightforward)
+4) Test basic API calls generated for us, and use these API calls to ensure loaded data is accurate
+    (e.g. all_entities_Tree, get_entity_Alignmnent, chained queries to get all Trees with a given sequence included)
+5) Discuss / agree on most critical workflow patterns that we need to support
+    (people should include Dylan, Paramvir, Gary, Fangfang, Michael, possibly Keith and Michael Souza, others?)
+6) Discuss / agree / prioritize API function calls beyond the auto-generated CDMI needed to support the workflows
+    (this should include determining who (Michael, Fangfang, other?) will implement which service call)
+7) Complete and test (with review by Dan/Bob) the makefiles, deployment scripts, start/stop service scripts
+
+The following 3 tasks should happen concurrently and iteratively, and will be expanded after steps 5/6 above are completed:
+8) Implement API function calls in order of prioritized list.
+9) Create a broad set of unit tests for each set of new API function calls
+10) Write API function call documentation (in the type spec indicating arguments, return values, error handling) and make sure
+    this documentaton is available to kbase.us and in KBase style
+
+11) Wrap server calls as command-line scripts that can be released with the rest of the KBase Library
+    (in theory the wrap_perl script written by Bob can automate this)
+12) Test/debug command-line scripts and ensure that the same results as the client libs are generated
+13) Deploy command-line scripts to IRIS
+
+14) Expand the IRIS tutorial, or write a new tutorial, that walks users through a basic biological workflow
+     (for example, given a new genome, find a gene family for each group, map each to a set of trees, analyze the tree ...)
+15) Write tutorials for the command-line scripts (for the same workflows) in KBase style and have it added to kbase.us
+16) Write tutorials for the client libs (for the same workflow, but in Perl? other languages?) in KBase style and have it added to kbase.us
+
+17) Sketch / develop / prototype / implement tree-based and alignment-based visualizations both for displaying existing data
+    and for displaying results of meta
+    
+18) Add support for Sifter (this should be included in the above discussions and list of workflows / API calls)
+
+
 
 
 Authors
