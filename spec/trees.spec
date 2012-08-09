@@ -207,7 +207,7 @@ module Trees
     unnamed internal nodes that have only one child, and removing unnamed leaf nodes.  During the removal process, edge lengths
     (if they exist) are conserved so that the end to end distance between any two nodes left in the tree will remain the same.
     */
-    funcdef replace_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
+    funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
     
     
 

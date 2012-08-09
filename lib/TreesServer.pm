@@ -29,7 +29,7 @@ sub _build_valid_methods
         'get_node_count' => 1,
         'get_leaf_count' => 1,
         'replace_node_names' => 1,
-        'replace_node_names_and_simplify' => 1,
+        'remove_node_names_and_simplify' => 1,
         'add_node_to_tree' => 1,
         'build_tree_from_sequences' => 1,
         'build_tree_from_fasta' => 1,

@@ -107,7 +107,7 @@ sub get_tree
     my($self, $ctx, $tree_id, $options) = @_;
     my($return);
     #BEGIN get_tree
-                        $return = "hello mr. tree., sent from get_tree";
+                                $return = "hello mr. tree., sent from get_tree";
     #END get_tree
     return($return);
 }
@@ -164,7 +164,7 @@ sub get_trees
     my($self, $ctx, $tree_ids, $options) = @_;
     my($return);
     #BEGIN get_trees
-                        $return = "hello mr. tree., sent from get_trees";
+                                $return = "hello mr. tree., sent from get_trees";
     #END get_trees
     return($return);
 }
@@ -220,7 +220,7 @@ sub all_tree_ids
     my($self, $ctx, $is_active) = @_;
     my($return);
     #BEGIN all_tree_ids
-                        $return = "hello mr. tree., sent from all_tree_ids";
+                                $return = "hello mr. tree., sent from all_tree_ids";
     #END all_tree_ids
     return($return);
 }
@@ -338,7 +338,7 @@ sub get_trees_with_entire_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_seq
-                        $return = "hello mr. tree., sent from get_trees_with_entire_seq";
+                                $return = "hello mr. tree., sent from get_trees_with_entire_seq";
     #END get_trees_with_entire_seq
     return($return);
 }
@@ -399,7 +399,7 @@ sub get_trees_with_overlapping_seq
     my($self, $ctx, $sequence, $beg, $end, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
-                        $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
+                                $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
     #END get_trees_with_overlapping_seq
     return($return);
 }
@@ -453,7 +453,7 @@ sub get_trees_with_entire_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_entire_domain
-                        $return = "hello mr. tree., sent from get_trees_with_entire_domain";
+                                $return = "hello mr. tree., sent from get_trees_with_entire_domain";
     #END get_trees_with_entire_domain
     return($return);
 }
@@ -508,7 +508,7 @@ sub get_trees_with_overlapping_domain
     my($self, $ctx, $domain, $options) = @_;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
-                        $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
+                                $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
     #END get_trees_with_overlapping_domain
     return($return);
 }
@@ -620,7 +620,7 @@ sub extract_leaf_node_names
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN extract_leaf_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+            my $kb_tree = new KBTreeUtil::KBTree($tree);
     my $leaf_names = $kb_tree->getAllLeafNames();
     my @leaf_name_list = split(';', $leaf_names);
     $return = \@leaf_name_list;
@@ -678,7 +678,7 @@ sub extract_node_names
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN extract_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+            my $kb_tree = new KBTreeUtil::KBTree($tree);
     my $node_names = $kb_tree->getAllNodeNames();
     my @node_name_list = split(';', $node_names);
     $return = \@node_name_list;
@@ -732,7 +732,7 @@ sub get_node_count
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN get_node_count
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+            my $kb_tree = new KBTreeUtil::KBTree($tree);
     $return = $kb_tree->getNodeCount();
     #END get_node_count
     return($return);
@@ -784,7 +784,7 @@ sub get_leaf_count
     my($self, $ctx, $tree) = @_;
     my($return);
     #BEGIN get_leaf_count
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+            my $kb_tree = new KBTreeUtil::KBTree($tree);
     $return = $kb_tree->getLeafCount();
     #END get_leaf_count
     return($return);
@@ -840,7 +840,7 @@ sub replace_node_names
     my($self, $ctx, $tree, $replacements) = @_;
     my($return);
     #BEGIN replace_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+        my $kb_tree = new KBTreeUtil::KBTree($tree);
     my $replacement_str="";
     foreach my $key ( keys %$replacements ) {
         $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
@@ -854,9 +854,9 @@ sub replace_node_names
 
 
 
-=head2 replace_node_names_and_simplify
+=head2 remove_node_names_and_simplify
 
-  $return = $obj->replace_node_names_and_simplify($tree, $removal_list)
+  $return = $obj->remove_node_names_and_simplify($tree, $removal_list)
 
 =over 4
 
@@ -898,19 +898,19 @@ unnamed internal nodes that have only one child, and removing unnamed leaf nodes
 
 =cut
 
-sub replace_node_names_and_simplify
+sub remove_node_names_and_simplify
 {
     my($self, $ctx, $tree, $removal_list) = @_;
     my($return);
-    #BEGIN replace_node_names_and_simplify
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    #BEGIN remove_node_names_and_simplify
+        my $kb_tree = new KBTreeUtil::KBTree($tree);
     my $nodes_to_remove="";
     foreach my $val (@$removal_list) {
         $nodes_to_remove=$nodes_to_remove.$val.";";
     }
     $kb_tree->removeNodesByNameAndSimplify($nodes_to_remove);
     $return = $kb_tree->toNewick(1); # 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
-    #END replace_node_names_and_simplify
+    #END remove_node_names_and_simplify
     return($return);
 }
 

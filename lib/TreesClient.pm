@@ -481,7 +481,7 @@ sub replace_node_names
 
 
 
-=head2 $result = replace_node_names_and_simplify(tree, removal_list)
+=head2 $result = remove_node_names_and_simplify(tree, removal_list)
 
 Given a tree, remove the node names indicated in the list, and simplify the tree.  Simplifying a tree involves removing
 unnamed internal nodes that have only one child, and removing unnamed leaf nodes.  During the removal process, edge lengths
@@ -489,23 +489,23 @@ unnamed internal nodes that have only one child, and removing unnamed leaf nodes
 
 =cut
 
-sub replace_node_names_and_simplify
+sub remove_node_names_and_simplify
 {
     my($self, @args) = @_;
 
     @args == 2 or die "Invalid argument count (expecting 2)";
     my $result = $self->{client}->call($self->{url}, {
-	method => "Trees.replace_node_names_and_simplify",
+	method => "Trees.remove_node_names_and_simplify",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
-	    die "Error invoking replace_node_names_and_simplify: " . $result->error_message;
+	    die "Error invoking remove_node_names_and_simplify: " . $result->error_message;
 	} else {
 	    return $result->result;
 	}
     } else {
-	die "Error invoking replace_node_names_and_simplify: " . $self->{client}->status_line;
+	die "Error invoking remove_node_names_and_simplify: " . $self->{client}->status_line;
     }
 }
 

@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 25;
+use Test::More tests => 27;
 use Data::Dumper;
 use Test::More;
 use lib "../lib/";
@@ -72,14 +72,25 @@ ok(!exists $all_node_hash{"mr. node"} ,"node named 'mr. node' should still NOT b
 
 ######### TEST SET 4 ######### 
 # TRY TO RENAME NODES IN THE TREE
-
 my %replacements;
 $replacements{"n2"}="mr. node";
 $replacements{"n3"}="dr. node";
 $replacements{"l2"}="myLeaf";
 $replacements{"l5"}="yourLeaf";
 my $relabeled_tree=$client->replace_node_names($newick,\%replacements);
+my $correct_relabeled_tree= "(l1,((myLeaf,l3)mr. node,(l4,yourLeaf)dr. node)n1)root;";
+ok($relabeled_tree eq $correct_relabeled_tree, "relabeled tree should match a correct relabeled tree");
 
-print $relabeled_tree."\n";
+######### TEST SET 5 ######### 
+# TRY TO REMOVE NODES IN THE TREE
+my @removal;
+push(@removal,"mr. node");
+push(@removal,"myLeaf");
+my $smaller_tree=$client->remove_node_names_and_simplify($relabeled_tree,\@removal);
+my $correct_smaller_tree= "(l1,((myLeaf,l3)mr. node,(l4,yourLeaf)dr. node)n1)root;";
+ok($smaller_tree eq $correct_smaller_tree, "smaller tree should match a correct smaller tree");
+
+
+
 
 done_testing();
