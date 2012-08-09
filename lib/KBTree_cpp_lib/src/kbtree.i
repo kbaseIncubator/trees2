@@ -32,6 +32,11 @@ namespace KBTreeLib {
 			in the original tree and the final tree are conserved. */
 			void removeNodesByNameAndSimplify(const std::string &nodeNames);
 			
+			/* given a list of node names to be replaced (concatented as from1;to1;from2;to2;...), 
+			this function renames any node with an exact matching 'from name' from the tree, and
+			replaces the name as 'to name'. */
+			void replaceNodeNames(const std::string &replacements);
+			
 			
 			/*  Prints the structure of the tree to standard out */
 			void printTree();

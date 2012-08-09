@@ -136,6 +136,12 @@ namespace KBTreeLib {
 			 */
 			void replaceNodeNames(std::map<std::string,std::string> &nodeNames);
 
+			/** string should be in format from1;to1;from2;to2;...
+				thus, there everything is delimited by a semicolon, and is parsed in pairs (must have an
+				even number of tokens or else you'll get an error!
+			 */
+			void replaceNodeNames(const std::string &replacements);
+
 
 			/**
 			 * Method for removing nodes from a tree and thus simplifying the tree.

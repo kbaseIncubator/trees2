@@ -624,6 +624,34 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 
 }
 
+
+
+void KBTree::replaceNodeNames(const std::string &replacements) {
+	map<string,string> nodeNameMap;
+	string delimiters = ";",fromName="",toName="";
+	size_t current; size_t next = -1;
+	do {
+		current = next + 1;
+		next = replacements.find_first_of( delimiters, current );
+		fromName = replacements.substr( current, next - current );
+		trim(fromName);
+
+		current = next + 1;
+		next = replacements.find_first_of( delimiters, current );
+		toName = replacements.substr( current, next - current );
+		trim(toName);
+
+		if(fromName.size()==0) { continue; }
+		if(nodeNameMap.find(fromName)==nodeNameMap.end()) {
+			nodeNameMap.insert(pair<string,string>(fromName,toName));
+		} else {
+			cout<<"++KBTREE WARNING--  YOU PROVIDED TWO NODES TO BE RENAMED IN THE LIST THAT HAVE THE SAME NAME: '"<<fromName<<"'"<<endl;
+		}
+	}
+	while (next != string::npos);
+	replaceNodeNames(nodeNameMap);
+}
+
 void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
 {
 	tree<KBNode>::post_order_iterator node;

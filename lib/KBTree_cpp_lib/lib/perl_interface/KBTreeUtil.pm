@@ -77,6 +77,7 @@ sub DESTROY {
 *toNewick = *KBTreeUtilc::KBTree_toNewick;
 *writeNewickToFile = *KBTreeUtilc::KBTree_writeNewickToFile;
 *removeNodesByNameAndSimplify = *KBTreeUtilc::KBTree_removeNodesByNameAndSimplify;
+*replaceNodeNames = *KBTreeUtilc::KBTree_replaceNodeNames;
 *printTree = *KBTreeUtilc::KBTree_printTree;
 *getNodeCount = *KBTreeUtilc::KBTree_getNodeCount;
 *getLeafCount = *KBTreeUtilc::KBTree_getLeafCount;

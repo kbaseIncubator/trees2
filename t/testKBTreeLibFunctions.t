@@ -63,15 +63,23 @@ ok(exists $all_node_hash{"l2"} ,"leaf named l2 should be in the list");
 ok(exists $all_node_hash{"l3"} ,"leaf named l3 should be in the list");
 ok(exists $all_node_hash{"l4"} ,"leaf named l4 should be in the list");
 ok(exists $all_node_hash{"l5"} ,"leaf named l5 should be in the list");
-ok(exists $all_node_hash{"n2"} ,"node named n1 should be in the list");
+ok(exists $all_node_hash{"n1"} ,"node named n1 should be in the list");
 ok(exists $all_node_hash{"n2"} ,"node named n2 should be in the list");
-ok(exists $all_node_hash{"n2"} ,"node named n3 should be in the list");
+ok(exists $all_node_hash{"n3"} ,"node named n3 should be in the list");
 ok(exists $all_node_hash{"root"} ,"node named root should be in the list");
 ok(!exists $all_node_hash{"mr. node"} ,"node named 'mr. node' should still NOT be in the list");
 
 
+######### TEST SET 4 ######### 
+# TRY TO RENAME NODES IN THE TREE
 
+my %replacements;
+$replacements{"n2"}="mr. node";
+$replacements{"n3"}="dr. node";
+$replacements{"l2"}="myLeaf";
+$replacements{"l5"}="yourLeaf";
+my $relabeled_tree=$client->replace_node_names($newick,\%replacements);
 
-
+print $relabeled_tree."\n";
 
 done_testing();

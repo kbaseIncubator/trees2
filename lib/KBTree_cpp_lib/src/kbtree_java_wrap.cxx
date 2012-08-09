@@ -416,6 +416,27 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1removeNodesByNameA
 }
 
 
+SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return ;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return ;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  (arg1)->replaceNodeNames((std::string const &)*arg2);
+}
+
+
 SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
