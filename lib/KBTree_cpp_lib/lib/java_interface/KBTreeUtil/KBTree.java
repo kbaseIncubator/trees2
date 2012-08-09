@@ -83,4 +83,8 @@ public class KBTree {
     return KBTreeUtilJNI.KBTree_getAllLeafNames(swigCPtr, this);
   }
 
+  public String getAllNodeNames() {
+    return KBTreeUtilJNI.KBTree_getAllNodeNames(swigCPtr, this);
+  }
+
 }

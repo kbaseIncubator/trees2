@@ -335,9 +335,8 @@ sub substitute_node_names_with_kbase_ids
 
 =head2 $result = extract_leaf_node_names(tree)
 
-Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already
-called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
-the tree.
+Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already called
+to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
 
 =cut
 
@@ -358,6 +357,155 @@ sub extract_leaf_node_names
 	}
     } else {
 	die "Error invoking extract_leaf_node_names: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = extract_node_names(tree)
+
+Given a tree, returns the list of names of all then nodes (note: for some trees, such as default MO trees, names of internal
+nodes are interpreted as bootstrap values, but are still returned here).  If the 'substitute_node_names_with_kbase_ids' was already called
+to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
+
+=cut
+
+sub extract_node_names
+{
+    my($self, @args) = @_;
+
+    @args == 1 or die "Invalid argument count (expecting 1)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.extract_node_names",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking extract_node_names: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking extract_node_names: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = get_node_count(tree)
+
+Given a tree, returns the total number of nodes, including internal nodes
+
+=cut
+
+sub get_node_count
+{
+    my($self, @args) = @_;
+
+    @args == 1 or die "Invalid argument count (expecting 1)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.get_node_count",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking get_node_count: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking get_node_count: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = get_leaf_count(tree)
+
+Given a tree, returns the total number of leaf nodes, (internal and root nodes are ignored)
+
+=cut
+
+sub get_leaf_count
+{
+    my($self, @args) = @_;
+
+    @args == 1 or die "Invalid argument count (expecting 1)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.get_leaf_count",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking get_leaf_count: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking get_leaf_count: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = replace_node_names(tree, replacements)
+
+Given a tree, replace the node names indicated as keys in the input map, and replace them with the values contained in the map.
+
+=cut
+
+sub replace_node_names
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.replace_node_names",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking replace_node_names: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking replace_node_names: " . $self->{client}->status_line;
+    }
+}
+
+
+
+
+=head2 $result = replace_node_names_and_simplify(tree, removal_list)
+
+Given a tree, remove the node names indicated in the list, and simplify the tree.  Simplifying a tree involves removing
+unnamed internal nodes that have only one child, and removing unnamed leaf nodes.  During the removal process, edge lengths
+(if they exist) are conserved so that the end to end distance between any two nodes left in the tree will remain the same.
+
+=cut
+
+sub replace_node_names_and_simplify
+{
+    my($self, @args) = @_;
+
+    @args == 2 or die "Invalid argument count (expecting 2)";
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Trees.replace_node_names_and_simplify",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    die "Error invoking replace_node_names_and_simplify: " . $result->error_message;
+	} else {
+	    return $result->result;
+	}
+    } else {
+	die "Error invoking replace_node_names_and_simplify: " . $self->{client}->status_line;
     }
 }
 

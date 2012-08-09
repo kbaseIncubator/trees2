@@ -108,14 +108,21 @@ namespace KBTreeLib {
 			/**
 			* returns a string with a list of all the names of the leaves in this tree
 			* concatenated as node1;node2;node3; ...
+			* * Note that nodes which are not labeled are not returned, so this tree may
+			* have more nodes than return values.  Duplicate names are returned as many
+			* times as they exist.
 			*/
 			std::string getAllLeafNames();
 			void getAllLeafNames(vector<string> &names);
 
-
-			// get a list of all the nodes in the tree, including internal nodes
-			// nodes that are not labeled are not returned, so this tree may have more
-			// nodes than the return values indicate
+			/**
+			* returns a string with a list of all the names of the nodes in this tree
+			* concatenated as node1;node2;node3; ...
+			* Note that nodes which are not labeled are not returned, so this tree may
+			* have more nodes than return values.  Duplicate names are returned as many
+			* times as they exist.
+			*/
+			std::string getAllNodeNames();
 			void getAllNodeNames(vector<string> &names);
 
 

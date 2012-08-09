@@ -44,6 +44,9 @@ namespace KBTreeLib {
             
             /* returns a string of all the leaf node names, concatenated as name1;name2;name3; */
             std::string getAllLeafNames();
+            
+            /* returns a string of all the node names, concatenated as name1;name2;name3; */
+            std::string getAllNodeNames();
     };
     
 };

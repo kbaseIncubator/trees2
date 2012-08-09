@@ -178,12 +178,39 @@ module Trees
     */
     funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);
 
+
     /*
-    Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already
-    called to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised
-    the tree.
+    Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already called
+    to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
     */
     funcdef extract_leaf_node_names(newick_tree tree) returns (list<node_name>);
+    /*
+    Given a tree, returns the list of names of all then nodes (note: for some trees, such as default MO trees, names of internal
+    nodes are interpreted as bootstrap values, but are still returned here).  If the 'substitute_node_names_with_kbase_ids' was already called
+    to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
+    */
+    funcdef extract_node_names(newick_tree tree) returns (list<node_name>);
+    /*
+    Given a tree, returns the total number of nodes, including internal nodes
+    */
+    funcdef get_node_count(newick_tree tree) returns (int);
+    /*
+    Given a tree, returns the total number of leaf nodes, (internal and root nodes are ignored)
+    */
+    funcdef get_leaf_count(newick_tree tree) returns (int);
+    /*
+    Given a tree, replace the node names indicated as keys in the input map, and replace them with the values contained in the map.
+    */
+    funcdef replace_node_names(newick_tree tree, mapping<node_name,node_name>replacements) returns (newick_tree);
+    /*
+    Given a tree, remove the node names indicated in the list, and simplify the tree.  Simplifying a tree involves removing
+    unnamed internal nodes that have only one child, and removing unnamed leaf nodes.  During the removal process, edge lengths
+    (if they exist) are conserved so that the end to end distance between any two nodes left in the tree will remain the same.
+    */
+    funcdef replace_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
+    
+    
+
 
     /*
     Given a tree and a sequence in kbase, attempt to map that sequence onto the tree, returning the newick representation

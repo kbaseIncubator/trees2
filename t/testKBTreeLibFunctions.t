@@ -41,9 +41,11 @@ ok(exists $leaf_node_hash{"l4"} ,"leaf named l4 should be in the list");
 ok(exists $leaf_node_hash{"l5"} ,"leaf named l5 should be in the list");
 ok(!exists $leaf_node_hash{"n2"} ,"node named n2 should NOT be in the list");
 ok(!exists $leaf_node_hash{"root"} ,"node named root should NOT be in the list");
+ok(!exists $leaf_node_hash{"mr. node"} ,"node named 'mr. node' should certainly NOT be in the list");
 
 
-
+######### TEST SET 2 ######### 
+# TRY TO RENAME A SET OF LEAF NODES IN THE TREE
 
 
 done_testing();
