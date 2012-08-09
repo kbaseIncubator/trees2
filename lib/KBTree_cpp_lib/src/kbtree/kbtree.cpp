@@ -663,9 +663,7 @@ std::string KBTree::getAllLeafNames()
 		if(name.size()>0) { leafNames += name; leafNames+=";"; }
 	}
 	return leafNames;
-
 }
-
 void KBTree::getAllLeafNames(vector<string> &names) {
 	tree<KBNode>::leaf_iterator leafIter;
 	names.reserve((size_t)(1+getNodeCount()/2)); //assume full binary tree of leaves
@@ -675,6 +673,16 @@ void KBTree::getAllLeafNames(vector<string> &names) {
 	}
 }
 
+std::string KBTree::getAllNodeNames()
+{
+	std::string nodeNames="";
+	tree<KBNode>::post_order_iterator nodeIter;
+	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+		string name = (*nodeIter).getName();
+		if(name.size()>0) { nodeNames += name; nodeNames+=";"; }
+	}
+	return nodeNames;
+}
 void KBTree::getAllNodeNames(vector<string> &names) {
 	names.reserve((size_t)(1+getNodeCount()));
 	tree<KBNode>::post_order_iterator nodeIter;

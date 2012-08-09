@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More tests => 25;
 use Data::Dumper;
 use Test::More;
 use lib "../lib/";
@@ -28,6 +28,13 @@ ok(defined($client),"instantiating tree client");
 my $newick = "(l1,((l2,l3)n2,(l4,l5)n3)n1)root;";
 
 ######### TEST SET 1 ######### 
+# RETRIEVE THE NUMBER OF NODES AND LEAVES
+my $leaf_node_count=$client->get_leaf_count($newick);
+my $all_node_count=$client->get_node_count($newick);
+ok($leaf_node_count == 5,"leaf node count should  5");
+ok($all_node_count == 9,"tree should have 9 total nodes");
+
+######### TEST SET 2 ######### 
 # TRY TO EXTRACT THE NAMES OF THE LEAF NODES IN A LIST
 my $leaf_node_list_ref=$client->extract_leaf_node_names($newick);
 # make sure length is 5
@@ -44,8 +51,27 @@ ok(!exists $leaf_node_hash{"root"} ,"node named root should NOT be in the list")
 ok(!exists $leaf_node_hash{"mr. node"} ,"node named 'mr. node' should certainly NOT be in the list");
 
 
-######### TEST SET 2 ######### 
-# TRY TO RENAME A SET OF LEAF NODES IN THE TREE
+######### TEST SET 3 ######### 
+# TRY TO EXTRACT THE NAMES OF ALL NODES IN A LIST
+my $all_node_list_ref=$client->extract_node_names($newick);
+# make sure length is 5
+ok(9==scalar @$all_node_list_ref,"length of full node list must be 9");
+# convert it to a hash for quick lookups, then make sure we find all 5 leaves and nothing else
+my %all_node_hash; foreach (@$all_node_list_ref) { $all_node_hash{$_}=1;}
+ok(exists $all_node_hash{"l1"} ,"leaf named l1 should be in the list");
+ok(exists $all_node_hash{"l2"} ,"leaf named l2 should be in the list");
+ok(exists $all_node_hash{"l3"} ,"leaf named l3 should be in the list");
+ok(exists $all_node_hash{"l4"} ,"leaf named l4 should be in the list");
+ok(exists $all_node_hash{"l5"} ,"leaf named l5 should be in the list");
+ok(exists $all_node_hash{"n2"} ,"node named n1 should be in the list");
+ok(exists $all_node_hash{"n2"} ,"node named n2 should be in the list");
+ok(exists $all_node_hash{"n2"} ,"node named n3 should be in the list");
+ok(exists $all_node_hash{"root"} ,"node named root should be in the list");
+ok(!exists $all_node_hash{"mr. node"} ,"node named 'mr. node' should still NOT be in the list");
+
+
+
+
 
 
 done_testing();
