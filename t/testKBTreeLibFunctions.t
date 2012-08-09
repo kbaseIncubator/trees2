@@ -79,15 +79,17 @@ $replacements{"l2"}="myLeaf";
 $replacements{"l5"}="yourLeaf";
 my $relabeled_tree=$client->replace_node_names($newick,\%replacements);
 my $correct_relabeled_tree= "(l1,((myLeaf,l3)mr. node,(l4,yourLeaf)dr. node)n1)root;";
+#print $relabeled_tree."\n";
 ok($relabeled_tree eq $correct_relabeled_tree, "relabeled tree should match a correct relabeled tree");
 
-######### TEST SET 5 ######### 
+######### TEST SET 5 (note: has dependency on test set 4) ######### 
 # TRY TO REMOVE NODES IN THE TREE
 my @removal;
 push(@removal,"mr. node");
 push(@removal,"myLeaf");
 my $smaller_tree=$client->remove_node_names_and_simplify($relabeled_tree,\@removal);
-my $correct_smaller_tree= "(l1,((myLeaf,l3)mr. node,(l4,yourLeaf)dr. node)n1)root;";
+my $correct_smaller_tree= "(l1,(l3,(l4,yourLeaf)dr. node)n1)root;";
+#print $smaller_tree."\n";
 ok($smaller_tree eq $correct_smaller_tree, "smaller tree should match a correct smaller tree");
 
 
