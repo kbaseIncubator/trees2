@@ -17,17 +17,29 @@ perl5
 
 Deploying on KBase infrastructure
 ----------
-*start a Magellan image (currently tested on kbase v10 image)
-*as root, cd to /kb/dev_container/modules, a directory setup to checkout code for deployment
-*clone the repo to the kbase machine (git clone kbase@git.kbase.us:trees.git trees)
-*to deploy these services (with all other checked out modules) type 'make deploy' in the 'dev_container' dir
-*alternatively, type 'make deploy' in the 'trees' directory to deploy only the tree services
-*deployment means the cpp libs are built, and all other files are copied to /kb/deployment/services/trees
-*type 'make clean' from the 'trees' dir to delete all deployed files (and any files you created in the deployed directory!!)
-*type 'make redeploy' to perform a fresh deployment (clean followed by deploy)
+* start with a fresh KBase image (last tested on v14) with security group 'treeServices'
+* login in as ubuntu and get root access with a sudo su
+* enter the following commands:
+
+cd /kb
+git clone ssh://kbase@git.kbase.us/dev_container
+cd /kb/dev_container/modules
+git clone ssh://kbase@git.kbase.us/trees
+cd /kb/dev_container
+./bootstrap /kb/runtime
+source user-env.sh
+make deploy
+
+
+Starting/Stopping the service, and other notes
+---------------------------
 *to start and stop the service, use the 'start_service' and 'stop_service' scripts in /kb/deployment/services/trees
+*on test machines, tree services listen on port 7047, so this port must be open
 *after starting the service, the process id of the serivice is stored in the 'service.pid' file in /kb/deployment/services/trees
 *log files are currently dumped in the /kb/deployment/services/trees/log directory, but this will change once central logging is adopted
+*'make clean' from the '/kb/dev_container/modules/trees' dir will delete all deployed files (and any files you created in the deployed directory!!)
+*'make redeploy' will perform a fresh deployment (clean followed by deploy)
+*cleaning and redeploying will not kill a running service!
 
 
 Testing
@@ -88,3 +100,4 @@ Log / Major Release Notes
 ---------
 v0.00a - 5/16/2012 - initial repo created
 v0.00a - 8/9/2012 - added / tested link to some MO functions and the cpp library
+v0.01  - 8/16/2012 - independent deployment and test at build meeting of basic configuration (tested on images v9-14)
