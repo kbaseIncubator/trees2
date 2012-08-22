@@ -35,6 +35,9 @@ Starting/Stopping the service, and other notes
 ---------------------------
 *to start and stop the service, use the 'start_service' and 'stop_service' scripts in /kb/deployment/services/trees
 *on test machines, tree services listen on port 7047, so this port must be open
+*note that I have experienced some delay on the first run of this service on a fresh deployment if connecting from outside
+of the Magellan network.  This may be caused by a delay in propagating the opening of the port, but I'm not sure.  So if
+initially you cannot remotely connect to the service, wait 30 min and try again before you try to debug anything else.
 *after starting the service, the process id of the serivice is stored in the 'service.pid' file in /kb/deployment/services/trees
 *log files are currently dumped in the /kb/deployment/services/trees/log directory, but this will change once central logging is adopted
 *'make clean' from the '/kb/dev_container/modules/trees' dir will delete all deployed files (and any files you created in the deployed directory!!)
