@@ -18,7 +18,7 @@ last updated 8/9/12
 
 #BEGIN_HEADER
 #using full path based on deployment - probably not the best idea!
-use lib "/kb/deployment/services/trees/lib/KBTree_cpp_lib/lib/perl_interface";
+use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
 use KBTreeUtil;
 #END_HEADER
 

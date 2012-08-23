@@ -16,12 +16,18 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 
 all:
 
-deploy: build-cpp-libs deploy-services
+redeploy: clean deploy
 
-redeploy: clean build-cpp-libs deploy-services
+deploy: build-cpp-libs deploy-libs deploy-services
+	echo "OK... Done deploying $(SERVICE)."
 
 build-cpp-libs:
 	cd "$(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib"; make all
+
+deploy-libs:
+	cp -v  $(TOP_DIR)/modules/$(SERVICE)/lib/Trees* $(TARGET)/lib/.
+	cp -rv $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib $(TARGET)/lib/.  
+	cp -v  $(TOP_DIR)/modules/$(SERVICE)/lib/KBRpcContext.pm $(TARGET)/lib/.
 
 deploy-services:
 	echo '#!/bin/sh' > ./start_service
@@ -30,7 +36,7 @@ deploy-services:
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
-	echo "  $(SERVICE_DIR)/lib/$(SERVICE_PSGI_FILE)" >> ./start_service
+	echo "  $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./start_service
 	echo "echo $(SERVICE) service is listening on port $(SERVICE_PORT).\n" >> ./start_service
 	echo '#!/bin/sh' > ./stop_service
 	echo "echo trying to stop $(SERVICE) services." >> ./stop_service
@@ -41,10 +47,13 @@ deploy-services:
 	chmod +x start_service stop_service
 	mkdir -p $(SERVICE_DIR)
 	mkdir -p $(SERVICE_DIR)/log
-	cp -rv . $(SERVICE_DIR)/
-	echo "OK ... Done deploying $(SERVICE) services."
+	cp -v start_service $(SERVICE_DIR)/
+	cp -v stop_service $(SERVICE_DIR)/
 
 clean:
 	rm -rfv $(SERVICE_DIR)
+	rm -rfv $(TARGET)/lib/Trees*
+	rm -rfv $(TARGET)/lib/KBTree_cpp_lib
+	rm -rfv $(TARGET)/lib/KBRpcContext.pm
 	rm -f start_service stop_service
 	echo "OK ... Removed all deployed files."
