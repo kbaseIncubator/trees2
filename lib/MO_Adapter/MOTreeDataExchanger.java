@@ -172,7 +172,7 @@ public class MOTreeDataExchanger {
 			if(use_KB_DB) { url = "jdbc:mysql://db2.chicago.kbase.us:3306/genomics"; }
 			Connection conn = DriverManager.getConnection(url, "guest", "guest");
 			
-			String query = "SELECT * FROM Tree WHERE type='COG'";
+			String query = "SELECT * FROM Tree WHERE type='"+GROUP+"'";
 			try
 			{
 				// Make sure we connect with some kind of stream rather than load it all at once
@@ -459,6 +459,7 @@ public class MOTreeDataExchanger {
 //		   }
 		}catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
+			System.exit(33);
 		}
 
 		// save the final alignment number of rows
