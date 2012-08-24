@@ -208,6 +208,10 @@ public class MOTreeDataExchanger {
 					SingleGeneAlignmentInformation ai = processSingleGeneAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/"+KBaseAlnID+".fasta");
 					System.out.println("     | alignment contains "+ai.n_rows+" total rows and "+ai.n_private+" private rows");
 					System.out.println("     | final alignment with removed private genes was written containing "+(ai.n_rows-ai.n_private) +" rows.");
+					if((ai.n_rows-ai.n_private)==0) {
+						System.out.println("     | no public rows to publish to kbase!  skipping this alignment/tree pair.");
+						continue;
+					}
 					
 					// (4) PARSE THE NEWICK TREE, REMOVE PRIVATE GENES, WRITE THE FILE
 					processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
