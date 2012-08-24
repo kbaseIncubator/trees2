@@ -214,7 +214,7 @@ public class MOTreeDataExchanger {
 					
 					// (5) WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
 					BW_aln.write(KBaseAlnID+"\t"); // kb_aln_id	 M	 unique kbase id reserved for the alignment from ID server: 'kb|aln.XXXXX'
-					BW_aln.write(ai.n_rows+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
+					BW_aln.write((ai.n_rows-ai.n_private)+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
 					BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
 					BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
 					BW_aln.write("\t");             // superseded_by	 O	 indicates the recommended replacement in simple successor relationships eg, the addition of new taxa into an old alignment; may be next alignment in a series, not necessarily the most recent
@@ -463,7 +463,7 @@ public class MOTreeDataExchanger {
 		}
 
 		// save the final alignment number of rows
-		ai.n_rows=ai.ids.size()-ai.n_private;
+		ai.n_rows=ai.ids.size();
 		return ai;
 	}
 	
