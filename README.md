@@ -1,13 +1,17 @@
 
-Tree and Multiple Sequence Alignment (MSA) Services
+Phylogenetic Tree and Multiple Sequence Alignment (MSA) Services
 =============================================
 
 Overview
 ----------
-Services to retrieve trees and MSAs and perform some typical operations / computations
-using trees and MSAs.  More to come....
+This KBase service provides data access and manipulation of multiple sequence
+alignments (MSAs) and phylogenetic trees built from MSAs.  It also includes support
+to build alignments and trees from sequence data using a variety of popular methods.
+This KBase module includes a c++ tree library wrapped in a SWIG interface which can
+be downloaded and used locally.  Because it is wrapped in SWIG, the functions can be
+called currently from Java and Perl, but potentially from a host of other languages
+as well (see http://www.swig.org/).
 
- 
 
 Dependencies
 ----------
@@ -35,12 +39,9 @@ Starting/Stopping the service, and other notes
 ---------------------------
 *to start and stop the service, use the 'start_service' and 'stop_service' scripts in /kb/deployment/services/trees
 *on test machines, tree services listen on port 7047, so this port must be open
-*note that I have experienced some delay on the first run of this service on a fresh deployment if connecting from outside
-of the Magellan network.  This may be caused by a delay in propagating the opening of the port, but I'm not sure.  So if
-initially you cannot remotely connect to the service, wait 30 min and try again before you try to debug anything else.
 *after starting the service, the process id of the serivice is stored in the 'service.pid' file in /kb/deployment/services/trees
 *log files are currently dumped in the /kb/deployment/services/trees/log directory, but this will change once central logging is adopted
-*'make clean' from the '/kb/dev_container/modules/trees' dir will delete all deployed files (and any files you created in the deployed directory!!)
+*'make clean' from the '/kb/dev_container/modules/trees' dir will delete all deployed files
 *'make redeploy' will perform a fresh deployment (clean followed by deploy)
 *cleaning and redeploying will not kill a running service!
 
@@ -53,7 +54,7 @@ there is also a 'test' directory which is currently a sym link to the 't' direct
 if additional non-perl tests are added, the 'test' directory may be converted to an explicit directory.
 
 To run tests, enter the 't' directory and run any of the available scripts (which should all be executable).
-Each test script has documentation indicating 
+Each test script has internal documentation indicating what functionality is tested.
 
 
 To Do (Task list, created Aug 8, 2012)
