@@ -463,7 +463,7 @@ public class MOTreeDataExchanger {
 		}
 
 		// save the final alignment number of rows
-		ai.n_rows=ai.ids.size();
+		ai.n_rows=ai.ids.size()-ai.n_private;
 		return ai;
 	}
 	
