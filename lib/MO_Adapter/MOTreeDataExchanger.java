@@ -20,20 +20,33 @@ import KBTreeUtil.KBTreeUtil;
 
 public class MOTreeDataExchanger {
 
-
-	//public static String pathToDumpDir = "/Users/msneddon/Desktop/mo_tree_dump/current/dump2";
-	//public static String pathToAlnDir = "/Users/msneddon/Desktop/mo_tree_dump/current/OriginalFASTA/COG_alignments";
-	//public static String pathToLociFile = "/Users/msneddon/Desktop/MO/public_loci_with_associated_kbaseIds.txt";
-	//public static String pathToIdFile = "/Users/msneddon/Desktop/assigned_kbase_tree_id_list.txt";
-        public static String pathToDumpDir =   "/homes/oakland/msneddon/mo_tree_dump/dump/COG";
-        public static String pathToAlnDir =    "/homes/oakland/msneddon/mo_tree_dump/input/alignments/COG";
-        public static String pathToLociFile =  "/homes/oakland/msneddon/mo_tree_dump/input/ids/public_loci_with_associated_kbaseIds.txt";
+	public static String GROUP = "SMART";
+	// Possible Groups (** indicates alignment files are ready)
+	// 16S
+	// 23S
+	// 5S
+	// Adhoc
+	// COG       **
+	// FastBLAST
+	// GENE3D    **
+	// PFAM      **
+	// PIRSF     **
+	// SMART     **
+	// species
+	// SSF
+	// TIGRFAMs
+	
+    public static String pathToDumpDir =   "/homes/oakland/msneddon/mo_tree_dump/dump/"+GROUP;
+    public static String pathToAlnDir =    "/homes/oakland/msneddon/mo_tree_dump/input/alignments/"+GROUP;
+    public static String pathToLociFile =  "/homes/oakland/msneddon/mo_tree_dump/input/ids/public_loci_with_associated_kbaseIds.txt";
 	public static String pathToIdFile =    "/homes/oakland/msneddon/mo_tree_dump/input/ids/assigned_kbase_tree_id_list.txt";
 	
 	public static long timestampInSecondsSinceEpoch;
 	public static boolean use_KB_DB = false;
 	public static LocusLookup publicLoci;
 	public static IdLookup kbaseIdMapping;
+	public static String ALN_METHOD="";
+	public static String ALN_PARAM="";
 	
 	// load the KBTree C++ Library for newick parsing and tree manipulations
 	// and figure out what timestamp to use
@@ -52,6 +65,14 @@ public class MOTreeDataExchanger {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		// Configure the alignment method and options for each source
+		if(GROUP.compareTo("COG")==0) { 			ALN_METHOD="RPS-BLAST"; ALN_PARAM="-e 1e-5"; }
+		else if(GROUP.compareTo("GENE3D")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2219 -E 0.001"; }
+		else if(GROUP.compareTo("PFAM")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="--cut_ga"; }
+		else if(GROUP.compareTo("PIRSF")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2791 -E 0.02"; }
+		else if(GROUP.compareTo("SMART")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 885 -E 2.04e-5"; }
+		else if(GROUP.compareTo("SSF")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2019 -E 0.02"; }
+		else if(GROUP.compareTo("TIGRFAMs")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="--cut_tc"; }
 	}
 	
 	public static void main(String[] args) 
@@ -200,8 +221,8 @@ public class MOTreeDataExchanger {
 					BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
 					BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
 					BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-					BW_aln.write("RPS-BLAST\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_aln.write("-e 1e-5\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+					BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+					BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
@@ -227,10 +248,10 @@ public class MOTreeDataExchanger {
 					writeAlignmentRowDataForProtAln(KBaseAlnID, BW_aln_row, BW_containsProtein, ai);
 					
 					// (8) WRITE ANY OTHER ATTRIBUTES WE NEED TO THE APPROPRIATE FILES
-					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_src\t"+type+"\n");
+					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
 					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_id\t"+name+"\n");
 					
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_src\t"+type+"\n");
+					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
 					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_id\t"+name+"\n");
 					BW_treeAttribute.write(KBaseTreeID+"\t"+"style\t"+"phylogram\n");
 					BW_treeAttribute.write(KBaseTreeID+"\t"+"bootstrap_type\t"+"Shimodaira-Hasegawa Test\n");
