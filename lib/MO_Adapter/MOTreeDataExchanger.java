@@ -182,7 +182,7 @@ public class MOTreeDataExchanger {
 
 				System.out.println(" -> executing the query: "+query);
 				ResultSet rs = st.executeQuery(query);
-				long iterationTime=0,iterationStartTime=0; int row_count = 0;
+				long iterationTime=0,iterationStartTime=0; int row_count = 0,written_count=0;
 				while (rs.next())
 				{
 					iterationStartTime = System.currentTimeMillis();
@@ -212,6 +212,7 @@ public class MOTreeDataExchanger {
 						continue;
 					}
 					System.out.println("     | final alignment with removed private genes was written containing "+(ai.n_rows-ai.n_private) +" rows.");
+					written_count++;
 					
 					// (4) PARSE THE NEWICK TREE, REMOVE PRIVATE GENES, WRITE THE FILE
 					processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
@@ -229,7 +230,8 @@ public class MOTreeDataExchanger {
 					BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
+					//BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
+					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+name+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_aln.write("\n");
 					BW_aln.flush();
 					
@@ -244,7 +246,8 @@ public class MOTreeDataExchanger {
 					BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_trees.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
+					//BW_trees.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database   
+					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+name+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_trees.write("\n");
 					BW_trees.flush();
 
@@ -279,7 +282,7 @@ public class MOTreeDataExchanger {
 					System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
 					System.gc();
 				}
-				System.out.println(" -> found "+row_count+" trees.");
+				System.out.println(" -> found "+row_count+" trees, wrote "+written_count);
 			}
 			catch (SQLException ex) {System.err.println("SQLException: "+ex.getMessage());}
 
