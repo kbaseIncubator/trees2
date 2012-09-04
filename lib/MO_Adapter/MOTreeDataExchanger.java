@@ -231,7 +231,7 @@ public class MOTreeDataExchanger {
 					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					//BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
-					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+name+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
+					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_aln.write("\n");
 					BW_aln.flush();
 					
@@ -247,7 +247,7 @@ public class MOTreeDataExchanger {
 					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					//BW_trees.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database   
-					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+name+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
+					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_trees.write("\n");
 					BW_trees.flush();
 
