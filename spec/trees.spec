@@ -7,7 +7,7 @@ Full documentation and API reference will be added here.
 created 5/21/2012 - msneddon
 last updated 8/9/12
 */
-module Trees
+module Tree
 {
     typedef int bool;
     typedef string timestamp;
