@@ -1,4 +1,4 @@
-use TreeImpl;
+use Bio::KBase::Tree::TreeImpl;
 
 use Bio::KBase::Tree::Service;
 
@@ -7,7 +7,7 @@ use Bio::KBase::Tree::Service;
 my @dispatch;
 
 {
-    my $obj = TreeImpl->new;
+    my $obj = Bio::KBase::Tree::TreeImpl->new;
     push(@dispatch, 'Tree' => $obj);
 }
 

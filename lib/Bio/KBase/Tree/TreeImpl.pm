@@ -1,4 +1,4 @@
-package TreeImpl;
+package Bio::KBase::Tree::TreeImpl;
 use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)

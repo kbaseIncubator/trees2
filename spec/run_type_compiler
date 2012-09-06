@@ -26,6 +26,7 @@ OUTPUT_DIR="../lib"
 SPEC_FILE="Tree.spec"
 
 PSGI_FILE="Tree.psgi"
+IMPL_FILE="Bio::KBase::Tree::TreeImpl"
 SERVICE_MODULE="Bio::KBase::Tree::Service"
 CLIENT_MODULE="Bio::KBase::Tree::Client"
 JS_NAME="Tree"
@@ -47,6 +48,7 @@ echo "perl path set to $PERL5LIB"
  
 # actually run the type compiler
 RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} \
+            -impl $IMPL_FILE \
             -psgi $PSGI_FILE \
             -service $SERVICE_MODULE \
             -client $CLIENT_MODULE \
