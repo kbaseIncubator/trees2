@@ -38,11 +38,11 @@ my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of func
 #  NOTE: for initial testing, you may have to modify TreesClient.pm to also
 #        point to the legacy interface
 use_ok("JSON::RPC::Legacy::Client");
-use_ok("TreesClient");
+use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION
-my $tree_service_url = "http://140.221.92.55:7047";
-my $client = TreesClient->new($tree_service_url);
+my $tree_service_url = "http://140.221.92.144:7047";
+my $client = Bio::KBase::Tree::Client->new($tree_service_url);
 ok(defined($client),"instantiating tree client");
 
 

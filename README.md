@@ -31,7 +31,6 @@ git clone ssh://kbase@git.kbase.us/dev_container
 cd /kb/dev_container/modules
 git clone ssh://kbase@git.kbase.us/trees
 git clone ssh://kbase@git.kbase.us/typecomp
-git clone ssh://kbase@git.kbase.us/trees
 cd /kb/dev_container
 ./bootstrap /kb/runtime
 source user-env.sh

@@ -122,6 +122,7 @@ sub get_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree
+    $return = "hello mr. tree., sent from get_tree";
     #END get_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");

@@ -36,6 +36,7 @@ deploy-services:
 	echo '#!/bin/sh' > ./start_service
 	echo "echo starting $(SERVICE) services." >> ./start_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_service
+	echo '#uncomment to debug: export STARMAN_DEBUG=1' >> ./start_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
