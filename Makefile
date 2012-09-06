@@ -31,7 +31,6 @@ deploy-libs:
 	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree $(TARGET)/lib/Bio/KBase/.
 	cp -v  $(TOP_DIR)/modules/$(SERVICE)/lib/Tree.* $(TARGET)/lib/.
 	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib $(TARGET)/lib/.
-	cp -v  $(TOP_DIR)/modules/$(SERVICE)/lib/KBRpcContext.pm $(TARGET)/lib/.
 
 deploy-services:
 	echo '#!/bin/sh' > ./start_service
@@ -59,7 +58,6 @@ clean:
 	rm -rfv $(SERVICE_DIR)
 	rm -rfv $(TARGET)/lib/Bio/KBase/Tree
 	rm -rfv $(TARGET)/lib/KBTree_cpp_lib
-	rm -rfv $(TARGET)/lib/KBRpcContext.pm
 	rm -rfv $(TARGET)/lib/Tree.*
 	rm -f start_service stop_service
 	echo "OK ... Removed all deployed files."

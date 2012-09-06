@@ -15,8 +15,9 @@ as well (see http://www.swig.org/).
 
 Dependencies
 ----------
-perl5
-...
+-perl
+-starman (http://search.cpan.org/~miyagawa/Starman-0.3001/lib/Starman.pm)
+-KBase typespec module deployed
 
 
 Deploying on KBase infrastructure
@@ -28,6 +29,8 @@ Deploying on KBase infrastructure
 cd /kb
 git clone ssh://kbase@git.kbase.us/dev_container
 cd /kb/dev_container/modules
+git clone ssh://kbase@git.kbase.us/trees
+git clone ssh://kbase@git.kbase.us/typecomp
 git clone ssh://kbase@git.kbase.us/trees
 cd /kb/dev_container
 ./bootstrap /kb/runtime
