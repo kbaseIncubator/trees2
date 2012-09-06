@@ -21,7 +21,6 @@ tree locally, perhaps sending the tree back and forth to decorate it, etc.
 -How are we going to modify the tree-building workflow?  At some point, will KBase have its own workflow for
 building trees, but regardless we need parsers and a data exchange format that can convert MO/SEED trees to
 
-
 next steps:
 1) mike, keith, gavin: talk to Tom about details of the CDS and TinyStore, and how kbase plans to allow us to query against it
 2) fangfang: talk to Bob about getting a development environment for working with the ER model
@@ -57,10 +56,53 @@ Discussion of the Exchange format led to the following points / questions:
 13) new trees and alignments are assumed active until they are turned inactive manually (api should provide access to modify this field)
 14) ask keith if there is a flag that says if a gene is in a tree or not: Answer: no, but can use locus2tree for that information.
 
+
 2012, July/August
 ===========================================
 -Gary Olsen entered conversation, and iterated over the exchange format and data model with Fangfang and Michael
 -Aggreed exchange format and data model was generated (see ERDB_Model/trees_data_model_proposa_v2.txt for latest version)
 -Bruce took data model and added the entities/relationships to the CDM
+-Michael/Fangfang proposed the following changes to the CDM (Aug. 31)
+1) For clarity, split the single AlignmentAttribute entity into three attribute entities: AlignmentAttribute,
+TreeAttribute, and Node Attribute.
+2) Add two new relationships to represent that one Tree or Alignment is built by modifying an existing Tree or
+Alignment.  We are not sure as to the best names for these relationships, but how about:   IsModificationOfTree
+/ IsModifiedToBuildTree      and  IsModificationOfAlignment / IsModifiedToBuildAlignment.
+These new relationships should have four fields: 
+from-link, to-link, modification-type, modification-value
+The from-link and to-link connects a Tree to a Tree OR an Alignment to an Alignment in a 1-many relationship (one
+Tree can be modified to build many other Trees).  The modification-type and modification-value fields provide a way
+to indicate how the tree was modified.  For instance, a tree might have been rerooted or annotated.  The modification-
+value may indicate if there was some parameter involved in the modification, such as a threshold cutoff for example.
+3) The SupersedesAlignment and SupersedesTree relationships should include a new field named "successor-type" to
+clarify how a new tree supersedes an existing tree.  The main goal of this addition is to be able to indicate if any
+sequences/nodes were removed from the new tree, or if strictly speaking the only modification is the addition of extra
+sequences/nodes.
+4) As long as it is possible, the ordering of fields should be slightly revised so that they are in a more logical order.  This includes:
+     (a) in the Alignment entity, the 'method' attribute should appear AFTER 'n-cols' and 'n-rows' attributes (so that it is grouped with
+      parameters and protocol attributes)
+     (b) in the Tree entity, the -'method' attribute should appear AFTER 'newick'
+5) We have some questions about what to use for the source-id fields and which entities/relationships in the exchange
+format should have them.  In our original exchange format, we simply indicate the source-id as the ID of the tree/alignment
+in MicrobesOnline or SEED and we only provide source-ids for Alignments and Trees.  However, Gavin's revised source-id
+format (see https://trac.kbase.us/projects/kbase/wiki/SourceIDs) was adopted to ensure that data can always be uniquely
+identified even if there is no originating source id.  For Trees and Alignments, we should be able to uniquely identify a
+Tree or an Alignment simply by the MO or SEED ID, or even just the KBase ID since those are reserved before the load.  Given
+this, should we still adopt the new conventions that are on the wiki?  Also, do you think we should include these updated
+source-id fields in other entities as well, such as AlignmentRow and AlignmentAttribute?  These in principle would also be
+uniquely identifiable simply by kbase-id or a tree/alignment source-id. Still, we are not sure exactly what option would be
+best and most consistant with the rest of KBase. 
+6)  There was some discussion to revise the description of the fields 'method', 'parameters', and 'protocol' in the Alignment
+and Tree Entity so that they are better defined and match our intended use.  Here are our proposals for the modifications:
+    (a) description of 'method' attribute should be revised to say: "name of the primary software package or script used
+      to construct the alignment/tree"
+    (b) description of 'parameters' attribute should be revised to say: "non-default parameters used as input
+      to the software package or script indicated in the method attribute"
+    (c) description of 'protocol' attribute should be revised to say: "description of the steps taken to construct
+      the alignment/tree, or a reference to an external pipeline (e.g. MicrobesOnline, SEED)"
+7) The Tree entity is missing the attribute named 'protocol', which is a free-form string describing the overall pipeline,
+just as in the Alignment entity.
+8) Two minor comments on the ER visualization: (a) the "SupersedesTree" representation is missing from the visualization and
+(b) the "ProjectsOnto" relationship probably should not be shown in the Alignment/Tree view.
 
 
