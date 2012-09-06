@@ -1,11 +1,10 @@
-
 /*
-Tree and Multiple Sequence Alignment(MSA) API
+KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
 Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
-last updated 8/9/12
+last updated 9/4/12
 */
 module Tree
 {
@@ -14,37 +13,56 @@ module Tree
     typedef int position;
     
     /*
-    A KBase ID is string starting with the characters "kb|".  KBase IDs are typed. The types are
-    designated using a short string. For instance," g" denotes a genome. KBase IDs may be hierarchical.
-    If a KBase genome identifier is "kb|g.1234", a protein within that genome may be represented
-    as "kb|g.1234.fp.771". See the standard KBase documentation for more info.
+    A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
+    designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and
+    "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
+    identifier is "kb|g.1234", a protein within that genome may be represented as "kb|g.1234.fp.771".
+    See the standard KBase documentation for more information.
     */
     typedef string kbase_id;
 
+
     /*
-    Trees are represented in newick format (http://en.wikipedia.org/wiki/Newick_format) and are
-    returned to you in this format by default.  All leaf nodes are by default indexed to a MSA row
-    element.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids
-    instead, depending on how the tree was built.  Internal nodes may or may not be labeled.  Nodes may
-    also be annotated with structured data.
+    A string representation of a phylogenetic tree.  The format/syntax of the string can be
+    specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
+    'phyloXML_tree' or 'json_tree'.  Regardless of format, all leaf nodes in trees built from MSAs are indexed
+    to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with
+    other KBase Ids instead, depending on how the tree was built.  Internal nodes may or may not be named.
+    Nodes, depending on the format, may also be annotated with structured data such as bootstrap values.
     */
-    typedef string newick_tree;
+    typedef string tree;
+
+    /*
+    Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format)
+    and are returned to you in this format by default.  
+    */
+    typedef tree newick_tree;
+    
+    /*
+    Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
+    but can optionally be converted to the more verbose phyloXML format, which is useful for compatibility or
+    when additional information/annotations decorate the tree.
+    */
+    typedef tree phyloXML_tree;
+    
+    /*
+    Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
+    but can optionally be converted to JSON format where the structure of the tree matches the structure of
+    the JSON object.  This is useful when interacting with the tree in JavaScript, for instance. 
+    */
+    typedef tree json_tree;
+    
+    
     
     /*
     The string representation of the parsed node name (may be a kbase_id, but does not have to).  Note, this
-    is not the full label (which may include comments or distances)
+    is not the full label in a newick_tree (which may include comments or distances)
     */
     typedef string node_name;
     
-    /*
-    A string representation of a tree in phyloXML format.
-    */
-    typedef string phyloXML_tree;
-
-    
     
     /*
-    String representation of an alignment, the precise syntax of which is not yet specified but will
+    String representation of an alignment, the precise syntax and alphabet of which is not yet specified but will
     likely be similar to alignments stored in SEED.
     */
     typedef string fasta_alignment;

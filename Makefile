@@ -1,6 +1,6 @@
 # configurable variables
 SERVICE = trees
-SERVICE_PSGI_FILE = Trees.psgi 
+SERVICE_PSGI_FILE = Tree.psgi 
 SERVICE_PORT = 7047
 
 #standalone variables, replaced when run via /kb/dev_container/Makefile
@@ -52,7 +52,7 @@ deploy-services:
 
 clean:
 	rm -rfv $(SERVICE_DIR)
-	rm -rfv $(TARGET)/lib/Trees*
+	rm -rfv $(TARGET)/lib/Tree*
 	rm -rfv $(TARGET)/lib/KBTree_cpp_lib
 	rm -rfv $(TARGET)/lib/KBRpcContext.pm
 	rm -f start_service stop_service

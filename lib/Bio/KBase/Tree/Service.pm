@@ -1,8 +1,7 @@
-package TreesServer;
+package Bio::KBase::Tree::Service;
 
 use Data::Dumper;
 use Moose;
-use KBRpcContext;
 
 extends 'RPC::Any::Server::JSONRPC::PSGI';
 
@@ -10,6 +9,30 @@ has 'instance_dispatch' => (is => 'ro', isa => 'HashRef');
 has 'user_auth' => (is => 'ro', isa => 'UserAuth');
 has 'valid_methods' => (is => 'ro', isa => 'HashRef', lazy => 1,
 			builder => '_build_valid_methods');
+
+our $CallContext;
+
+our %return_counts = (
+        'get_tree' => 1,
+        'get_trees' => 1,
+        'all_tree_ids' => 1,
+        'get_kbase_ids_from_alignment_row' => 1,
+        'get_trees_with_entire_seq' => 1,
+        'get_trees_with_overlapping_seq' => 1,
+        'get_trees_with_entire_domain' => 1,
+        'get_trees_with_overlapping_domain' => 1,
+        'substitute_node_names_with_kbase_ids' => 1,
+        'extract_leaf_node_names' => 1,
+        'extract_node_names' => 1,
+        'get_node_count' => 1,
+        'get_leaf_count' => 1,
+        'replace_node_names' => 1,
+        'remove_node_names_and_simplify' => 1,
+        'add_node_to_tree' => 1,
+        'build_tree_from_sequences' => 1,
+        'build_tree_from_fasta' => 1,
+        'version' => 1,
+);
 
 sub _build_valid_methods
 {
@@ -33,6 +56,7 @@ sub _build_valid_methods
         'add_node_to_tree' => 1,
         'build_tree_from_sequences' => 1,
         'build_tree_from_fasta' => 1,
+        'version' => 1,
     };
     return $methods;
 }
@@ -41,25 +65,45 @@ sub call_method {
     my ($self, $data, $method_info) = @_;
     my ($module, $method) = @$method_info{qw(module method)};
     
-    my $ctx = KBRpcContext->new(client_ip => $self->_plack_req->address);
+    my $ctx = Bio::KBase::Tree::ServiceContext->new(client_ip => $self->_plack_req->address);
     
     my $args = $data->{arguments};
-    if (@$args == 1 && ref($args->[0]) eq 'HASH')
-    {
-	my $actual_args = $args->[0]->{args};
-	my $token = $args->[0]->{auth_token};
-	$data->{arguments} = $actual_args;
-	
-	
-        # Module Trees does not require authentication.
-	
-    }
-    
+
+        # Service Tree does not require authentication.
+        
     my $new_isa = $self->get_package_isa($module);
     no strict 'refs';
     local @{"${module}::ISA"} = @$new_isa;
-    my @result = $module->$method($ctx, @{ $data->{arguments} });
-    return \@result;
+    local $CallContext = $ctx;
+    my @result;
+    {
+	my $err;
+	eval {
+	    @result = $module->$method(@{ $data->{arguments} });
+	};
+	if ($@)
+	{
+	    #
+	    # Reraise the string version of the exception because
+	    # the RPC lib can't handle exception objects (yet).
+	    #
+	    my $err = $@;
+	    my $str = "$err";
+	    $str =~ s/Bio::KBase::CDMI::Service::call_method.*//s;
+	    $str =~ s/^/>\t/mg;
+	    die "The JSONRPC server invocation of the method \"$method\" failed with the following error:\n" . $str;
+	}
+    }
+    my $result;
+    if ($return_counts{$method} == 1)
+    {
+        $result = [[$result[0]]];
+    }
+    else
+    {
+        $result = \@result;
+    }
+    return $result;
 }
 
 
@@ -82,7 +126,7 @@ sub get_method
     if (!$self->valid_methods->{$method})
     {
 	$self->exception('NoSuchMethod',
-			 "'$method' is not a valid method in module Trees.");
+			 "'$method' is not a valid method in service Tree.");
     }
 	
     my $inst = $self->instance_dispatch->{$package};
@@ -109,6 +153,37 @@ sub get_method
     }
     
     return { module => $module, method => $method };
+}
+
+package Bio::KBase::Tree::ServiceContext;
+
+use strict;
+
+=head1 NAME
+
+Bio::KBase::Tree::ServiceContext
+
+head1 DESCRIPTION
+
+A KB RPC context contains information about the invoker of this
+service. If it is an authenticated service the authenticated user
+record is available via $context->user. The client IP address
+is available via $context->client_ip.
+
+=cut
+
+use base 'Class::Accessor';
+
+__PACKAGE__->mk_accessors(qw(user client_ip));
+
+sub new
+{
+    my($class, %opts) = @_;
+    
+    my $self = {
+	%opts,
+    };
+    return bless $self, $class;
 }
 
 1;

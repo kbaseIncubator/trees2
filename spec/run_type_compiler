@@ -23,9 +23,16 @@ GEN_JAVA_CLIENT='/scripts/gen_java_client.pl'
 
 # Specify input and output locations for the type compiler
 OUTPUT_DIR="../lib"
-SPEC_FILE="trees.spec"
+SPEC_FILE="Tree.spec"
 
-# We need to add the type compiler dependencies to the perl path
+PSGI_FILE="Tree.psgi"
+SERVICE_MODULE="Bio::KBase::Tree::Service"
+CLIENT_MODULE="Bio::KBase::Tree::Client"
+JS_NAME="Tree"
+PY_NAME="Tree"
+
+# We need to add the type compiler dependencies to the perl path to run
+# the type compiler properly
 export PERL5LIB="$PATH_TO_TC/lib/";
 echo "perl path set to $PERL5LIB"
 
@@ -37,10 +44,15 @@ echo "perl path set to $PERL5LIB"
  #          -js CDMI \
  #          -py CDMI \
  #          CDMI-API.spec CDMI-EntityAPI.spec .
-
-
+ 
 # actually run the type compiler
-RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} $SPEC_FILE $OUTPUT_DIR"
+RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} \
+            -psgi $PSGI_FILE \
+            -service $SERVICE_MODULE \
+            -client $CLIENT_MODULE \
+            -js $JS_NAME \
+            -py $PY_NAME \
+            $SPEC_FILE $OUTPUT_DIR"
 echo "Running: \"perl ${RUN_CMD}\""
 perl $RUN_CMD
 
