@@ -21,6 +21,8 @@ last updated 9/4/12
 =cut
 
 #BEGIN_HEADER
+use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
+use KBTreeUtil;
 #END_HEADER
 
 sub new
@@ -122,7 +124,7 @@ sub get_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree
-    $return = "hello mr. tree., sent from get_tree";
+    $return = "(mr_tree)";
     #END get_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -200,6 +202,7 @@ sub get_trees
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees
+    $return = "(mr_trees)";
     #END get_trees
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -273,6 +276,7 @@ sub all_tree_ids
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN all_tree_ids
+    $return = "(mr_tree)";
     #END all_tree_ids
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -346,6 +350,7 @@ sub get_kbase_ids_from_alignment_row
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_kbase_ids_from_alignment_row
+    $return = "(mr_tree)";
     #END get_kbase_ids_from_alignment_row
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -430,6 +435,7 @@ sub get_trees_with_entire_seq
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees_with_entire_seq
+    $return = "hello mr. tree., sent from get_trees_with_entire_seq";
     #END get_trees_with_entire_seq
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -511,6 +517,7 @@ sub get_trees_with_overlapping_seq
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees_with_overlapping_seq
+    $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
     #END get_trees_with_overlapping_seq
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -583,6 +590,7 @@ sub get_trees_with_entire_domain
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees_with_entire_domain
+    $return = "hello mr. tree., sent from get_trees_with_entire_domain";
     #END get_trees_with_entire_domain
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -656,6 +664,7 @@ sub get_trees_with_overlapping_domain
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees_with_overlapping_domain
+    $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
     #END get_trees_with_overlapping_domain
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -735,6 +744,7 @@ sub substitute_node_names_with_kbase_ids
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN substitute_node_names_with_kbase_ids
+    $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
     #END substitute_node_names_with_kbase_ids
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -808,6 +818,10 @@ sub extract_leaf_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN extract_leaf_node_names
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $leaf_names = $kb_tree->getAllLeafNames();
+    my @leaf_name_list = split(';', $leaf_names);
+    $return = \@leaf_name_list;
     #END extract_leaf_node_names
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -882,6 +896,10 @@ sub extract_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN extract_node_names
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $node_names = $kb_tree->getAllNodeNames();
+    my @node_name_list = split(';', $node_names);
+    $return = \@node_name_list;
     #END extract_node_names
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -952,6 +970,8 @@ sub get_node_count
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_node_count
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    $return = $kb_tree->getNodeCount();
     #END get_node_count
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1022,6 +1042,8 @@ sub get_leaf_count
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_leaf_count
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    $return = $kb_tree->getLeafCount();
     #END get_leaf_count
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1097,6 +1119,13 @@ sub replace_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN replace_node_names
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $replacement_str="";
+    foreach my $key ( keys %$replacements ) {
+        $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
+    }
+    $kb_tree->replaceNodeNames($replacement_str);
+    $return = $kb_tree->toNewick(1); # 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
     #END replace_node_names
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1174,6 +1203,13 @@ sub remove_node_names_and_simplify
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN remove_node_names_and_simplify
+    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $nodes_to_remove="";
+    foreach my $val (@$removal_list) {
+        $nodes_to_remove=$nodes_to_remove.$val.";";
+    }
+    $kb_tree->removeNodesByNameAndSimplify($nodes_to_remove);
+    $return = $kb_tree->toNewick(1); # 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
     #END remove_node_names_and_simplify
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
