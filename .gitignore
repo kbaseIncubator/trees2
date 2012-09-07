@@ -28,7 +28,7 @@
 *.sqlite
 *.bak-*
 
-# OS generated files #
+# OS and other auto-generated files #
 ######################
 .DS_Store
 .DS_Store?
@@ -38,3 +38,4 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+*~

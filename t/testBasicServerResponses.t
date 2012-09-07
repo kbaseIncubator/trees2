@@ -23,11 +23,11 @@ use lib "../lib/";
 my $func_calls = {  get_tree => ["kb|t123", [FORMAT =>'first']],
                     get_trees => [ ["kb|t1","kb|t2","kb|t4"], [FORMAT =>'first']],
                     all_tree_ids => [ "1" ],
-                    get_trees_with_entire_seq => ["kb|g44.1", "1", "50", "opts"],
-                    get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", "opts"],
-                    get_trees_with_entire_domain => ["kb|d33.1", "opts"],
-                    get_trees_with_overlapping_domain => ["kb|d33.1", "opts"],
-                    substitute_node_names_with_kbase_ids => ["tree","opts"],
+                    get_trees_with_entire_seq => ["kb|g44.1", "1", "50", [FORMAT =>'first']],
+                    get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", [FORMAT =>'first']],
+                    get_trees_with_entire_domain => ["kb|d33.1", [FORMAT =>'first']],
+                    get_trees_with_overlapping_domain => ["kb|d33.1", [FORMAT =>'first']],
+                    substitute_node_names_with_kbase_ids => ["tree",[FORMAT =>'first']],
                     extract_leaf_node_names => ["(a,b)c;"]
                  };
 #############################################################################

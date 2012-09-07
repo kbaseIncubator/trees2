@@ -16,11 +16,11 @@ use lib "../lib/";
 #  NOTE: for initial testing, you may have to modify TreesClient.pm to also
 #        point to the legacy interface
 use_ok("JSON::RPC::Legacy::Client");
-use_ok("TreesClient");
+use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION AND ENSURE WE ARE CONNECTED
-my $tree_service_url = "http://140.221.92.55:7047";
-my $client = TreesClient->new($tree_service_url);
+my $tree_service_url = "http://140.221.92.144:7047";
+my $client = Bio::KBase::Tree::Client->new($tree_service_url);
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)
