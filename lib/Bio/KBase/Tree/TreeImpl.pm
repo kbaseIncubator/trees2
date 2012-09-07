@@ -23,6 +23,7 @@ last updated 9/4/12
 #BEGIN_HEADER
 use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
 use KBTreeUtil;
+use Bio::KBase::Tree::ForesterParserWrapper;
 #END_HEADER
 
 sub new
@@ -1446,6 +1447,79 @@ sub build_tree_from_fasta
 	my $msg = "Invalid returns passed to build_tree_from_fasta:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'build_tree_from_fasta');
+    }
+    return($return);
+}
+
+
+
+
+=head2 convert_newick2phyloXML
+
+  $return = $obj->convert_newick2phyloXML($tree)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree is a newick_tree
+$return is a phyloXML_tree
+newick_tree is a tree
+tree is a string
+phyloXML_tree is a tree
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree is a newick_tree
+$return is a phyloXML_tree
+newick_tree is a tree
+tree is a string
+phyloXML_tree is a tree
+
+
+=end text
+
+
+
+=item Description
+
+Converts a tree encoded in newick as a phyloXML formatted tree
+
+=back
+
+=cut
+
+sub convert_newick2phyloXML
+{
+    my $self = shift;
+    my($tree) = @_;
+
+    my @_bad_arguments;
+    (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument \"tree\" (value was \"$tree\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to convert_newick2phyloXML:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'convert_newick2phyloXML');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN convert_newick2phyloXML
+    $return = ForesterParserWrapper::convertToPhyloXML($tree)."\n";
+    #END convert_newick2phyloXML
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to convert_newick2phyloXML:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'convert_newick2phyloXML');
     }
     return($return);
 }

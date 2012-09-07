@@ -303,6 +303,22 @@ class Tree:
         else:
             return None
 
+    def convert_newick2phyloXML(self, tree):
+
+        arg_hash = { 'method': 'Tree.convert_newick2phyloXML',
+                     'params': [tree],
+                     'version': '1.1'
+                     }
+
+        body = json.dumps(arg_hash)
+        resp_str = urllib.urlopen(self.url, body).read()
+        resp = json.loads(resp_str)
+
+        if 'result' in resp:
+            return resp['result'][0]
+        else:
+            return None
+
 
 
 

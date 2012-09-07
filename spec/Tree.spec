@@ -245,6 +245,8 @@ module Tree
     funcdef build_tree_from_fasta(list<string> fasta_files, mapping<string,string>options) returns (newick_tree);
 
 
+    /* Converts a tree encoded in newick as a phyloXML formatted tree */
+    funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree);
 
 
 };

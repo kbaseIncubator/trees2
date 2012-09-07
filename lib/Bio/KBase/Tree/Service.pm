@@ -31,6 +31,7 @@ our %return_counts = (
         'add_node_to_tree' => 1,
         'build_tree_from_sequences' => 1,
         'build_tree_from_fasta' => 1,
+        'convert_newick2phyloXML' => 1,
         'version' => 1,
 );
 
@@ -56,6 +57,7 @@ sub _build_valid_methods
         'add_node_to_tree' => 1,
         'build_tree_from_sequences' => 1,
         'build_tree_from_fasta' => 1,
+        'convert_newick2phyloXML' => 1,
         'version' => 1,
     };
     return $methods;

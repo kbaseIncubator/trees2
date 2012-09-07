@@ -1005,6 +1005,56 @@ sub build_tree_from_fasta
 
 
 
+=head2 $result = convert_newick2phyloXML(tree)
+
+Converts a tree encoded in newick as a phyloXML formatted tree
+
+=cut
+
+sub convert_newick2phyloXML
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function convert_newick2phyloXML (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to convert_newick2phyloXML:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'convert_newick2phyloXML');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.convert_newick2phyloXML",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'convert_newick2phyloXML',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_newick2phyloXML",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'convert_newick2phyloXML',
+				       );
+    }
+}
+
+
+
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, {
@@ -1016,16 +1066,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'build_tree_from_fasta',
+                method_name => 'convert_newick2phyloXML',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method build_tree_from_fasta",
+            error => "Error invoking method convert_newick2phyloXML",
             status_line => $self->{client}->status_line,
-            method_name => 'build_tree_from_fasta',
+            method_name => 'convert_newick2phyloXML',
         );
     }
 }
