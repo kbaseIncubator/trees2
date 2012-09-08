@@ -18,7 +18,15 @@ Dependencies
 -perl
 -starman (http://search.cpan.org/~miyagawa/Starman-0.3001/lib/Starman.pm)
 -KBase typespec module deployed
-
+-to run any calls that use the Forester java library, we need to have Inline::Java installed.
+ currently it is not part of the build, but can be easily added with cpan.  After you have sourced
+ the user-env.sh file (see below), your environment will point to the kbase runtime.  Then to
+ install Inline::Java, enter the following as root:
+    JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
+ Running cpan for the first time will ask you for some basic config options.  Defaults seemed to
+ work for us.  Inline::Java also asks if you would like to install a JNI option.  This is not
+ necessary (for now).  It allows you to avoid starting a separate java vm process, instead keeping
+ it rolled up with perl.  Could be nice, but wasn't tested.
 
 Deploying on KBase infrastructure
 ----------
