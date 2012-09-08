@@ -1512,7 +1512,7 @@ sub convert_newick2phyloXML
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN convert_newick2phyloXML
-    $return = ForesterParserWrapper::convertToPhyloXML($tree)."\n";
+    $return = Bio::KBase::Tree::ForesterParserWrapper::convertToPhyloXML($tree)."\n";
     #END convert_newick2phyloXML
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
