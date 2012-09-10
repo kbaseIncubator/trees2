@@ -40,10 +40,522 @@ sub new
 
 
 
+=head2 $result = convert_newick2phyloXML(tree)
+
+Convert a tree encoded in newick format to a tree encded in phyloXML format.
+
+=cut
+
+sub convert_newick2phyloXML
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function convert_newick2phyloXML (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to convert_newick2phyloXML:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'convert_newick2phyloXML');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.convert_newick2phyloXML",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'convert_newick2phyloXML',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_newick2phyloXML",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'convert_newick2phyloXML',
+				       );
+    }
+}
+
+
+
+=head2 $result = convert_phyloXML2newick(tree)
+
+Convert a tree encoded in newick format to a tree encded in phyloXML format.
+
+=cut
+
+sub convert_phyloXML2newick
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function convert_phyloXML2newick (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to convert_phyloXML2newick:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'convert_phyloXML2newick');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.convert_phyloXML2newick",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'convert_phyloXML2newick',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_phyloXML2newick",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'convert_phyloXML2newick',
+				       );
+    }
+}
+
+
+
+=head2 $result = convert_newick2json(tree)
+
+Convert a tree encoded in newick format to a tree encded in JSON format.
+
+=cut
+
+sub convert_newick2json
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function convert_newick2json (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to convert_newick2json:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'convert_newick2json');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.convert_newick2json",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'convert_newick2json',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_newick2json",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'convert_newick2json',
+				       );
+    }
+}
+
+
+
+=head2 $result = convert_json2newick(tree)
+
+Convert a tree encoded in JSON format to a tree encded in newick format.
+
+=cut
+
+sub convert_json2newick
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function convert_json2newick (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to convert_json2newick:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'convert_json2newick');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.convert_json2newick",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'convert_json2newick',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_json2newick",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'convert_json2newick',
+				       );
+    }
+}
+
+
+
+=head2 $result = replace_node_names(tree, replacements)
+
+Given a tree in newick format, replace the node names indicated as keys in the 'replacements' mapping
+with new node names indicated as values in the 'replacements' mapping.  Matching is EXACT and will not handle
+regular expression patterns.
+
+=cut
+
+sub replace_node_names
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function replace_node_names (received $n, expecting 2)");
+    }
+    {
+	my($tree, $replacements) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        (ref($replacements) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"replacements\" (value was \"$replacements\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to replace_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'replace_node_names');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.replace_node_names",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'replace_node_names',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method replace_node_names",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'replace_node_names',
+				       );
+    }
+}
+
+
+
+=head2 $result = remove_node_names_and_simplify(tree, removal_list)
+
+Given a tree in newick format, remove the nodes with the given names indicated in the list, and
+simplify the tree.  Simplifying a tree involves removing unnamed internal nodes that have only one
+child, and removing unnamed leaf nodes.  During the removal process, edge lengths (if they exist) are
+conserved so that the summed end to end distance between any two nodes left in the tree will remain the same.
+
+=cut
+
+sub remove_node_names_and_simplify
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function remove_node_names_and_simplify (received $n, expecting 2)");
+    }
+    {
+	my($tree, $removal_list) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        (ref($removal_list) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 2 \"removal_list\" (value was \"$removal_list\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to remove_node_names_and_simplify:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'remove_node_names_and_simplify');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.remove_node_names_and_simplify",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'remove_node_names_and_simplify',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method remove_node_names_and_simplify",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'remove_node_names_and_simplify',
+				       );
+    }
+}
+
+
+
+=head2 $result = extract_leaf_node_names(tree)
+
+Given a tree in newick format, list the names of the leaf nodes.
+
+=cut
+
+sub extract_leaf_node_names
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function extract_leaf_node_names (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to extract_leaf_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'extract_leaf_node_names');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.extract_leaf_node_names",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'extract_leaf_node_names',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method extract_leaf_node_names",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'extract_leaf_node_names',
+				       );
+    }
+}
+
+
+
+=head2 $result = extract_node_names(tree)
+
+Given a tree in newick format, list the names of ALL the nodes.  Note that for some trees, such as
+those originating from MicrobesOnline, the names of internal nodes are bootstrap values, but will still
+be returned by this function.
+
+=cut
+
+sub extract_node_names
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function extract_node_names (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to extract_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'extract_node_names');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.extract_node_names",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'extract_node_names',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method extract_node_names",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'extract_node_names',
+				       );
+    }
+}
+
+
+
+=head2 $result = get_node_count(tree)
+
+Given a tree, return the total number of nodes, including internal nodes and the root node.
+
+=cut
+
+sub get_node_count
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_node_count (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_node_count:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_node_count');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_node_count",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_node_count',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_node_count",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_node_count',
+				       );
+    }
+}
+
+
+
+=head2 $result = get_leaf_count(tree)
+
+Given a tree, return the total number of leaf nodes, (internal and root nodes are ignored).  When the
+tree was based on a multiple sequence alignment, the number of leaves will match the number of sequences
+that were aligned.
+
+=cut
+
+sub get_leaf_count
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_leaf_count (received $n, expecting 1)");
+    }
+    {
+	my($tree) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_leaf_count:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_leaf_count');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_leaf_count",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_leaf_count',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_leaf_count",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_leaf_count',
+				       );
+    }
+}
+
+
+
 =head2 $result = get_tree(tree_id, options)
 
 Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
-hash provides a way to return the tree with different labels replaced.
+hash provides a way to return the tree with different labels replaced or with different attached meta
+information.
 
     options = [
         FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
@@ -57,7 +569,7 @@ row in a comma-delimited format.  If there is only one sequence in the alignment
 is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
 other options???
 
-Note: the options hash will be the same as for other functions which provide substitution cababilities 
+Note: the options hash will be the same as for other functions which provide substitution capabilities 
 
 todo: provide a way to get meta data about this tree, possibly in a separate function, but may
 not be needed if this is provided by the ER model.
@@ -112,8 +624,7 @@ sub get_tree
 =head2 $result = get_trees(tree_ids, options)
 
 Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
-was not found.
-Note: this function may not be needed if this functionality is provided by the auto-gen ER code
+was not found. Note: this function may not be needed if this functionality is provided by the auto-gen ER code
 
 =cut
 
@@ -167,7 +678,6 @@ sub get_trees
 Returns a list of all IDs of all trees in the database that match the given flags (right now
 the only flag indicates if the tree is active or not, meaning the latest version of the tree,
 but this should be extended to accept more args and possible queries.
-Note: this function may not be needed if this functionality is provided by the auto-gen ER code
 
 =cut
 
@@ -209,59 +719,6 @@ sub all_tree_ids
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method all_tree_ids",
 					    status_line => $self->{client}->status_line,
 					    method_name => 'all_tree_ids',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_kbase_ids_from_alignment_row(alignment_id, row_number)
-
-Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
-the given tree.
-Note: may not be needed if this functionality is possible via the ER model
-
-=cut
-
-sub get_kbase_ids_from_alignment_row
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_kbase_ids_from_alignment_row (received $n, expecting 2)");
-    }
-    {
-	my($alignment_id, $row_number) = @args;
-
-	my @_bad_arguments;
-        (!ref($alignment_id)) or push(@_bad_arguments, "Invalid type for argument 1 \"alignment_id\" (value was \"$alignment_id\")");
-        (!ref($row_number)) or push(@_bad_arguments, "Invalid type for argument 2 \"row_number\" (value was \"$row_number\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_kbase_ids_from_alignment_row:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_kbase_ids_from_alignment_row');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_kbase_ids_from_alignment_row",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_kbase_ids_from_alignment_row',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_kbase_ids_from_alignment_row",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_kbase_ids_from_alignment_row',
 				       );
     }
 }
@@ -329,8 +786,7 @@ sub get_trees_with_entire_seq
 =head2 $result = get_trees_with_overlapping_seq(sequence, beg, end, options)
 
 Returns all tree IDs in which some portion of the given sequence (which can optionally
-include start and end positions of the sequence) is used in the alignment which generates the
-tree.
+include start and end positions of the sequence) is used in the alignment which generates the tree.
 
 =cut
 
@@ -384,7 +840,7 @@ sub get_trees_with_overlapping_seq
 =head2 $result = get_trees_with_entire_domain(domain, options)
 
 Returns all tree IDs in which the entire portion of the given domain is used in the alignment
-which generates the tree (usually the tree will be constructed based on this domain).
+which generates the tree (usually the tree will be constructed based on this domain). NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
 
 =cut
 
@@ -436,8 +892,8 @@ sub get_trees_with_entire_domain
 =head2 $result = get_trees_with_overlapping_domain(domain, options)
 
 Returns all tree IDs in which some portion of the given domain is used in the alignment
-which generates the tree (usually the tree will be constructed based on a similar domain created
-with an alternative method, so the entire domain may not be contained).
+which generates the tree (usually such trees will be constructed based on a similar domain created
+with an alternative method, so the entire domain may not be contained).  NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
 
 =cut
 
@@ -541,307 +997,52 @@ sub substitute_node_names_with_kbase_ids
 
 
 
-=head2 $result = extract_leaf_node_names(tree)
+=head2 $result = get_kbase_ids_from_alignment_row(alignment_id, row_number)
 
-Given a tree, returns the list of names of the leaves.  If the 'substitute_node_names_with_kbase_ids' was already called
-to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
-
-=cut
-
-sub extract_leaf_node_names
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function extract_leaf_node_names (received $n, expecting 1)");
-    }
-    {
-	my($tree) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to extract_leaf_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'extract_leaf_node_names');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.extract_leaf_node_names",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'extract_leaf_node_names',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method extract_leaf_node_names",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'extract_leaf_node_names',
-				       );
-    }
-}
-
-
-
-=head2 $result = extract_node_names(tree)
-
-Given a tree, returns the list of names of all then nodes (note: for some trees, such as default MO trees, names of internal
-nodes are interpreted as bootstrap values, but are still returned here).  If the 'substitute_node_names_with_kbase_ids' was already called
-to retrieve the trees, then this method will provide a list of kbase_ids indicating the sequences that comprised the tree.
+Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
+the given tree. Note: may not be needed if this functionality is possible via the ER model
 
 =cut
 
-sub extract_node_names
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function extract_node_names (received $n, expecting 1)");
-    }
-    {
-	my($tree) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to extract_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'extract_node_names');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.extract_node_names",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'extract_node_names',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method extract_node_names",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'extract_node_names',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_node_count(tree)
-
-Given a tree, returns the total number of nodes, including internal nodes
-
-=cut
-
-sub get_node_count
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_node_count (received $n, expecting 1)");
-    }
-    {
-	my($tree) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_node_count:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_node_count');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_node_count",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_node_count',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_node_count",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_node_count',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_leaf_count(tree)
-
-Given a tree, returns the total number of leaf nodes, (internal and root nodes are ignored)
-
-=cut
-
-sub get_leaf_count
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_leaf_count (received $n, expecting 1)");
-    }
-    {
-	my($tree) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_leaf_count:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_leaf_count');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_leaf_count",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_leaf_count',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_leaf_count",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_leaf_count',
-				       );
-    }
-}
-
-
-
-=head2 $result = replace_node_names(tree, replacements)
-
-Given a tree, replace the node names indicated as keys in the input map, and replace them with the values contained in the map.
-
-=cut
-
-sub replace_node_names
+sub get_kbase_ids_from_alignment_row
 {
     my($self, @args) = @_;
 
     if ((my $n = @args) != 2)
     {
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function replace_node_names (received $n, expecting 2)");
+							       "Invalid argument count for function get_kbase_ids_from_alignment_row (received $n, expecting 2)");
     }
     {
-	my($tree, $replacements) = @args;
+	my($alignment_id, $row_number) = @args;
 
 	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        (ref($replacements) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"replacements\" (value was \"$replacements\")");
+        (!ref($alignment_id)) or push(@_bad_arguments, "Invalid type for argument 1 \"alignment_id\" (value was \"$alignment_id\")");
+        (!ref($row_number)) or push(@_bad_arguments, "Invalid type for argument 2 \"row_number\" (value was \"$row_number\")");
         if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to replace_node_names:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    my $msg = "Invalid arguments passed to get_kbase_ids_from_alignment_row:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'replace_node_names');
+								   method_name => 'get_kbase_ids_from_alignment_row');
 	}
     }
 
     my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.replace_node_names",
+	method => "Tree.get_kbase_ids_from_alignment_row",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
 					       code => $result->content->{code},
-					       method_name => 'replace_node_names',
+					       method_name => 'get_kbase_ids_from_alignment_row',
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
 	}
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method replace_node_names",
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_kbase_ids_from_alignment_row",
 					    status_line => $self->{client}->status_line,
-					    method_name => 'replace_node_names',
-				       );
-    }
-}
-
-
-
-=head2 $result = remove_node_names_and_simplify(tree, removal_list)
-
-Given a tree, remove the node names indicated in the list, and simplify the tree.  Simplifying a tree involves removing
-unnamed internal nodes that have only one child, and removing unnamed leaf nodes.  During the removal process, edge lengths
-(if they exist) are conserved so that the end to end distance between any two nodes left in the tree will remain the same.
-
-=cut
-
-sub remove_node_names_and_simplify
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function remove_node_names_and_simplify (received $n, expecting 2)");
-    }
-    {
-	my($tree, $removal_list) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
-        (ref($removal_list) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 2 \"removal_list\" (value was \"$removal_list\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to remove_node_names_and_simplify:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'remove_node_names_and_simplify');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.remove_node_names_and_simplify",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'remove_node_names_and_simplify',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method remove_node_names_and_simplify",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'remove_node_names_and_simplify',
+					    method_name => 'get_kbase_ids_from_alignment_row',
 				       );
     }
 }
@@ -850,8 +1051,9 @@ sub remove_node_names_and_simplify
 
 =head2 $result = add_node_to_tree(tree_id, sequence_id, options)
 
-Given a tree and a sequence in kbase, attempt to map that sequence onto the tree, returning the newick representation
-of the tree.
+Given a tree in KBASE and a sequence in FASTA format, attempt to add the new sequence into the tree.  This
+method requires that the tree was built from a multiple sequence alignment and that the tree/alignment is stored
+in KBASE.  This method returns
 
 =cut
 
@@ -901,62 +1103,9 @@ sub add_node_to_tree
 
 
 
-=head2 $result = build_tree_from_sequences(sequences, options)
+=head2 $result = build_tree_from_fasta(alignment, options)
 
-Not sure if we want this, but would allow users to submit a set of sequences, then build a tree.  Here, options
-would support the various alignment options, trimming options, tree-building algorithms.
-todo: this isn't well thought out -> do we return alignments as well?  do we support building MSAs?
-
-=cut
-
-sub build_tree_from_sequences
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function build_tree_from_sequences (received $n, expecting 2)");
-    }
-    {
-	my($sequences, $options) = @args;
-
-	my @_bad_arguments;
-        (ref($sequences) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"sequences\" (value was \"$sequences\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to build_tree_from_sequences:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'build_tree_from_sequences');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.build_tree_from_sequences",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'build_tree_from_sequences',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method build_tree_from_sequences",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'build_tree_from_sequences',
-				       );
-    }
-}
-
-
-
-=head2 $result = build_tree_from_fasta(fasta_files, options)
-
-
+Given an alignment in FASTA format, build a phylogenetic tree using the options indicated.
 
 =cut
 
@@ -970,10 +1119,10 @@ sub build_tree_from_fasta
 							       "Invalid argument count for function build_tree_from_fasta (received $n, expecting 2)");
     }
     {
-	my($fasta_files, $options) = @args;
+	my($alignment, $options) = @args;
 
 	my @_bad_arguments;
-        (ref($fasta_files) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"fasta_files\" (value was \"$fasta_files\")");
+        (!ref($alignment)) or push(@_bad_arguments, "Invalid type for argument 1 \"alignment\" (value was \"$alignment\")");
         (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
         if (@_bad_arguments) {
 	    my $msg = "Invalid arguments passed to build_tree_from_fasta:\n" . join("", map { "\t$_\n" } @_bad_arguments);
@@ -1005,50 +1154,153 @@ sub build_tree_from_fasta
 
 
 
-=head2 $result = convert_newick2phyloXML(tree)
+=head2 $result = align_sequences(sequences, options)
 
-Converts a tree encoded in newick as a phyloXML formatted tree
+Given a set of sequences in FASTA format, construct a sequence alignment with the options indicated.
 
 =cut
 
-sub convert_newick2phyloXML
+sub align_sequences
 {
     my($self, @args) = @_;
 
-    if ((my $n = @args) != 1)
+    if ((my $n = @args) != 2)
     {
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function convert_newick2phyloXML (received $n, expecting 1)");
+							       "Invalid argument count for function align_sequences (received $n, expecting 2)");
     }
     {
-	my($tree) = @args;
+	my($sequences, $options) = @args;
 
 	my @_bad_arguments;
-        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        (ref($sequences) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"sequences\" (value was \"$sequences\")");
+        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
         if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to convert_newick2phyloXML:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    my $msg = "Invalid arguments passed to align_sequences:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'convert_newick2phyloXML');
+								   method_name => 'align_sequences');
 	}
     }
 
     my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.convert_newick2phyloXML",
+	method => "Tree.align_sequences",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
 					       code => $result->content->{code},
-					       method_name => 'convert_newick2phyloXML',
+					       method_name => 'align_sequences',
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
 	}
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method convert_newick2phyloXML",
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method align_sequences",
 					    status_line => $self->{client}->status_line,
-					    method_name => 'convert_newick2phyloXML',
+					    method_name => 'align_sequences',
+				       );
+    }
+}
+
+
+
+=head2 $result = draw_web_tree(tree, display_options)
+
+Given a tree, render it in HTML/JAVASCRIPT and return the page.
+
+=cut
+
+sub draw_web_tree
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function draw_web_tree (received $n, expecting 2)");
+    }
+    {
+	my($tree, $display_options) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        (ref($display_options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"display_options\" (value was \"$display_options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to draw_web_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'draw_web_tree');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.draw_web_tree",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'draw_web_tree',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method draw_web_tree",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'draw_web_tree',
+				       );
+    }
+}
+
+
+
+=head2 $result = draw_svg_tree(tree, display_options)
+
+Given a tree, render it as an SVG object and return the drawing.
+
+=cut
+
+sub draw_svg_tree
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function draw_svg_tree (received $n, expecting 2)");
+    }
+    {
+	my($tree, $display_options) = @args;
+
+	my @_bad_arguments;
+        (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree\" (value was \"$tree\")");
+        (ref($display_options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"display_options\" (value was \"$display_options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to draw_svg_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'draw_svg_tree');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.draw_svg_tree",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'draw_svg_tree',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method draw_svg_tree",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'draw_svg_tree',
 				       );
     }
 }
@@ -1066,16 +1318,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'convert_newick2phyloXML',
+                method_name => 'draw_svg_tree',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method convert_newick2phyloXML",
+            error => "Error invoking method draw_svg_tree",
             status_line => $self->{client}->status_line,
-            method_name => 'convert_newick2phyloXML',
+            method_name => 'draw_svg_tree',
         );
     }
 }
