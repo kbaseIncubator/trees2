@@ -147,6 +147,7 @@ module Tree
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE INTROSPECTION */
+    /* note that some of these methods may be better perfomed via the CDMI if the tree is available in the CDS */
     /* *********************************************************************************************** */
   
     /* Given a tree in newick format, list the names of the leaf nodes.

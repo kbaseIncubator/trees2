@@ -177,6 +177,9 @@ sub convert_phyloXML2newick
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN convert_phyloXML2newick
+    
+    # call forester parser wrapper method
+    
     #END convert_phyloXML2newick
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -249,6 +252,9 @@ sub convert_newick2json
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN convert_newick2json
+    
+    # call c++ tree lib method
+    
     #END convert_newick2json
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -321,6 +327,10 @@ sub convert_json2newick
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN convert_json2newick
+    
+    # call c++ tree lib
+    
+    
     #END convert_json2newick
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1431,6 +1441,15 @@ sub substitute_node_names_with_kbase_ids
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN substitute_node_names_with_kbase_ids
+    
+    # 1) retrieve the tree
+    # 2) find cooresponding alignment and alignment rows
+    # 3) extract the feature ids or sequence IDs from the alignment row table with the original internal tree node id
+    # 4) create a c++ tree lib tree object
+    # 5) replace the names with the feature IDs or sequenceIDs
+    # 6) (optionally) lookup and add annotations
+    # 7) return the newick tree
+    
     $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
     #END substitute_node_names_with_kbase_ids
     my @_bad_returns;

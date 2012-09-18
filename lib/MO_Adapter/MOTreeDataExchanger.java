@@ -11,11 +11,8 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.Vector;
-import java.util.HashMap;
 
 import KBTreeUtil.KBTree;
-import KBTreeUtil.KBTreeUtil;
 
 
 public class MOTreeDataExchanger {
@@ -27,7 +24,7 @@ public class MOTreeDataExchanger {
 	// 5S
 	// Adhoc
 	// COG       **
-	// FastBLAST
+	// FastBLAST **
 	// GENE3D    **
 	// PFAM      **
 	// PIRSF     **
@@ -54,7 +51,7 @@ public class MOTreeDataExchanger {
 		System.loadLibrary("KBTreeUtil");	
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		calendar.clear();
-		calendar.set(2012, Calendar.AUGUST, 22);
+		calendar.set(2012, Calendar.SEPTEMBER, 18);
 		timestampInSecondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
 		try {
 			publicLoci = new LocusLookup(pathToLociFile);
@@ -222,7 +219,6 @@ public class MOTreeDataExchanger {
 					BW_aln.write((ai.n_rows-ai.n_private)+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
 					BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
 					BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
-					BW_aln.write("\t");             // superseded_by	 O	 indicates the recommended replacement in simple successor relationships eg, the addition of new taxa into an old alignment; may be next alignment in a series, not necessarily the most recent
 					BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
 					BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
 					BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
@@ -230,8 +226,8 @@ public class MOTreeDataExchanger {
 					BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					//BW_aln.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database
-					BW_aln.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
+					BW_aln.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database
+					//BW_aln.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId);  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_aln.write("\n");
 					BW_aln.flush();
 					
@@ -239,15 +235,14 @@ public class MOTreeDataExchanger {
 					BW_trees.write(KBaseTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
 					BW_trees.write(KBaseAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
 					BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
-					BW_trees.write("\t");              // superseded_by	 O	 indicates the recommended replacement in simple successor relationships eg, the addition of new taxa into an old tree; may be next tree in a series, not necessarily the most recent
 					BW_trees.write("sequnce_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
 					BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
 					BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
 					BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					//BW_trees.write(treeId+"\t");      // source_db_aln_id	 M	 the id of this alignment in the original database   
-					BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId+"\t");  // source_db_aln_id	 M	 the id of this alignment in the original database
+					BW_trees.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database   
+					//BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId);  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_trees.write("\n");
 					BW_trees.flush();
 
@@ -579,7 +574,6 @@ public class MOTreeDataExchanger {
 			BW_aln_row.write(ai.row_end_pos_in_alignment.get(k)+"\t");    //end_pos_in_aln	 R	 the column (index starting at pos '1') in the alignment where this sequence row ends (ie. truncating any ending gaps)
 			BW_aln_row.write(ai.MD5ofGapRemovedSequences.get(k));            // md5_of_ungapped_seq	 M	 the MD5 (uppercase) of the aligned sequence on this row with gaps stripped; U should be converted to T in nucleotide sequences (even for RNA)
 			BW_aln_row.write("\n");
-			currentRow++;
 			
 			BW_containsProtein.write(KBaseAlnID+"\t");    // kb-aln-id	 M	 maps this component to a particular alignment identified by the kbase id
 			BW_containsProtein.write(currentRow+"\t");    // aln-row-number	 M	 row number in alignment file, count starts at '1'
@@ -590,7 +584,7 @@ public class MOTreeDataExchanger {
 			BW_containsProtein.write(ai.parent_seq_length.get(k)+"\t");     // parent-seq-len	 M	 the length of the untrimmed sequence for quick reference of the coverage of this alignment
 			BW_containsProtein.write(ai.row_start_pos_in_alignment.get(k)+"\t");   // beg-pos-in-aln	 M	 integer value providing a coordinate/mapping to the starting column in the alignment where this sequence component begins
 			BW_containsProtein.write(ai.row_end_pos_in_alignment.get(k)+"\t");     // end-pos-in-aln	 M	 integer value providing a coordinate/mapping to the ending column in the alignment where this sequence component ends
-			BW_containsProtein.write(ai.feature_reference.get(k)+"\t");                           // kb-feature-id	 O	 associated kbase feature id, e.g., when intending to refer to a particular genome
+			BW_containsProtein.write(ai.feature_reference.get(k));                           // kb-feature-id	 O	 associated kbase feature id, e.g., when intending to refer to a particular genome
 			BW_containsProtein.write("\n");
 			currentRow++;
 		}
@@ -668,181 +662,3 @@ public class MOTreeDataExchanger {
 	}
 
 }
-
-
-
-
-
-
-
-
-/////////// DEAD CODE BELOW!!! MOST OF IT WORKS BUT IS NOT NEEDED
-
-
-
-
-
-//public static void identifyPrivateLocusIds(SingleGeneAlignmentInformation ai, Statement st) {
-//	try {
-//		// add our list of MO IDs and search the locus tables for them
-//		String locusList = "";
-//		for(int k=0; k<ai.ids.size(); k++) { if(k!=0){locusList+=",";} locusList+=ai.MO_locusId[k]; }
-//		
-//		// create a list to keep track of the private sequences.  we assume things
-//		// are private unless we can find them in the locus table
-//		ai.isPrivate = new boolean[ai.ids.size()];
-//		for(int k=0; k<ai.ids.size(); k++) { ai.isPrivate[k] = true; };
-//
-//		// perform the query and identify all the non-private genes
-//		String sqlStatement = "SELECT Locus.locusId, AASeq.sequence FROM Locus JOIN AASeq ON (Locus.locusId=AASeq.locusId AND Locus.version=AASeq.version) WHERE (Locus.priority=1 AND Locus.locusId IN (";
-//		ResultSet rs = st.executeQuery(sqlStatement+locusList+"));");
-//
-//		HashMap<Integer,String> publicLoci = new HashMap<Integer,String>();
-//		while(rs.next()) { 
-//			publicLoci.put(new Integer(rs.getInt(1)),rs.getString(2)); 
-//		}
-//
-//		// find the start and end position in the original parent sequence
-//		int alignmentRunCount=0;
-//		System.out.println("     | finding start/end positions in parent sequence");
-//		ai.begin_pos_in_parent = new int[ai.ids.size()];
-//		ai.end_pos_in_parent = new int[ai.ids.size()];
-//		ai.parent_MD5=new String[ai.ids.size()];
-//		ai.parent_seq_length=new int[ai.ids.size()];
-//		int nPrivate=ai.ids.size();
-//		for(int k=0; k<ai.ids.size(); k++) {
-//			String parentSeq = publicLoci.get(new Integer(ai.MO_locusId[k]));
-//			if(parentSeq!=null) { 
-//				ai.isPrivate[k] = false;
-//				nPrivate--;
-//				
-//				//from the sequnce, get length and MD5
-//				ai.parent_MD5[k]=computeMD5(parentSeq);
-//				ai.parent_seq_length[k]=parentSeq.length();
-//				
-//				// now that we have the sequences, map the start and end pos in parent
-//				int sl=7; // length of the sequence to start our 'exact' search with
-//				//System.out.println("---");
-//				//System.out.println(parentSeq);
-//				//System.out.println(ai.sequences.get(k));
-//				//System.out.println((ai.sequences.get(k)).substring(0,sl));
-//				//System.out.println(ai.sequences.get(k).substring(ai.sequences.get(k).length()-sl,ai.sequences.get(k).length()));
-//				
-//				//find first and second matches starting from either end for the exact sequence
-//				String thisSeq = ai.sequences.get(k).replace("-","");
-//				int startIdx = parentSeq.indexOf(thisSeq.substring(0,sl));
-//				int startIdx2 = parentSeq.indexOf(thisSeq.substring(0,sl),startIdx+1);
-//				int endIdx = parentSeq.lastIndexOf(thisSeq.substring(thisSeq.length()-sl,thisSeq.length()));
-//				int endIdx2 = parentSeq.lastIndexOf(thisSeq.substring(thisSeq.length()-sl,thisSeq.length()),endIdx-1);
-//				if(startIdx<0 || endIdx<0) {
-//					// can't find something exactly? then we must align.
-//					//System.out.println("can't guess, so i must align.");
-//					int bounds[] = align(parentSeq,thisSeq); alignmentRunCount++;
-//					ai.begin_pos_in_parent[k]=bounds[0];
-//					ai.end_pos_in_parent[k]=bounds[1];
-//				} else {
-//					startIdx+=1;
-//					endIdx+=sl;
-//					//System.out.println("Guess: ["+startIdx+","+endIdx+"]");
-//					// we have a guess - if the guess exactly matches the length of the sequence, then there is no alternative and we are golden
-//					int seqDiffCount=(endIdx-startIdx)+1-thisSeq.length();
-//					//System.out.println("seq diff="+seqDiffCount);
-//					if(seqDiffCount!=0) {
-//						//System.out.println("does not exactly fit, is there another possible match?");
-//						// otherwise, we should check if we found a second exact match, in which case there could be another way to match
-//						// NOTE that assuming gap penalty of zero, then this check is the only one needed
-//						// and will return a valid bounding values.  If there are repeats, then this might miss the original
-//						// portion extracted, but will return a valid mapping. Since we use sl=7, it is highly unliklely that there is
-//						// an exact repeat of that length in two places, but just in case we check and ensure that the error <sl
-//						if(startIdx2>=0 || endIdx2>=0 || seqDiffCount>sl) {
-//							//System.out.println("yes, possibly: ["+(startIdx2+1)+","+(endIdx2+sl)+"]");
-//							//System.out.println("looks good, but may not be correct. i must align.");
-//							//we can accept that the quick find is correct if there is no other way to fit in this
-//							//aligned sequence into the main sequence.  if we not, we must align.
-//							int bounds[] = align(parentSeq,thisSeq); alignmentRunCount++;
-//							startIdx=bounds[0];
-//							endIdx=bounds[1];
-//							//System.out.println("Align Bounds: ["+startIdx+","+endIdx+"]");
-//						}
-//						//else { System.out.println("nope"); }
-//					}
-//					ai.begin_pos_in_parent[k]=startIdx;
-//					ai.end_pos_in_parent[k]=endIdx;
-//					//System.out.println("sizes: "+(endIdx+sl-startIdx+1)+" --- "+thisSeq.length());
-//					//System.out.println("size of original:"+parentSeq.length());
-//					//System.out.println(parentSeq.substring(startIdx-1,endIdx-1));
-//				}
-//				
-//			}
-//			System.out.println("-");
-//			System.out.println(ai.begin_pos_in_parent[k]+" - "+ai.end_pos_in_parent[k]);
-//			System.out.println(ai.begin[k]+" - "+ai.end[k]);
-//		}
-//		System.out.println("     | did the work, and only needed to run "+alignmentRunCount+" alignment(s) to find all ends");
-//	    System.out.println("     | alignment contains "+nPrivate+" private rows");
-//		if(false) {
-//			for(int k=0; k<ai.ids.size(); k++) {
-//				System.out.println(ai.ids.get(k)+"---"+ai.isPrivate[k]);
-//			}
-//		}
-//		 
-//	} catch (SQLException e) {
-//		System.err.println(e.getMessage());
-//		System.err.println(e.getStackTrace());
-//	}
-//}
-	
-	
-	
-//// allign the two strings, find the pos in s1 where s2 starts and ends
-//public static int[] align(String parent,String sub) {
-//	//initialize
-//	int score[][] = new int[parent.length()+1][sub.length()+1];
-//	int dir[][] = new int[parent.length()+1][sub.length()+1];
-//	for(int i=0; i<score.length;i++) {
-//		for(int j=0; j<score[i].length;j++) {
-//			score[i][j]=0;dir[i][j]=-1;
-//		}
-//	}
-//	//align
-//	int maxPos[]=new int[2]; maxPos[0]=-1;maxPos[1]=-1;int maxValue=0;
-//	for(int i=1; i<score.length;i++) {
-//		for(int j=1; j<score[i].length;j++) {
-//			int match=-999999; if(parent.charAt(i-1)==sub.charAt(j-1)) { match=1; }
-//			int diag = score[i-1][j-1]+match;
-//			int up = score[i][j-1]-1;
-//			int left = score[i-1][j]-1;
-//			if(diag>=up && diag>=left) { score[i][j]=diag; dir[i][j]=1; }
-//			else if(up>=left) {score[i][j]=up; dir[i][j]=2;}
-//			else {score[i][j]=left; dir[i][j]=0;}
-//			if(score[i][j]>maxValue) {maxValue=score[i][j];maxPos[0]=i;maxPos[1]=j; }
-//		}
-//	}
-//	//backtrack to get start pos (uncomment to see alignment)
-//	int i=maxPos[0]; int j=maxPos[1];
-//	String aln1=""; String aln2="";
-//	while(j>0) {
-//		int i2=maxPos[0],j2=maxPos[1];
-//		if(dir[i][j]==1) {
-//			//aln1=parent.charAt(i-1)+aln1;
-//			//aln2=sub.charAt(j-1)+aln2;
-//			i2=i-1;j2=j-1;
-//		} else if (dir[i][j]==2) {
-//			//aln1="-"+aln1;
-//			//aln2=sub.charAt(j-1)+aln2;
-//			i2=i;j2=j-1;
-//		} else if (dir[i][j]==0) {
-//			//aln1=parent.charAt(i-1)+aln1;
-//			//aln2="-"+aln2;
-//			i2=i-1;j2=j;
-//		}
-//		i=i2;j=j2;
-//	}
-//	//System.out.println(aln1);
-//	//System.out.println(aln2);
-//	int bounds[] = new int[2];
-//	bounds[0]=i+1;
-//	bounds[1]=maxPos[0];
-//	return bounds;
-//}
-
