@@ -15,7 +15,7 @@ as well (see http://www.swig.org/).
 
 Dependencies
 ----------
--perl
+-perl as installed in /kb/runtime
 -starman (http://search.cpan.org/~miyagawa/Starman-0.3001/lib/Starman.pm)
 -KBase typespec module deployed
 -to run any calls that use the Forester java library, we need to have Inline::Java installed.
