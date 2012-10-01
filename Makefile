@@ -14,7 +14,7 @@ PID_FILE = $(SERVICE_DIR)/service.pid
 ACCESS_LOG_FILE = $(SERVICE_DIR)/log/access.log
 ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 
-all:
+all: build-cpp-libs
 
 redeploy: clean deploy
 
