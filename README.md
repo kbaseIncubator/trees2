@@ -60,6 +60,11 @@ Starting/Stopping the service, and other notes
   deployed files
 * 'make redeploy' will perform a fresh deployment (clean followed by deploy)
 * cleaning and redeploying will not kill a running service!
+* The first time the service is run, an error stating that a file cannot be unlinked
+  may appear in the log/error.log file.  This is expected, and occurs because the
+  first time Inline:Java is run, some temporary files are created and removed. The
+  slave Starman processes cannot delete this file because the master already does.
+  As far as we can tell, this does not affect the actual functioning of the service.
 
 
 Testing
