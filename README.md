@@ -4,8 +4,8 @@ Phylogenetic Tree and Multiple Sequence Alignment (MSA) Services
 
 Overview
 ----------
-This KBase service provides data access and manipulation of multiple sequence
-alignments (MSAs) and phylogenetic trees built from MSAs.  It also includes support
+This KBase service provides helper methods for performing data access and manipulation 
+of multiple sequence alignments (MSAs) and phylogenetic trees.  It also includes support
 to build alignments and trees from sequence data using a variety of popular methods.
 This KBase module includes a c++ tree library wrapped in a SWIG interface which can
 be downloaded and used locally.  Because it is wrapped in SWIG, the functions can be
@@ -15,22 +15,21 @@ as well (see http://www.swig.org/).
 
 Dependencies
 ----------
--perl as installed in /kb/runtime
--starman (http://search.cpan.org/~miyagawa/Starman-0.3001/lib/Starman.pm)
--KBase typespec module deployed
--to run any calls that use the Forester java library, we need to have Inline::Java installed.
- currently it is not part of the build, but can be easily added with cpan.  After you have sourced
- the user-env.sh file (see below), your environment will point to the kbase runtime.  Then to
- install Inline::Java, enter the following as root:
-    JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
- Running cpan for the first time will ask you for some basic config options.  Defaults seemed to
- work for us.  Inline::Java also asks if you would like to install a JNI option.  This is not
- necessary (for now).  It allows you to avoid starting a separate java vm process, instead keeping
- it rolled up with perl.  Could be nice, but wasn't tested.
+-kbase deployment image (kbase-image-v14)
+-KBase typespec module deployed (git repo: typecomp)
+-KBase CDM module deployed (git repo: kb_seed)
+-installation of perl module Inline::Java (which is not yet added to the bootstrap
+ scripts).  To install on kbase-image-v14, source the user-env.sh file (see below)
+ so that your environment will point to the kbase runtime.  Then to enter:
+    sudo JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
+ Running cpan for the first time will require setting up some initial config settings.
+ All of the default options (answering yes) worked for us.  Inline::Java also asks to
+ install/compile a JNI option (so that a separate JVM process is not required at
+ runtime), but this is not necessary and has not been tested.
 
 Deploying on KBase infrastructure
 ----------
-* start with a fresh KBase image (last tested on v14) with security group 'treeServices'
+* boot a fresh KBase image (last tested on v14)
 * login in as ubuntu and get root access with a sudo su
 * enter the following commands:
 
@@ -39,21 +38,28 @@ git clone ssh://kbase@git.kbase.us/dev_container
 cd /kb/dev_container/modules
 git clone ssh://kbase@git.kbase.us/trees
 git clone ssh://kbase@git.kbase.us/typecomp
+git clone ssh://kbase@git.kbase.us/kb_seed
 cd /kb/dev_container
 ./bootstrap /kb/runtime
 source user-env.sh
+# NOTE: see above for more details about the Inline::Java dependency
+JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
 make deploy
 
 
 Starting/Stopping the service, and other notes
 ---------------------------
-*to start and stop the service, use the 'start_service' and 'stop_service' scripts in /kb/deployment/services/trees
-*on test machines, tree services listen on port 7047, so this port must be open
-*after starting the service, the process id of the serivice is stored in the 'service.pid' file in /kb/deployment/services/trees
-*log files are currently dumped in the /kb/deployment/services/trees/log directory, but this will change once central logging is adopted
-*'make clean' from the '/kb/dev_container/modules/trees' dir will delete all deployed files
-*'make redeploy' will perform a fresh deployment (clean followed by deploy)
-*cleaning and redeploying will not kill a running service!
+* to start and stop the service, use the 'start_service' and 'stop_service'
+  scripts in /kb/deployment/services/trees
+* on test machines, tree services listen on port 7047, so this port must be open
+* after starting the service, the process id of the serivice is stored in the 
+  'service.pid' file in /kb/deployment/services/trees
+* log files are currently dumped in the /kb/deployment/services/trees/log
+  directory, but this will change once central logging is adopted
+* 'make clean' from the '/kb/dev_container/modules/trees' dir will delete all
+  deployed files
+* 'make redeploy' will perform a fresh deployment (clean followed by deploy)
+* cleaning and redeploying will not kill a running service!
 
 
 Testing
@@ -69,15 +75,13 @@ Each test script has internal documentation indicating what functionality is tes
 
 To Do (Task list, created Aug 8, 2012)
 ----------
-1) Write Loader scripts for importing data in the exchange format into the CDS
+x) Write Loader scripts for importing data in the exchange format into the CDS
 2) Load MO Trees (which involves finishing the processing of raw alignment and tree files, and handling the species tree)
-3) Load SEED Trees (should be more straightforward)
-4) Test basic API calls generated for us, and use these API calls to ensure loaded data is accurate
+x) Load SEED Trees (should be more straightforward)
+x) Test basic API calls generated for us, and use these API calls to ensure loaded data is accurate
     (e.g. all_entities_Tree, get_entity_Alignmnent, chained queries to get all Trees with a given sequence included)
 5) Discuss / agree on most critical workflow patterns that we need to support
-    (people should include Dylan, Paramvir, Gary, Fangfang, Michael, possibly Keith and Michael Souza, others?)
 6) Discuss / agree / prioritize API function calls beyond the auto-generated CDMI needed to support the workflows
-    (this should include determining who (Michael, Fangfang, other?) will implement which service call)
 7) Complete and test (with review by Dan/Bob) the makefiles, deployment scripts, start/stop service scripts
 
 The following 3 tasks should happen concurrently and iteratively, and will be expanded after steps 5/6 above are completed:

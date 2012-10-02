@@ -62,5 +62,6 @@ clean:
 	rm -rfv $(TARGET)/lib/KBTree_cpp_lib
 	rm -rfv $(TARGET)/lib/Tree.*
 	rm -fv  $(TARGET)/lib/forester_1005.jar
+	rm -rfv $(TARGET)/lib/_Inline 
 	rm -f start_service stop_service
 	echo "OK ... Removed all deployed files."
