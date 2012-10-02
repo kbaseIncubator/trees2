@@ -23,7 +23,7 @@ last updated sept 2012
 #BEGIN_HEADER
 use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
 use KBTreeUtil;
-use Bio::KBase::Tree::ForesterParserWrapper;
+#use Bio::KBase::Tree::ForesterParserWrapper;
 #END_HEADER
 
 sub new
@@ -104,7 +104,7 @@ sub convert_newick2phyloXML
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN convert_newick2phyloXML
-    $return = Bio::KBase::Tree::ForesterParserWrapper::convertToPhyloXML($tree)."\n";
+    #$return = Bio::KBase::Tree::ForesterParserWrapper::convertToPhyloXML($tree)."\n";
     #END convert_newick2phyloXML
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
