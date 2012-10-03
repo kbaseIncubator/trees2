@@ -658,7 +658,7 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
 	map<string,string>::iterator name;
 	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
 		name = nodeNames.find((*node).getName());
-		cout<<"looking at node:"<<(*node).getName()<<endl;
+		if(verbose) { cout<<"looking at node:"<<(*node).getName()<<endl; }
 		if( name!=nodeNames.end() ) {
 			(*node).name=name->second;
 		}
