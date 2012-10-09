@@ -33,9 +33,9 @@ public class MOTreeDataExchanger {
 	// SSF
 	// TIGRFAMs
 	
-    public static String pathToDumpDir =   "/homes/oakland/msneddon/mo_tree_dump/dump/"+GROUP;
-    public static String pathToAlnDir =    "/homes/oakland/msneddon/mo_tree_dump/input/alignments/"+GROUP;
-    public static String pathToLociFile =  "/homes/oakland/msneddon/mo_tree_dump/input/ids/public_loci_with_associated_kbaseIds.txt";
+	public static String pathToDumpDir =   "/homes/oakland/msneddon/mo_tree_dump/dump/"+GROUP;
+	public static String pathToAlnDir =    "/homes/oakland/msneddon/mo_tree_dump/input/alignments/"+GROUP;
+	public static String pathToLociFile =  "/homes/oakland/msneddon/mo_tree_dump/input/ids/public_loci_with_associated_kbaseIds.txt";
 	public static String pathToIdFile =    "/homes/oakland/msneddon/mo_tree_dump/input/ids/assigned_kbase_tree_id_list.txt";
 	
 	public static long timestampInSecondsSinceEpoch;
@@ -51,7 +51,7 @@ public class MOTreeDataExchanger {
 		System.loadLibrary("KBTreeUtil");	
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		calendar.clear();
-		calendar.set(2012, Calendar.SEPTEMBER, 18);
+		calendar.set(2012, Calendar.OCTOBER, 9);
 		timestampInSecondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
 		try {
 			publicLoci = new LocusLookup(pathToLociFile);
@@ -63,7 +63,7 @@ public class MOTreeDataExchanger {
 			System.exit(1);
 		}
 		// Configure the alignment method and options for each source
-		if(GROUP.compareTo("COG")==0) { 			ALN_METHOD="RPS-BLAST"; ALN_PARAM="-e 1e-5"; }
+		if(GROUP.compareTo("COG")==0) { 		ALN_METHOD="RPS-BLAST"; ALN_PARAM="-e 1e-5"; }
 		else if(GROUP.compareTo("GENE3D")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2219 -E 0.001"; }
 		else if(GROUP.compareTo("PFAM")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="--cut_ga"; }
 		else if(GROUP.compareTo("PIRSF")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2791 -E 0.02"; }
@@ -227,7 +227,6 @@ public class MOTreeDataExchanger {
 					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					BW_aln.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database
-					//BW_aln.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId);  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_aln.write("\n");
 					BW_aln.flush();
 					
@@ -235,14 +234,13 @@ public class MOTreeDataExchanger {
 					BW_trees.write(KBaseTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
 					BW_trees.write(KBaseAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
 					BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
-					BW_trees.write("sequnce_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
+					BW_trees.write("sequence_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
 					BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
 					BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
 					BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
 					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 					BW_trees.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database   
-					//BW_trees.write("mwsneddon@lbl.gov:MOL-Tree_"+type+".1|"+treeId);  // source_db_aln_id	 M	 the id of this alignment in the original database
 					BW_trees.write("\n");
 					BW_trees.flush();
 
@@ -262,16 +260,16 @@ public class MOTreeDataExchanger {
 
 					// dump some stats to see how we are progressing
 					Runtime runtime = Runtime.getRuntime();
-				    java.text.NumberFormat format = java.text.NumberFormat.getInstance();
-				    StringBuilder sb = new StringBuilder();
-				    long maxMemory = runtime.maxMemory();
-				    long allocatedMemory = runtime.totalMemory();
-				    long freeMemory = runtime.freeMemory();
-				    sb.append("free memory=" + format.format(freeMemory / 1024) + ", ");
-				    sb.append("allocated memory=" + format.format(allocatedMemory / 1024) + ", ");
-				    sb.append("max memory=" + format.format(maxMemory / 1024) + ", ");
-				    sb.append("total free memory=" + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024));
-				    System.out.println("     | "+sb.toString());
+				    	java.text.NumberFormat format = java.text.NumberFormat.getInstance();
+				    	StringBuilder sb = new StringBuilder();
+				    	long maxMemory = runtime.maxMemory();
+				    	long allocatedMemory = runtime.totalMemory();
+				   	long freeMemory = runtime.freeMemory();
+				    	sb.append("free memory=" + format.format(freeMemory / 1024) + ", ");
+				    	sb.append("allocated memory=" + format.format(allocatedMemory / 1024) + ", ");
+				   	sb.append("max memory=" + format.format(maxMemory / 1024) + ", ");
+				    	sb.append("total free memory=" + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024));
+				    	System.out.println("     | "+sb.toString());
 					long estimatedTime = System.currentTimeMillis() - startTime;
 					iterationTime = System.currentTimeMillis() - iterationStartTime;
 					System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
