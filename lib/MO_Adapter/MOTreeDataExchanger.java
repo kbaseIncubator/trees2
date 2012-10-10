@@ -352,9 +352,15 @@ public class MOTreeDataExchanger {
 		SingleGeneAlignmentInformation ai = new SingleGeneAlignmentInformation();
 		try {
 			// open up a stream to the desired output file
-			File file =new File(output_path);
-			if(!file.exists()){ file.createNewFile(); }
-			BufferedWriter out = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
+			try {
+				File file =new File(output_path);
+				if(!file.exists()){ file.createNewFile(); }
+				BufferedWriter out = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
+			} catch (Exception e) {
+				System.err.println("Error with connecting to output directory.  Make sure folder structures are correct.");
+				System.err.println("Error: " + e.getMessage());
+				System.exit(33);
+			} 
 			
 			//open up a stream and read in the file
 			DataInputStream in = new DataInputStream(new FileInputStream(file_path));
@@ -451,7 +457,7 @@ public class MOTreeDataExchanger {
 //			System.out.println(ai.parent_MD5.size());
 //			System.out.println(ai.parent_seq_length.size());
 //			System.out.println(" ");
-//		    if(false) {
+//		    	if(false) {
 //			    for(int k=0; k<ai.ids.size(); k++) {
 //				    System.out.println("\n\n"+ai.ids.get(k));
 //				    System.out.println(ai.descriptions.get(k));
@@ -461,7 +467,7 @@ public class MOTreeDataExchanger {
 //			    }
 //			    System.out.println("++++");
 //		   }
-		}catch (Exception e) {
+		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 			System.exit(33);
 		}
@@ -531,7 +537,7 @@ public class MOTreeDataExchanger {
 	public static void processNewickGeneTree(String newick, SingleGeneAlignmentInformation ai, String finalTreeFilename) 
 	{
 		//NOTE FROM MO DOC: For gene trees, the leaf ids are of the form locusId_version_begin_end or locusId_begin_end. 
-		//                : For species trees, the leaf ids are taxonomy ids. 
+		//                : For species trees, the leaf ids are taxonomy ids.
 		// Parse the newick string
 		boolean verboseTreeOutput = false;
 		boolean assumeInternalNodeNamesAreBootstrapValues=true;
