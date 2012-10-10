@@ -352,10 +352,11 @@ public class MOTreeDataExchanger {
 		SingleGeneAlignmentInformation ai = new SingleGeneAlignmentInformation();
 		try {
 			// open up a stream to the desired output file
+			File file=null; BufferedWriter out=null;
 			try {
-				File file =new File(output_path);
+				file =new File(output_path);
 				if(!file.exists()){ file.createNewFile(); }
-				BufferedWriter out = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
+				out = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
 			} catch (Exception e) {
 				System.err.println("Error with connecting to output directory.  Make sure folder structures are correct.");
 				System.err.println("Error: " + e.getMessage());
@@ -466,7 +467,7 @@ public class MOTreeDataExchanger {
 //				    System.out.println("begin:"+ai.begin_pos_in_parent.get(k)+",end:"+ai.end_pos_in_parent.get(k));
 //			    }
 //			    System.out.println("++++");
-//		   }
+//		   	}
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 			System.exit(33);
