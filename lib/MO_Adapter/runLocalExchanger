@@ -1,0 +1,2 @@
+
+java -classpath "../KBTree_cpp_lib/lib/java_interface":".":"mysql-connector-java-5.1.20-bin.jar" -Djava.library.path="../KBTree_cpp_lib/lib/java_interface" MOTreeLocalExchanger
