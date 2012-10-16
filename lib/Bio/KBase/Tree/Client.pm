@@ -942,6 +942,57 @@ sub get_trees_with_overlapping_domain
 
 
 
+=head2 $result = get_trees_by_feature(feature_ids, options)
+
+
+
+=cut
+
+sub get_trees_by_feature
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_trees_by_feature (received $n, expecting 2)");
+    }
+    {
+	my($feature_ids, $options) = @args;
+
+	my @_bad_arguments;
+        (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"feature_ids\" (value was \"$feature_ids\")");
+        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_trees_by_feature');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_trees_by_feature",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_trees_by_feature',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_by_feature",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_trees_by_feature',
+				       );
+    }
+}
+
+
+
 =head2 $result = substitute_node_names_with_kbase_ids(trees, options)
 
 Given a list of kbase identifiers for a tree, substitutes the leaf node labels with actual kbase sequence

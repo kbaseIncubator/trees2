@@ -4,7 +4,7 @@ KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
-last updated sept 2012
+last updated oct 2012
 */
 module Tree
 {
@@ -145,6 +145,8 @@ module Tree
     funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
    
     
+    
+    
     /* *********************************************************************************************** */
     /* METHODS FOR TREE INTROSPECTION */
     /* note that some of these methods may be better perfomed via the CDMI if the tree is available in the CDS */
@@ -173,9 +175,9 @@ module Tree
     
     
     
+    
     /* *********************************************************************************************** */
-    /* METHODS FOR ALIGNMENT / TREE RETRIEVAL */
-    /* NOTE THAT SOME OF THESE METHODS MIGHT NOT BE REQUIRED IF THE CDMI PROVIDES ENOUGH FUNCTIONALITY */
+    /* METHODS FOR ALIGNMENT AND TREE RETRIEVAL */
     /* *********************************************************************************************** */
     
     /* Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
@@ -237,7 +239,7 @@ module Tree
     */
     funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
     
-    
+    funcdef get_trees_by_feature(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
     
     
     

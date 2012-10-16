@@ -16,14 +16,21 @@ KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 Full documentation and API reference will be added here.
 
 created 5/21/2012 - msneddon
-last updated sept 2012
+last updated OCT-2012
 
 =cut
 
 #BEGIN_HEADER
+
+use strict;
+use Bio::KBase::CDMI::CDMI;
+use Data::Dumper;
+
 use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
 use KBTreeUtil;
+
 #use Bio::KBase::Tree::ForesterParserWrapper;
+
 #END_HEADER
 
 sub new
@@ -33,6 +40,39 @@ sub new
     };
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
+    
+    # NOTE: code below copied from CDM library (CDMI_APIImpl.pm) on 10/16/12
+    # comments for my own reference are added by msneddon
+    
+    # check if ref. to CDMI object was passed in
+    my($cdmi) = @args;
+    if (! $cdmi) {
+
+	# if not, then go to the config file defined by the deployment and import
+	# the deployment settings
+	my %params;
+	if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
+	{
+	    my $service = $ENV{KB_SERVICE_NAME};
+	    #parse the file and 
+	    my $c = Config::Simple->new();
+	    $c->read($e);
+	    my @params = qw(DBD dbName sock userData dbhost port dbms develop);
+	    for my $p (@params)
+	    {
+		my $v = $c->param("$service.$p");
+		if ($v)
+		{
+		    $params{$p} = $v;
+		}
+	    }
+	}
+	#Create a connection to the CDMI 
+        $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
+    }
+    $self->{db} = $cdmi;
+    
+    
     #END_CONSTRUCTOR
 
     if ($self->can('_init_instance'))
@@ -894,6 +934,11 @@ sub get_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree
+    
+    my $kb = $self->{db};
+    $return = {};
+
+    
     $return = "(mr_tree)";
     #END get_tree
     my @_bad_returns;
@@ -1369,6 +1414,89 @@ sub get_trees_with_overlapping_domain
 	my $msg = "Invalid returns passed to get_trees_with_overlapping_domain:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_trees_with_overlapping_domain');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_trees_by_feature
+
+  $return = $obj->get_trees_by_feature($feature_ids, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub get_trees_by_feature
+{
+    my $self = shift;
+    my($feature_ids, $options) = @_;
+
+    my @_bad_arguments;
+    (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
+    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_trees_by_feature');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_trees_by_feature
+    
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow',
+                           'IncludesAlignmentRow(from-link) = ?',['kb|aln.0'],
+                           [qw(AlignmentRow(row_id)
+                               AlignmentRow(row_description)
+                               AlignmentRow(sequence))]);
+    $return = \@rows;
+    
+    
+    
+    
+    #END get_trees_by_feature
+    my @_bad_returns;
+    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_trees_by_feature');
     }
     return($return);
 }
