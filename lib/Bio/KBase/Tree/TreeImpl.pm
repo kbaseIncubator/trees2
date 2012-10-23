@@ -22,13 +22,12 @@ last updated OCT-2012
 
 #BEGIN_HEADER
 
-use strict;
 use Bio::KBase::CDMI::CDMI;
 use Data::Dumper;
+use Config::Simple;
 
 use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
 use KBTreeUtil;
-
 #use Bio::KBase::Tree::ForesterParserWrapper;
 
 #END_HEADER
@@ -40,10 +39,8 @@ sub new
     };
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
-    
-    # NOTE: code below copied from CDM library (CDMI_APIImpl.pm) on 10/16/12
+    # NOTE: most code below copied from CDM library (CDMI_APIImpl.pm) on 10/16/12
     # comments for my own reference are added by msneddon
-    
     # check if ref. to CDMI object was passed in
     my($cdmi) = @args;
     if (! $cdmi) {
@@ -53,26 +50,29 @@ sub new
 	my %params;
 	if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
 	{
-	    my $service = $ENV{KB_SERVICE_NAME};
+	    my $CDMI_SERVICE_NAME = "cdmi";
+	    
 	    #parse the file and 
 	    my $c = Config::Simple->new();
 	    $c->read($e);
 	    my @params = qw(DBD dbName sock userData dbhost port dbms develop);
 	    for my $p (@params)
 	    {
-		my $v = $c->param("$service.$p");
+		my $v = $c->param("$CDMI_SERVICE_NAME.$p");
 		if ($v)
 		{
 		    $params{$p} = $v;
 		}
 	    }
 	}
-	#Create a connection to the CDMI 
+	#Create a connection to the CDMI (and print a logging debug mssg)
+	if( 0 < scalar keys(%params) ) {
+	    	warn "Connection to CDMI established with the following non-default parameters:\n";
+	    	foreach my $key (sort keys %params) { warn "   $key => $params{$key} \n"; }
+	} else { warn "Connection to CDMI established with all default parameters.  See Bio/KBase/CDMI/CDMI.pm\n"; }
         $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
     }
     $self->{db} = $cdmi;
-    
-    
     #END_CONSTRUCTOR
 
     if ($self->can('_init_instance'))
@@ -1478,17 +1478,14 @@ sub get_trees_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees_by_feature
-    
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow',
-                           'IncludesAlignmentRow(from-link) = ?',['kb|aln.0'],
-                           [qw(AlignmentRow(row_id)
-                               AlignmentRow(row_description)
-                               AlignmentRow(sequence))]);
+    
+    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+                           'Feature(id) = ?',['kb|g.9988.peg.1744'],
+                           [qw(Tree(id)
+                               )]);
+    #based on options hash, we should return the trees with features/proteins/etc filled in...
     $return = \@rows;
-    
-    
-    
     
     #END get_trees_by_feature
     my @_bad_returns;
