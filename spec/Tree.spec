@@ -149,7 +149,8 @@ module Tree
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE INTROSPECTION */
-    /* These are methods that operate on any newick tree that is passed in.
+    /* These are methods that make a tree tell you about itself.  These methods operate on any newick  */
+    /* tree that is passed in, and requires no direct connecion to the CDM.                            */
     /* *********************************************************************************************** */
   
     /* Given a tree in newick format, list the names of the leaf nodes.
