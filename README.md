@@ -15,7 +15,7 @@ as well (see http://www.swig.org/).
 
 Dependencies
 ----------
--kbase deployment image (kbase-image-v14)
+-kbase deployment image (last tested on kbase-image-v17)
 -KBase typespec module deployed (git repo: typecomp)
 -KBase CDM module deployed (git repo: kb_seed)
 -NOTE: If using the forrester library, you need a working installation of 
@@ -98,7 +98,6 @@ The following 3 tasks should happen concurrently and iteratively, and will be ex
     this documentaton is available to kbase.us and in KBase style
 
 11) Wrap server calls as command-line scripts that can be released with the rest of the KBase Library
-    (in theory the wrap_perl script written by Bob can automate this)
 12) Test/debug command-line scripts and ensure that the same results as the client libs are generated
 13) Deploy command-line scripts to IRIS
 

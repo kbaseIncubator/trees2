@@ -1,7 +1,7 @@
 /*
 KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.
+Set of functions and tools for building, querying, 
 
 created 5/21/2012 - msneddon
 last updated oct 2012
@@ -149,7 +149,7 @@ module Tree
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE INTROSPECTION */
-    /* note that some of these methods may be better perfomed via the CDMI if the tree is available in the CDS */
+    /* These are methods that operate on any newick tree that is passed in.
     /* *********************************************************************************************** */
   
     /* Given a tree in newick format, list the names of the leaf nodes.
@@ -200,8 +200,8 @@ module Tree
     
     todo: provide a way to get meta data about this tree, possibly in a separate function, but may
     not be needed if this is provided by the ER model.
-    */
     funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (newick_tree);
+    */
     
     /* Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
     was not found. Note: this function may not be needed if this functionality is provided by the auto-gen ER code
@@ -220,28 +220,34 @@ module Tree
     todo: should beg/end just be included in some options hash?
     todo: define contents of options hash, which will allow more complex queries, such as returning
           only active trees, or trees of a particuar hieght, etc...
-    */
     funcdef get_trees_with_entire_seq(fasta sequence, position beg, position end, mapping<string,string> options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which some portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the tree.
-    */
     funcdef get_trees_with_overlapping_seq(fasta sequence, position beg, position end, mapping<string,string> options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which the entire portion of the given domain is used in the alignment
     which generates the tree (usually the tree will be constructed based on this domain). NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-    */
     funcdef get_trees_with_entire_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which some portion of the given domain is used in the alignment
     which generates the tree (usually such trees will be constructed based on a similar domain created
     with an alternative method, so the entire domain may not be contained).  NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-    */
     funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
+    */
     
-    funcdef get_trees_by_feature(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
     
+    funcdef get_tree_ids_by_feature(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
     
+    funcdef get_tree_ids_by_protein_sequence(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
+    
+    funcdef get_alignment_ids_by_feature(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
+    
+    funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> feature_ids, mapping<string,string>options) returns (list<kbase_id>);
+  
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE-BASED FEATURE/SEQUENCE LOOKUPS */
