@@ -17,8 +17,8 @@ To add a new test:
    or "t/server-tests") OR open an existing test script file.
  - if creating a new test file, add the name of the file to the list of available tests below and
    add the command to run the script under the appropriate makefile target in the trees makefile
- - if creating a new set of tests in perl, look at an existing test script to see how to read
-   the test configuration file (test.cfg) to point to the client to the proper host.
+ - if creating a new test file in perl, use the module TreeTestConfig to properly configure the
+   host url and port information.  See t/server-tests/testServerUp.t for an example
 
 
 Available Tests:
