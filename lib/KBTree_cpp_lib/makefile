@@ -33,7 +33,7 @@ JAVA_LIB_CMD := -framework JavaVM -bundle -o $(OUT_DIR)/java_interface/libKBTree
 else ifeq ($(UNAME),Linux)
 PERL_CC_OPTIONS := $(shell perl -MConfig -e 'print join(" ", @Config{qw(ccflags optimize cccdlflags)}, "-I$$Config{archlib}/CORE")')
 PERL_LD_OPTIONS := $(shell perl -MConfig -e 'print $$Config{lddlflags}')
-PERL_LIB_CMD := -shared -o $(OUT_DIR)/perl_interface/KBTreeUtil.so
+PERL_LIB_CMD := -shared -o $(OUT_DIR)/perl_interface/TreeCppUtil.so
 JAVA_HEADER_PATH := "/usr/lib/jvm/java-7-openjdk-amd64/include"
 JAVA_LIB_CMD := -shared -o $(OUT_DIR)/java_interface/libKBTreeUtil.so
 endif
@@ -48,7 +48,9 @@ all: perl-lib java-lib
 
 swig: $(SWIG_PERL_WRAP_FILE) $(SWIG_JAVA_WRAP_FILE)
 $(SWIG_PERL_WRAP_FILE) : $(SWIG_FILE)
-	swig -c++ -perl5 -outdir $(OUT_DIR)/perl_interface -o $(SWIG_PERL_WRAP_FILE) $(SWIG_FILE)
+	mkdir -p $(OUT_DIR)/perl_interface/Bio/KBase/Tree
+	swig -c++ -perl5 -module "Bio::KBase::Tree::TreeCppUtil" -outdir $(OUT_DIR)/perl_interface/ -o $(SWIG_PERL_WRAP_FILE) $(SWIG_FILE)
+	mv $(OUT_DIR)/perl_interface/TreeCppUtil.pm $(OUT_DIR)/perl_interface/Bio/KBase/Tree/TreeCppUtil.pm
 $(SWIG_JAVA_WRAP_FILE) : $(SWIG_FILE)
 	swig -c++ -java -outdir $(OUT_DIR)/java_interface/KBTreeUtil -package KBTreeUtil -o $(SWIG_JAVA_WRAP_FILE) $(SWIG_FILE)
 

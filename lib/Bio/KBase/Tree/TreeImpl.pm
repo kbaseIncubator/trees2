@@ -13,23 +13,19 @@ Tree
 
 KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.
+Set of functions and tools for building, querying, 
 
 created 5/21/2012 - msneddon
-last updated OCT-2012
+last updated oct 2012
 
 =cut
 
 #BEGIN_HEADER
-
-use Bio::KBase::CDMI::CDMI;
 use Data::Dumper;
 use Config::Simple;
-
-use lib "/kb/deployment/lib/KBTree_cpp_lib/lib/perl_interface";
-use KBTreeUtil;
+use Bio::KBase::CDMI::CDMI;
+use Bio::KBase::Tree::TreeCppUtil;
 #use Bio::KBase::Tree::ForesterParserWrapper;
-
 #END_HEADER
 
 sub new
@@ -448,7 +444,7 @@ sub replace_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN replace_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     my $replacement_str="";
     foreach my $key ( keys %$replacements ) {
         $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
@@ -533,7 +529,7 @@ sub remove_node_names_and_simplify
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN remove_node_names_and_simplify
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     my $nodes_to_remove="";
     foreach my $val (@$removal_list) {
         $nodes_to_remove=$nodes_to_remove.$val.";";
@@ -612,7 +608,7 @@ sub extract_leaf_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN extract_leaf_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     my $leaf_names = $kb_tree->getAllLeafNames();
     my @leaf_name_list = split(';', $leaf_names);
     $return = \@leaf_name_list;
@@ -690,7 +686,7 @@ sub extract_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN extract_node_names
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     my $node_names = $kb_tree->getAllNodeNames();
     my @node_name_list = split(';', $node_names);
     $return = \@node_name_list;
@@ -764,7 +760,7 @@ sub get_node_count
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_node_count
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     $return = $kb_tree->getNodeCount();
     #END get_node_count
     my @_bad_returns;
@@ -838,7 +834,7 @@ sub get_leaf_count
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_leaf_count
-    my $kb_tree = new KBTreeUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::Util::KBTree($tree);
     $return = $kb_tree->getLeafCount();
     #END get_leaf_count
     my @_bad_returns;
@@ -847,106 +843,6 @@ sub get_leaf_count
 	my $msg = "Invalid returns passed to get_leaf_count:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_leaf_count');
-    }
-    return($return);
-}
-
-
-
-
-=head2 get_tree
-
-  $return = $obj->get_tree($tree_id, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$tree_id is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a newick_tree
-kbase_id is a string
-newick_tree is a tree
-tree is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$tree_id is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a newick_tree
-kbase_id is a string
-newick_tree is a tree
-tree is a string
-
-
-=end text
-
-
-
-=item Description
-
-Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
-hash provides a way to return the tree with different labels replaced or with different attached meta
-information.
-
-    options = [
-        FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
-    ]
- 
-The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
-tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
-with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
-only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
-row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
-is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
-other options???
-
-Note: the options hash will be the same as for other functions which provide substitution capabilities 
-
-todo: provide a way to get meta data about this tree, possibly in a separate function, but may
-not be needed if this is provided by the ER model.
-
-=back
-
-=cut
-
-sub get_tree
-{
-    my $self = shift;
-    my($tree_id, $options) = @_;
-
-    my @_bad_arguments;
-    (!ref($tree_id)) or push(@_bad_arguments, "Invalid type for argument \"tree_id\" (value was \"$tree_id\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_tree');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_tree
-    
-    my $kb = $self->{db};
-    $return = {};
-
-    
-    $return = "(mr_tree)";
-    #END get_tree
-    my @_bad_returns;
-    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_tree');
     }
     return($return);
 }
@@ -1104,96 +1000,9 @@ sub all_tree_ids
 
 
 
-=head2 get_trees_with_entire_seq
+=head2 get_tree_ids_by_feature
 
-  $return = $obj->get_trees_with_entire_seq($sequence, $beg, $end, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$sequence is a fasta
-$beg is a position
-$end is a position
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-fasta is a string
-position is an int
-kbase_id is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$sequence is a fasta
-$beg is a position
-$end is a position
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-fasta is a string
-position is an int
-kbase_id is a string
-
-
-=end text
-
-
-
-=item Description
-
-Returns all tree IDs in which the entire portion of the given sequence (which can optionally
-include start and end positions of the sequence) is used in the alignment which generates the
-tree.
-todo: should beg/end just be included in some options hash?
-todo: define contents of options hash, which will allow more complex queries, such as returning
-      only active trees, or trees of a particuar hieght, etc...
-
-=back
-
-=cut
-
-sub get_trees_with_entire_seq
-{
-    my $self = shift;
-    my($sequence, $beg, $end, $options) = @_;
-
-    my @_bad_arguments;
-    (!ref($sequence)) or push(@_bad_arguments, "Invalid type for argument \"sequence\" (value was \"$sequence\")");
-    (!ref($beg)) or push(@_bad_arguments, "Invalid type for argument \"beg\" (value was \"$beg\")");
-    (!ref($end)) or push(@_bad_arguments, "Invalid type for argument \"end\" (value was \"$end\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees_with_entire_seq:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_entire_seq');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_trees_with_entire_seq
-    $return = "hello mr. tree., sent from get_trees_with_entire_seq";
-    #END get_trees_with_entire_seq
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees_with_entire_seq:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_entire_seq');
-    }
-    return($return);
-}
-
-
-
-
-=head2 get_trees_with_overlapping_seq
-
-  $return = $obj->get_trees_with_overlapping_seq($sequence, $beg, $end, $options)
+  $return = $obj->get_tree_ids_by_feature($feature_ids, $options)
 
 =over 4
 
@@ -1202,90 +1011,7 @@ sub get_trees_with_entire_seq
 =begin html
 
 <pre>
-$sequence is a fasta
-$beg is a position
-$end is a position
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-fasta is a string
-position is an int
-kbase_id is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$sequence is a fasta
-$beg is a position
-$end is a position
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-fasta is a string
-position is an int
-kbase_id is a string
-
-
-=end text
-
-
-
-=item Description
-
-Returns all tree IDs in which some portion of the given sequence (which can optionally
-include start and end positions of the sequence) is used in the alignment which generates the tree.
-
-=back
-
-=cut
-
-sub get_trees_with_overlapping_seq
-{
-    my $self = shift;
-    my($sequence, $beg, $end, $options) = @_;
-
-    my @_bad_arguments;
-    (!ref($sequence)) or push(@_bad_arguments, "Invalid type for argument \"sequence\" (value was \"$sequence\")");
-    (!ref($beg)) or push(@_bad_arguments, "Invalid type for argument \"beg\" (value was \"$beg\")");
-    (!ref($end)) or push(@_bad_arguments, "Invalid type for argument \"end\" (value was \"$end\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees_with_overlapping_seq:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_overlapping_seq');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_trees_with_overlapping_seq
-    $return = "hello mr. tree., sent from get_trees_with_overlapping_seq";
-    #END get_trees_with_overlapping_seq
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees_with_overlapping_seq:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_overlapping_seq');
-    }
-    return($return);
-}
-
-
-
-
-=head2 get_trees_with_entire_domain
-
-  $return = $obj->get_trees_with_entire_domain($domain, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$domain is a kbase_id
+$feature_ids is a reference to a list where each element is a kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
@@ -1296,80 +1022,7 @@ kbase_id is a string
 
 =begin text
 
-$domain is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-
-
-=end text
-
-
-
-=item Description
-
-Returns all tree IDs in which the entire portion of the given domain is used in the alignment
-which generates the tree (usually the tree will be constructed based on this domain). NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-
-=back
-
-=cut
-
-sub get_trees_with_entire_domain
-{
-    my $self = shift;
-    my($domain, $options) = @_;
-
-    my @_bad_arguments;
-    (!ref($domain)) or push(@_bad_arguments, "Invalid type for argument \"domain\" (value was \"$domain\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees_with_entire_domain:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_entire_domain');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_trees_with_entire_domain
-    $return = "hello mr. tree., sent from get_trees_with_entire_domain";
-    #END get_trees_with_entire_domain
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees_with_entire_domain:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_entire_domain');
-    }
-    return($return);
-}
-
-
-
-
-=head2 get_trees_with_overlapping_domain
-
-  $return = $obj->get_trees_with_overlapping_domain($domain, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$domain is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$domain is a kbase_id
+$feature_ids is a reference to a list where each element is a kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
@@ -1384,36 +1037,36 @@ kbase_id is a string
 Returns all tree IDs in which some portion of the given domain is used in the alignment
 which generates the tree (usually such trees will be constructed based on a similar domain created
 with an alternative method, so the entire domain may not be contained).  NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
+funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
 
 =back
 
 =cut
 
-sub get_trees_with_overlapping_domain
+sub get_tree_ids_by_feature
 {
     my $self = shift;
-    my($domain, $options) = @_;
+    my($feature_ids, $options) = @_;
 
     my @_bad_arguments;
-    (!ref($domain)) or push(@_bad_arguments, "Invalid type for argument \"domain\" (value was \"$domain\")");
+    (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
     (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees_with_overlapping_domain:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	my $msg = "Invalid arguments passed to get_tree_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_overlapping_domain');
+							       method_name => 'get_tree_ids_by_feature');
     }
 
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
-    #BEGIN get_trees_with_overlapping_domain
-    $return = "hello mr. tree., sent from get_trees_with_overlapping_domain";
-    #END get_trees_with_overlapping_domain
+    #BEGIN get_tree_ids_by_feature
+    #END get_tree_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees_with_overlapping_domain:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	my $msg = "Invalid returns passed to get_tree_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_with_overlapping_domain');
+							       method_name => 'get_tree_ids_by_feature');
     }
     return($return);
 }
@@ -1421,9 +1074,9 @@ sub get_trees_with_overlapping_domain
 
 
 
-=head2 get_trees_by_feature
+=head2 get_tree_ids_by_protein_sequence
 
-  $return = $obj->get_trees_by_feature($feature_ids, $options)
+  $return = $obj->get_tree_ids_by_protein_sequence($feature_ids, $options)
 
 =over 4
 
@@ -1461,7 +1114,7 @@ kbase_id is a string
 
 =cut
 
-sub get_trees_by_feature
+sub get_tree_ids_by_protein_sequence
 {
     my $self = shift;
     my($feature_ids, $options) = @_;
@@ -1470,30 +1123,163 @@ sub get_trees_by_feature
     (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
     (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
     if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	my $msg = "Invalid arguments passed to get_tree_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_by_feature');
+							       method_name => 'get_tree_ids_by_protein_sequence');
     }
 
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
-    #BEGIN get_trees_by_feature
-    my $kb = $self->{db};
-    
-    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-                           'Feature(id) = ?',['kb|g.9988.peg.1744'],
-                           [qw(Tree(id)
-                               )]);
-    #based on options hash, we should return the trees with features/proteins/etc filled in...
-    $return = \@rows;
-    
-    #END get_trees_by_feature
+    #BEGIN get_tree_ids_by_protein_sequence
+    #END get_tree_ids_by_protein_sequence
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	my $msg = "Invalid returns passed to get_tree_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees_by_feature');
+							       method_name => 'get_tree_ids_by_protein_sequence');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_alignment_ids_by_feature
+
+  $return = $obj->get_alignment_ids_by_feature($feature_ids, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub get_alignment_ids_by_feature
+{
+    my $self = shift;
+    my($feature_ids, $options) = @_;
+
+    my @_bad_arguments;
+    (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
+    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_alignment_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_ids_by_feature');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_alignment_ids_by_feature
+    #END get_alignment_ids_by_feature
+    my @_bad_returns;
+    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_alignment_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_ids_by_feature');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_alignment_ids_by_protein_sequence
+
+  $return = $obj->get_alignment_ids_by_protein_sequence($feature_ids, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$feature_ids is a reference to a list where each element is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub get_alignment_ids_by_protein_sequence
+{
+    my $self = shift;
+    my($feature_ids, $options) = @_;
+
+    my @_bad_arguments;
+    (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
+    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_alignment_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_ids_by_protein_sequence');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_alignment_ids_by_protein_sequence
+    #END get_alignment_ids_by_protein_sequence
+    my @_bad_returns;
+    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_alignment_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_ids_by_protein_sequence');
     }
     return($return);
 }

@@ -175,22 +175,6 @@ class Tree:
         else:
             return None
 
-    def get_tree(self, tree_id, options):
-
-        arg_hash = { 'method': 'Tree.get_tree',
-                     'params': [tree_id, options],
-                     'version': '1.1'
-                     }
-
-        body = json.dumps(arg_hash)
-        resp_str = urllib.urlopen(self.url, body).read()
-        resp = json.loads(resp_str)
-
-        if 'result' in resp:
-            return resp['result'][0]
-        else:
-            return None
-
     def get_trees(self, tree_ids, options):
 
         arg_hash = { 'method': 'Tree.get_trees',
@@ -223,10 +207,10 @@ class Tree:
         else:
             return None
 
-    def get_trees_with_entire_seq(self, sequence, beg, end, options):
+    def get_tree_ids_by_feature(self, feature_ids, options):
 
-        arg_hash = { 'method': 'Tree.get_trees_with_entire_seq',
-                     'params': [sequence, beg, end, options],
+        arg_hash = { 'method': 'Tree.get_tree_ids_by_feature',
+                     'params': [feature_ids, options],
                      'version': '1.1'
                      }
 
@@ -239,10 +223,10 @@ class Tree:
         else:
             return None
 
-    def get_trees_with_overlapping_seq(self, sequence, beg, end, options):
+    def get_tree_ids_by_protein_sequence(self, feature_ids, options):
 
-        arg_hash = { 'method': 'Tree.get_trees_with_overlapping_seq',
-                     'params': [sequence, beg, end, options],
+        arg_hash = { 'method': 'Tree.get_tree_ids_by_protein_sequence',
+                     'params': [feature_ids, options],
                      'version': '1.1'
                      }
 
@@ -255,10 +239,10 @@ class Tree:
         else:
             return None
 
-    def get_trees_with_entire_domain(self, domain, options):
+    def get_alignment_ids_by_feature(self, feature_ids, options):
 
-        arg_hash = { 'method': 'Tree.get_trees_with_entire_domain',
-                     'params': [domain, options],
+        arg_hash = { 'method': 'Tree.get_alignment_ids_by_feature',
+                     'params': [feature_ids, options],
                      'version': '1.1'
                      }
 
@@ -271,10 +255,10 @@ class Tree:
         else:
             return None
 
-    def get_trees_with_overlapping_domain(self, domain, options):
+    def get_alignment_ids_by_protein_sequence(self, feature_ids, options):
 
-        arg_hash = { 'method': 'Tree.get_trees_with_overlapping_domain',
-                     'params': [domain, options],
+        arg_hash = { 'method': 'Tree.get_alignment_ids_by_protein_sequence',
+                     'params': [feature_ids, options],
                      'version': '1.1'
                      }
 

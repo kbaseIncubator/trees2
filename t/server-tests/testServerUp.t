@@ -1,9 +1,8 @@
 #!/usr/bin/perl
 #
-#  This set of tests is simply to see if the service is available and we can access a single basic
+#  This set of tests simply checks to see if the service is available and if we can access a single basic
 #  RPC call, and get something back.  It does not check the validity of the response, nor the
-#  auto-gen client libs normally used to retrieve the response.  It does however, require that
-#  JSON::RPC module is installed.
+#  auto-gen client libs normally used to retrieve the response.
 #
 #  author:  msneddon
 #  created: 5/21/2012
@@ -28,7 +27,7 @@ print "-> attempting to connect to:'".$host.":".$port."'\n";
 # MAKE A VALID RPC CALL (TEST 2,3,4)
 my $callobj = {
     method  => 'Tree.get_node_count',
-    params  => ["(a,(b,c))root"],
+    params  => ["(a,(b,c))"],
 };
 my $res = $client->call($host.":".$port, $callobj);
 ok($client->status_line =~ m/^200/,"test a valid rpc call");

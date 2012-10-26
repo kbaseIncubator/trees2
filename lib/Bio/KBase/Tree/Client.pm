@@ -551,76 +551,6 @@ sub get_leaf_count
 
 
 
-=head2 $result = get_tree(tree_id, options)
-
-Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
-hash provides a way to return the tree with different labels replaced or with different attached meta
-information.
-
-    options = [
-        FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
-    ]
- 
-The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
-tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
-with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
-only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
-row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
-is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
-other options???
-
-Note: the options hash will be the same as for other functions which provide substitution capabilities 
-
-todo: provide a way to get meta data about this tree, possibly in a separate function, but may
-not be needed if this is provided by the ER model.
-
-=cut
-
-sub get_tree
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_tree (received $n, expecting 2)");
-    }
-    {
-	my($tree_id, $options) = @args;
-
-	my @_bad_arguments;
-        (!ref($tree_id)) or push(@_bad_arguments, "Invalid type for argument 1 \"tree_id\" (value was \"$tree_id\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_tree');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_tree",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_tree',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_tree",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_tree',
-				       );
-    }
-}
-
-
-
 =head2 $result = get_trees(tree_ids, options)
 
 Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
@@ -725,237 +655,23 @@ sub all_tree_ids
 
 
 
-=head2 $result = get_trees_with_entire_seq(sequence, beg, end, options)
-
-Returns all tree IDs in which the entire portion of the given sequence (which can optionally
-include start and end positions of the sequence) is used in the alignment which generates the
-tree.
-todo: should beg/end just be included in some options hash?
-todo: define contents of options hash, which will allow more complex queries, such as returning
-      only active trees, or trees of a particuar hieght, etc...
-
-=cut
-
-sub get_trees_with_entire_seq
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 4)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_trees_with_entire_seq (received $n, expecting 4)");
-    }
-    {
-	my($sequence, $beg, $end, $options) = @args;
-
-	my @_bad_arguments;
-        (!ref($sequence)) or push(@_bad_arguments, "Invalid type for argument 1 \"sequence\" (value was \"$sequence\")");
-        (!ref($beg)) or push(@_bad_arguments, "Invalid type for argument 2 \"beg\" (value was \"$beg\")");
-        (!ref($end)) or push(@_bad_arguments, "Invalid type for argument 3 \"end\" (value was \"$end\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 4 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_trees_with_entire_seq:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_trees_with_entire_seq');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_trees_with_entire_seq",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_trees_with_entire_seq',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_with_entire_seq",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_trees_with_entire_seq',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_trees_with_overlapping_seq(sequence, beg, end, options)
-
-Returns all tree IDs in which some portion of the given sequence (which can optionally
-include start and end positions of the sequence) is used in the alignment which generates the tree.
-
-=cut
-
-sub get_trees_with_overlapping_seq
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 4)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_trees_with_overlapping_seq (received $n, expecting 4)");
-    }
-    {
-	my($sequence, $beg, $end, $options) = @args;
-
-	my @_bad_arguments;
-        (!ref($sequence)) or push(@_bad_arguments, "Invalid type for argument 1 \"sequence\" (value was \"$sequence\")");
-        (!ref($beg)) or push(@_bad_arguments, "Invalid type for argument 2 \"beg\" (value was \"$beg\")");
-        (!ref($end)) or push(@_bad_arguments, "Invalid type for argument 3 \"end\" (value was \"$end\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 4 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_trees_with_overlapping_seq:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_trees_with_overlapping_seq');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_trees_with_overlapping_seq",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_trees_with_overlapping_seq',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_with_overlapping_seq",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_trees_with_overlapping_seq',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_trees_with_entire_domain(domain, options)
-
-Returns all tree IDs in which the entire portion of the given domain is used in the alignment
-which generates the tree (usually the tree will be constructed based on this domain). NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-
-=cut
-
-sub get_trees_with_entire_domain
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_trees_with_entire_domain (received $n, expecting 2)");
-    }
-    {
-	my($domain, $options) = @args;
-
-	my @_bad_arguments;
-        (!ref($domain)) or push(@_bad_arguments, "Invalid type for argument 1 \"domain\" (value was \"$domain\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_trees_with_entire_domain:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_trees_with_entire_domain');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_trees_with_entire_domain",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_trees_with_entire_domain',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_with_entire_domain",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_trees_with_entire_domain',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_trees_with_overlapping_domain(domain, options)
+=head2 $result = get_tree_ids_by_feature(feature_ids, options)
 
 Returns all tree IDs in which some portion of the given domain is used in the alignment
 which generates the tree (usually such trees will be constructed based on a similar domain created
 with an alternative method, so the entire domain may not be contained).  NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
+funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
 
 =cut
 
-sub get_trees_with_overlapping_domain
+sub get_tree_ids_by_feature
 {
     my($self, @args) = @_;
 
     if ((my $n = @args) != 2)
     {
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_trees_with_overlapping_domain (received $n, expecting 2)");
-    }
-    {
-	my($domain, $options) = @args;
-
-	my @_bad_arguments;
-        (!ref($domain)) or push(@_bad_arguments, "Invalid type for argument 1 \"domain\" (value was \"$domain\")");
-        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_trees_with_overlapping_domain:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_trees_with_overlapping_domain');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_trees_with_overlapping_domain",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'get_trees_with_overlapping_domain',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_with_overlapping_domain",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'get_trees_with_overlapping_domain',
-				       );
-    }
-}
-
-
-
-=head2 $result = get_trees_by_feature(feature_ids, options)
-
-
-
-=cut
-
-sub get_trees_by_feature
-{
-    my($self, @args) = @_;
-
-    if ((my $n = @args) != 2)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function get_trees_by_feature (received $n, expecting 2)");
+							       "Invalid argument count for function get_tree_ids_by_feature (received $n, expecting 2)");
     }
     {
 	my($feature_ids, $options) = @args;
@@ -964,29 +680,182 @@ sub get_trees_by_feature
         (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"feature_ids\" (value was \"$feature_ids\")");
         (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
         if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to get_trees_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    my $msg = "Invalid arguments passed to get_tree_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'get_trees_by_feature');
+								   method_name => 'get_tree_ids_by_feature');
 	}
     }
 
     my $result = $self->{client}->call($self->{url}, {
-	method => "Tree.get_trees_by_feature",
+	method => "Tree.get_tree_ids_by_feature",
 	params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
 					       code => $result->content->{code},
-					       method_name => 'get_trees_by_feature',
+					       method_name => 'get_tree_ids_by_feature',
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
 	}
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_trees_by_feature",
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_tree_ids_by_feature",
 					    status_line => $self->{client}->status_line,
-					    method_name => 'get_trees_by_feature',
+					    method_name => 'get_tree_ids_by_feature',
+				       );
+    }
+}
+
+
+
+=head2 $result = get_tree_ids_by_protein_sequence(feature_ids, options)
+
+
+
+=cut
+
+sub get_tree_ids_by_protein_sequence
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_tree_ids_by_protein_sequence (received $n, expecting 2)");
+    }
+    {
+	my($feature_ids, $options) = @args;
+
+	my @_bad_arguments;
+        (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"feature_ids\" (value was \"$feature_ids\")");
+        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_tree_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_tree_ids_by_protein_sequence');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_tree_ids_by_protein_sequence",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_tree_ids_by_protein_sequence',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_tree_ids_by_protein_sequence",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_tree_ids_by_protein_sequence',
+				       );
+    }
+}
+
+
+
+=head2 $result = get_alignment_ids_by_feature(feature_ids, options)
+
+
+
+=cut
+
+sub get_alignment_ids_by_feature
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_alignment_ids_by_feature (received $n, expecting 2)");
+    }
+    {
+	my($feature_ids, $options) = @args;
+
+	my @_bad_arguments;
+        (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"feature_ids\" (value was \"$feature_ids\")");
+        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_alignment_ids_by_feature:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_alignment_ids_by_feature');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_alignment_ids_by_feature",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_alignment_ids_by_feature',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_alignment_ids_by_feature",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_alignment_ids_by_feature',
+				       );
+    }
+}
+
+
+
+=head2 $result = get_alignment_ids_by_protein_sequence(feature_ids, options)
+
+
+
+=cut
+
+sub get_alignment_ids_by_protein_sequence
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 2)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function get_alignment_ids_by_protein_sequence (received $n, expecting 2)");
+    }
+    {
+	my($feature_ids, $options) = @args;
+
+	my @_bad_arguments;
+        (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"feature_ids\" (value was \"$feature_ids\")");
+        (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 2 \"options\" (value was \"$options\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to get_alignment_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'get_alignment_ids_by_protein_sequence');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "Tree.get_alignment_ids_by_protein_sequence",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'get_alignment_ids_by_protein_sequence',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method get_alignment_ids_by_protein_sequence",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'get_alignment_ids_by_protein_sequence',
 				       );
     }
 }
