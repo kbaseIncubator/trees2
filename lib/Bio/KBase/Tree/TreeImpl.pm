@@ -1060,6 +1060,11 @@ sub get_tree_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_feature
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ?', @{ $feature_ids },
+	    [qw(Tree(id))]);
+    $return = \@rows;
     #END get_tree_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
