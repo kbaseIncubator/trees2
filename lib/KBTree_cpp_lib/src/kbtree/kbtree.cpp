@@ -400,10 +400,11 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 		label += C;
 		k++;
 	}
-	trim(label);
+	trim(label); trim(nameString);
 
 	node.original_label.assign(label);
 	node.name.assign(nameString);
+	trim(distanceToParentString);
 	if(distanceToParentString.size()>0) { node.distanceToParent = convertToDouble(distanceToParentString); }
 	node.pre_name_decoration.assign(preNameComment);
 	node.post_name_decoration.assign(postNameComment);
@@ -430,7 +431,7 @@ void KBTree::passLeadingWhiteSpace(const std::string &newickString, unsigned int
 		if( C!=' ' && C!='\t' && C!='\n' && C!='\r' ) {
 			break;
 		}
-		k++;
+		C=newickString.at(++k);
 	}
 }
 
