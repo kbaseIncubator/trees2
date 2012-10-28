@@ -9,6 +9,7 @@
 #
 #  author:  msneddon
 #  created: 5/21/2012
+#  updated :
 
 use strict;
 use warnings;
@@ -17,18 +18,28 @@ use Data::Dumper;
 use Test::More;
 use lib "../lib/";
 
+use FindBin;
+use lib "$FindBin::Bin/..";
+use TreeTestConfig qw(getHost getPort);
+
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
 # NOTE THAT THE PARAMETERS ARE JUST MADE UP AT THE MOMENT
-my $func_calls = {  get_tree => ["kb|t123", [FORMAT =>'first']],
-                    get_trees => [ ["kb|t1","kb|t2","kb|t4"], [FORMAT =>'first']],
-                    all_tree_ids => [ "1" ],
-                    get_trees_with_entire_seq => ["kb|g44.1", "1", "50", [FORMAT =>'first']],
-                    get_trees_with_overlapping_seq => ["kb|g44.1", "1", "50", [FORMAT =>'first']],
-                    get_trees_with_entire_domain => ["kb|d33.1", [FORMAT =>'first']],
-                    get_trees_with_overlapping_domain => ["kb|d33.1", [FORMAT =>'first']],
-                    substitute_node_names_with_kbase_ids => ["tree",[FORMAT =>'first']],
-                    extract_leaf_node_names => ["(a,b)c;"]
+my $func_calls = {
+                replace_node_names => ["((a,b)c);",{"b"=>"x"}],
+                remove_node_names_and_simplify => ["((a,b)c);",["b"]],
+                extract_leaf_node_names => ["((a,b)c);"],
+                extract_node_names => ["((a,b)c);"],
+                get_node_count => ["((a,b)c);"],
+                get_leaf_count => ["((a,b)c);"],
+                get_tree => ["kb|tree.123", {format=>'newick'}],
+                get_trees => [ ["kb|tree.1","kb|tree.2","kb|tree.4"], {format=>'newick'}],
+                get_tree_ids_by_feature => [ ["kb|g.fake"] ],
+                get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
+                get_alignment_ids_by_feature => [ ["kb|g.fake"]],
+                get_alignment_ids_by_protein_sequence => [ ["madeUpMD5"] ],
+                get_kbase_ids_from_alignment_row => ["kb|aln.4",5],
+                draw_html_tree => ["((a,b)c);",{option=>"value"}],
                  };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
@@ -37,12 +48,13 @@ my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of func
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS
 #  NOTE: for initial testing, you may have to modify TreesClient.pm to also
 #        point to the legacy interface
-use_ok("JSON::RPC::Legacy::Client");
+use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
-# MAKE A CONNECTION
-my $tree_service_url = "http://140.221.92.144:7047";
-my $client = Bio::KBase::Tree::Client->new($tree_service_url);
+# MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 ok(defined($client),"instantiating tree client");
 
 

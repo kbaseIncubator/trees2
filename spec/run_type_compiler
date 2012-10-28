@@ -12,14 +12,14 @@
 
 echo "running type_compiler to generate the tree server/client libs..."
 
-# SPECIFY LOCAL TYPE COMPILER PATH HERE
+# SPECIFY TYPE COMPILER PATH HERE, or empty if typecomp is on the path
 #PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/kb_typecomp"
 #PATH_TO_TC="/Users/msneddon/Desktop/work/kbase_git/typecomp_from_kbase_git"
-PATH_TO_TC="/Users/msneddon/Desktop/trees/git_repo/typecomp"
+PATH_TO_TC=""
 
 # Name of type compiler perl executables - this should not have to change
-COMPILE_TYPESPEC='/scripts/compile_typespec.pl'
-GEN_JAVA_CLIENT='/scripts/gen_java_client.pl'
+COMPILE_TYPESPEC='compile_typespec'
+GEN_JAVA_CLIENT='gen_java_client'
 
 # Specify input and output locations for the type compiler
 OUTPUT_DIR="../lib"
@@ -56,7 +56,7 @@ RUN_CMD="${PATH_TO_TC}${COMPILE_TYPESPEC} \
             -py $PY_NAME \
             $SPEC_FILE $OUTPUT_DIR"
 echo "Running: \"perl ${RUN_CMD}\""
-perl $RUN_CMD
+$RUN_CMD
 
 # we want to generate java clients, but this code does not
 # appear to be fully functional yet ...

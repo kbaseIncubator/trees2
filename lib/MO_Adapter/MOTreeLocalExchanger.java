@@ -14,10 +14,10 @@ import java.util.TimeZone;
 
 import KBTreeUtil.KBTree;
 
+// same as the data exchanger, except looks for tree files locally
+public class MOTreeLocalExchanger {
 
-public class MOTreeDataExchanger {
-
-	public static String GROUP = "SMART";
+	public static String GROUP = "SSF";
 	// Possible Groups (** indicates alignment files are ready)
 	// 16S
 	// 23S
@@ -33,8 +33,11 @@ public class MOTreeDataExchanger {
 	// SSF
 	// TIGRFAMs
 	
+	public static String pathToTreeList =   "/homes/oakland/msneddon/mo_tree_dump/input/"+GROUP+"_TreeList.txt";
+	
 	public static String pathToDumpDir =   "/homes/oakland/msneddon/mo_tree_dump/dump/"+GROUP;
 	public static String pathToAlnDir =    "/homes/oakland/msneddon/mo_tree_dump/input/alignments/"+GROUP;
+	public static String pathToTreeDir =    "/homes/oakland/msneddon/mo_tree_dump/input/trees/"+GROUP;
 	public static String pathToLociFile =  "/homes/oakland/msneddon/mo_tree_dump/input/ids/public_loci_with_associated_kbaseIds.txt";
 	public static String pathToIdFile =    "/homes/oakland/msneddon/mo_tree_dump/input/ids/assigned_kbase_tree_id_list.txt";
 	
@@ -74,16 +77,12 @@ public class MOTreeDataExchanger {
 	
 	public static void main(String[] args) 
 	{		
-		// process any command line arguments
-		if(args.length>2)  { System.err.println("error, too many args.  One argument acceptable which gives path to dump directory.\n"); return; }
-		if(args.length>=1) { pathToDumpDir = args[0]; }
-		if(args.length==2) { pathToAlnDir = args[1]; }
-		
-		// grab and open streams to the output destinations, if ignoreExistingFiles is set to true, then files will be overwritten
-		boolean ignoreExistingFiles = true;
+		// do the work of actually querying microbes online and writing the files
+		long startTime = System.currentTimeMillis();
 		BufferedWriter BW_trees, BW_treeAttribute, BW_treeNodeAttribute, BW_aln, BW_aln_row, BW_alnAttribute, BW_containsProtein, BW_containsNucleotide;
 		
 		// open buffers to all the primary output files we need
+		boolean ignoreExistingFiles=true;
 		System.out.println(" -> creating file \"Tree.tab\"");
 		if(!ignoreExistingFiles) BW_trees   = openOutputFileStreamNicely(pathToDumpDir+"/Tree.tab");
 		else BW_trees   = openOutputFileStreamNoMatterWhat(pathToDumpDir+"/Tree.tab");
@@ -111,7 +110,6 @@ public class MOTreeDataExchanger {
 
 		
 		// do the work of actually querying microbes online and writing the files
-		long startTime = System.currentTimeMillis();
 		if(BW_trees!=null && BW_treeAttribute!=null && BW_treeNodeAttribute!=null && BW_aln!=null && 
 			BW_aln_row!=null && BW_alnAttribute!=null && BW_containsProtein!=null && BW_containsNucleotide!=null) {
 			
@@ -126,7 +124,7 @@ public class MOTreeDataExchanger {
 					BW_containsNucleotide,
 					startTime);
 		}
-
+		
 		// close the streams
 		try {
 			BW_trees.close();
@@ -139,6 +137,7 @@ public class MOTreeDataExchanger {
 			BW_containsNucleotide.close();
 		} catch (IOException ex) { System.err.println("IOException: "+ex.getMessage()); }
 		
+
 		// give us some stats on how we did
 		long estimatedTime = System.currentTimeMillis() - startTime;
 		System.out.println(" -> elapsedtime="+estimatedTime*0.001+"s");
@@ -163,129 +162,101 @@ public class MOTreeDataExchanger {
 
 		try
 		{
-			System.out.println(" -> opening connection to pub.microbesonline.org:3306/genomics");
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			String url = "jdbc:mysql://pub.microbesonline.org:3306/genomics";
-			if(use_KB_DB) { url = "jdbc:mysql://db2.chicago.kbase.us:3306/genomics"; }
-			Connection conn = DriverManager.getConnection(url, "guest", "guest");
 			
-			String query = "SELECT * FROM Tree WHERE type='"+GROUP+"'";
-			try
-			{
-				// Make sure we connect with some kind of stream rather than load it all at once
-				Statement st = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
-						java.sql.ResultSet.CONCUR_READ_ONLY);
-				st.setFetchSize(Integer.MIN_VALUE);
-
-				System.out.println(" -> executing the query: "+query);
-				ResultSet rs = st.executeQuery(query);
-				long iterationTime=0,iterationStartTime=0; int row_count = 0,written_count=0;
-				while (rs.next())
-				{
-					iterationStartTime = System.currentTimeMillis();
+			// read in the file list of alignments/trees to process
+			DataInputStream in = new DataInputStream(new FileInputStream(pathToTreeList));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String line=""; int row_count = 1; int written_count=0;
+			while ((line=br.readLine()) != null)   {
+				long iterationStartTime = System.currentTimeMillis();
+			
+				line=line.trim();
+				String [] tokens = line.split("\\s+");
+				String treeId = tokens[0];
+				String name = tokens[1];
+				String type = GROUP;
+				System.out.println(" -> ["+row_count+"]: processing "+treeId+", named: "+name);
+				row_count++;
 					
-					//(1) Parse out the result set
-					row_count++;
-					String treeId     = rs.getString(1);
-					String name       = rs.getString(2);
-					String type       = rs.getString(3);
-					String modified   = rs.getString(4);
-					String newick     = rs.getString(5);
-					System.out.println(" -> ["+row_count+"]: processing "+treeId+", named: "+name+", type:"+type+", modified:"+modified);
-					
-					// (2) Grab the associated KBase ID
-					String ids[] = kbaseIdMapping.find(Long.parseLong(treeId));
-					String KBaseTreeID = ids[0];
-					String KBaseAlnID = ids[1];
-					System.out.println("     | tree is mapped to kbase aln id: "+KBaseAlnID+" and kbase tree id: "+KBaseTreeID);
-					
-					// (3) FIND, LOAD THE ALIGNMENT FILE, IDENTIFY THE PRIVATE GENES, AND WRITE THE NEW ALIGNMENT FILE (WITHOUT EVER STORING ALL THE SEQUENCES)
-					String alignmentFileName = pathToAlnDir+"/"+name+".trim.fasta";
-					System.out.println("     | processing alignment file: "+alignmentFileName);
-					SingleGeneAlignmentInformation ai = processSingleGeneAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/"+KBaseAlnID+".fasta");
-					System.out.println("     | alignment contains "+ai.n_rows+" total rows and "+ai.n_private+" private rows");
-					if((ai.n_rows-ai.n_private)==0) {
-						System.out.println("     | no public rows to publish to kbase!  skipping this alignment/tree pair.");
-						continue;
-					}
-					System.out.println("     | final alignment with removed private genes was written containing "+(ai.n_rows-ai.n_private) +" rows.");
-					written_count++;
-					
-					// (4) PARSE THE NEWICK TREE, REMOVE PRIVATE GENES, WRITE THE FILE
-					processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
-					
-					// (5) WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
-					BW_aln.write(KBaseAlnID+"\t"); // kb_aln_id	 M	 unique kbase id reserved for the alignment from ID server: 'kb|aln.XXXXX'
-					BW_aln.write((ai.n_rows-ai.n_private)+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
-					BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
-					BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
-					BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
-					BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
-					BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-					BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
-					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
-					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_aln.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database
-					BW_aln.write("\n");
-					BW_aln.flush();
-					
-					// (6) WRITE THE TREE RECORD IN TREE.TAB FILE
-					BW_trees.write(KBaseTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
-					BW_trees.write(KBaseAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
-					BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
-					BW_trees.write("sequence_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
-					BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-					BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
-					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
-					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_trees.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database   
-					BW_trees.write("\n");
-					BW_trees.flush();
-
-					// (7) ADD TO THE ALIGNMENT ROW TABLE
-					writeAlignmentRowDataForProtAln(KBaseAlnID, BW_aln_row, BW_containsProtein, ai);
-					
-					// (8) WRITE ANY OTHER ATTRIBUTES WE NEED TO THE APPROPRIATE FILES
-					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
-					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_id\t"+name+"\n");
-					
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_id\t"+name+"\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"style\t"+"phylogram\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"bootstrap_type\t"+"Shimodaira-Hasegawa Test\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"rooted\t"+"midpoint\n");
-
-
-					// dump some stats to see how we are progressing
-					Runtime runtime = Runtime.getRuntime();
-				    	java.text.NumberFormat format = java.text.NumberFormat.getInstance();
-				    	StringBuilder sb = new StringBuilder();
-				    	long maxMemory = runtime.maxMemory();
-				    	long allocatedMemory = runtime.totalMemory();
-				   	long freeMemory = runtime.freeMemory();
-				    	sb.append("free memory=" + format.format(freeMemory / 1024) + ", ");
-				    	sb.append("allocated memory=" + format.format(allocatedMemory / 1024) + ", ");
-				   	sb.append("max memory=" + format.format(maxMemory / 1024) + ", ");
-				    	sb.append("total free memory=" + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024));
-				    	System.out.println("     | "+sb.toString());
-					long estimatedTime = System.currentTimeMillis() - startTime;
-					iterationTime = System.currentTimeMillis() - iterationStartTime;
-					System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
-					System.gc();
+				// for each ID, grab the associated KBase ID
+				String ids[] = kbaseIdMapping.find(Long.parseLong(treeId));
+				String KBaseTreeID = ids[0];
+				String KBaseAlnID = ids[1];
+				System.out.println("     | tree is mapped to kbase aln id: "+KBaseAlnID+" and kbase tree id: "+KBaseTreeID);
+				
+				// FIND, LOAD THE ALIGNMENT FILE, IDENTIFY THE PRIVATE GENES, AND WRITE THE NEW ALIGNMENT FILE (WITHOUT EVER STORING ALL THE SEQUENCES)
+				String alignmentFileName = pathToAlnDir+"/"+name+".trim.fasta";
+				System.out.println("     | processing alignment file: "+alignmentFileName);
+				SingleGeneAlignmentInformation ai = processSingleGeneAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/"+KBaseAlnID+".fasta");
+				System.out.println("     | alignment contains "+ai.n_rows+" total rows and "+ai.n_private+" private rows");
+				if((ai.n_rows-ai.n_private)==0) {
+					System.out.println("     | no public rows to publish to kbase!  skipping this alignment/tree pair.");
+					continue;
 				}
-				System.out.println(" -> found "+row_count+" trees, wrote "+written_count);
-			}
-			catch (SQLException ex) {System.err.println("SQLException: "+ex.getMessage());}
+				System.out.println("     | final alignment with removed private genes was written containing "+(ai.n_rows-ai.n_private) +" rows.");
+				written_count++;
+	
+				// PARSE THE NEWICK TREE, REMOVE PRIVATE GENES, WRITE THE FILE
+				String treeFileName = pathToTreeDir+"/"+name+".newick";
+				
+				System.out.println("     | processing tree file: "+treeFileName);
+				DataInputStream inTREE = new DataInputStream(new FileInputStream(treeFileName));
+				BufferedReader brTREE = new BufferedReader(new InputStreamReader(inTREE));
+				String newick=""; String treeFileLine="";
+				while ((treeFileLine=brTREE.readLine()) != null) { newick+=treeFileLine.trim(); };
+				processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
+					
+				// (5) WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
+				BW_aln.write(KBaseAlnID+"\t"); // kb_aln_id	 M	 unique kbase id reserved for the alignment from ID server: 'kb|aln.XXXXX'
+				BW_aln.write((ai.n_rows-ai.n_private)+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
+				BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
+				BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
+				BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
+				BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
+				BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
+				BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+				BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+				BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
+				BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
+				BW_aln.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database
+				BW_aln.write("\n");
+				BW_aln.flush();
+					
+				// (6) WRITE THE TREE RECORD IN TREE.TAB FILE
+				BW_trees.write(KBaseTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
+				BW_trees.write(KBaseAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
+				BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
+				BW_trees.write("sequence_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
+				BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
+				BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+				BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+				BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
+				BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
+				BW_trees.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database   
+				BW_trees.write("\n");
+				BW_trees.flush();
 
-			//close shop
-			conn.close();
+				// (7) ADD TO THE ALIGNMENT ROW TABLE
+				writeAlignmentRowDataForProtAln(KBaseAlnID, BW_aln_row, BW_containsProtein, ai);
+				
+				// (8) WRITE ANY OTHER ATTRIBUTES WE NEED TO THE APPROPRIATE FILES
+				BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
+				BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_id\t"+name+"\n");
+					
+				BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
+				BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_id\t"+name+"\n");
+				BW_treeAttribute.write(KBaseTreeID+"\t"+"style\t"+"phylogram\n");
+				BW_treeAttribute.write(KBaseTreeID+"\t"+"bootstrap_type\t"+"Shimodaira-Hasegawa Test\n");
+				BW_treeAttribute.write(KBaseTreeID+"\t"+"rooted\t"+"midpoint\n");
+
+				// dump some stats to see how we are progressing
+				
+				long estimatedTime = System.currentTimeMillis() - startTime;
+				long iterationTime = System.currentTimeMillis() - iterationStartTime;
+				System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
+				System.gc();
+			}
 		}
-		catch (ClassNotFoundException ex) {System.err.println("classnotfound: "+ex.getMessage());}
-		catch (IllegalAccessException ex) {System.err.println("IllegalAccessException: "+ex.getMessage());}
-		catch (InstantiationException ex) {System.err.println("InstantiationException: "+ex.getMessage());}
-		catch (SQLException ex)           {System.err.println("SQLException: "+ex.getMessage());}
 		catch (IOException ex)            {System.err.println("IOException: "+ex.getMessage());}
 
 	}

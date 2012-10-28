@@ -1,10 +1,10 @@
 /*
 KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
-Full documentation and API reference will be added here.
+Set of functions and tools for building, querying, 
 
 created 5/21/2012 - msneddon
-last updated sept 2012
+last updated oct 2012
 */
 module Tree
 {
@@ -14,8 +14,10 @@ module Tree
 
     /* indicates true or false values, false <= 0, true >=1 */
     typedef int bool;
+    
     /* time in units of number of seconds since the epoch */
     typedef string timestamp;
+    
     /* integer number indicating a 1-based position in an amino acid / nucleotide sequence */
     typedef int position;
     
@@ -27,14 +29,13 @@ module Tree
     */
     typedef string kbase_id;
 
-    /* A string representation of a phylogenetic tree.  The format/syntax of the string can be
+    /* A string representation of a phylogenetic tree.  The format/syntax of the string is
     specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
-    'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to accept/return
+    'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
     trees in different formats depending on addtional option parameters. Regardless of format, all leaf nodes
     in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
-    of the API to replace these IDs with other KBase Ids instead, depending on how the tree was built.  Internal
-    nodes may or may not be named.  Nodes, depending on the format, may also be annotated with structured data
-    such as bootstrap values.
+    of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
+    Nodes, depending on the format, may also be annotated with structured data such as bootstrap values.
     */
     typedef string tree;
 
@@ -65,17 +66,13 @@ module Tree
     */
     typedef fasta fasta_alignment;
     
-    /* The string representation of the parsed node name (may be a kbase_id, but does not have to).  Note, this
-    is not the full label in a newick_tree (which may include comments or distances).
+    /* The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note, this
+    is not the full, raw label in a newick_tree (which may include comments or distances).
     */
     typedef string node_name;
     
     /* String in HTML format, used in the KBase Tree library for returning rendered trees. */
     typedef string html_file;
-    
-    /* String in SVG format, used in the KBase Tree library for returning rendered trees. */
-    typedef string svg_file;
-    
     
     /* Meta data about a tree, such as when it was created, parameters used in its creation, etc
     Is this actually needed? Or will this info be accessible through the auto generated methods?
@@ -114,22 +111,24 @@ module Tree
     /* *********************************************************************************************** */
     /* METHODS FOR TREE PARSING AND STRING MANIPULATIONS */
     /* *********************************************************************************************** */
-     
+    
+    /* NOTE: methods that are commented out are not yet fully functional or implemented */
     /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
     */
-    funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree);
+    /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree); */
     
     /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
     */
-    funcdef convert_phyloXML2newick(newick_tree tree) returns (phyloXML_tree);
+    /* funcdef convert_phyloXML2newick(newick_tree tree) returns (phyloXML_tree); */
     
     /* Convert a tree encoded in newick format to a tree encded in JSON format.
     */
-    funcdef convert_newick2json(newick_tree tree) returns (json_tree);
+    /* funcdef convert_newick2json(newick_tree tree) returns (json_tree); */
     
     /* Convert a tree encoded in JSON format to a tree encded in newick format.
     */
-    funcdef convert_json2newick(json_tree tree) returns (newick_tree);
+    /* funcdef convert_json2newick(json_tree tree) returns (newick_tree); */
+    
     
     /* Given a tree in newick format, replace the node names indicated as keys in the 'replacements' mapping
     with new node names indicated as values in the 'replacements' mapping.  Matching is EXACT and will not handle
@@ -145,9 +144,12 @@ module Tree
     funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
    
     
+    
+    
     /* *********************************************************************************************** */
     /* METHODS FOR TREE INTROSPECTION */
-    /* note that some of these methods may be better perfomed via the CDMI if the tree is available in the CDS */
+    /* These are methods that make a tree tell you about itself.  These methods operate on any newick  */
+    /* tree that is passed in, and requires no direct connecion to the CDM.                            */
     /* *********************************************************************************************** */
   
     /* Given a tree in newick format, list the names of the leaf nodes.
@@ -173,73 +175,98 @@ module Tree
     
     
     
+    
     /* *********************************************************************************************** */
-    /* METHODS FOR ALIGNMENT / TREE RETRIEVAL */
-    /* NOTE THAT SOME OF THESE METHODS MIGHT NOT BE REQUIRED IF THE CDMI PROVIDES ENOUGH FUNCTIONALITY */
+    /* METHODS FOR ALIGNMENT AND TREE RETRIEVAL */
     /* *********************************************************************************************** */
     
-    /* Returns the specified tree in newick format, or an empty string if the tree does not exist.  Options
-    hash provides a way to return the tree with different labels replaced or with different attached meta
-    information.
+    /* Returns the specified tree in the specified format, or an empty string if the tree does not exist.
+    The options hash provides a way to return the tree with different labels replaced or with different attached meta
+    information.  Currently, the available flags and understood options are listed 
     
         options = [
-            FORMAT => 'raw' || 'first' || 'all' || 'species_name' ...
-        ]
+            format => 'newick',
+            newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+            newick_bootstrap => 'none' || 'internal_node_names'
+        ];
  
-    The FORMAT option selects how node labels are replaced in the output tree.  'raw' returns just the
-    tree with labels into the AlignmentRowComponent table. 'first' returns the tree with labels replaced
-    with only a single kbase_id to a sequence (if there are multiple sequences in the alignment row, then
-    only the first is returned).  'all' returns the tree with all the kbase_ids that make up the alignment
-    row in a comma-delimited format.  If there is only one sequence in the alignment, then the behavior
-    is the same as 'first'.  'species_name' replaces labels with the name of the organism, if available.
-    other options???
+    The 'format' key indicates what string format the tree should be returned in.  Currently, there is only
+    support for 'newick'. The default value if not specified is 'newick'.
     
-    Note: the options hash will be the same as for other functions which provide substitution capabilities 
+    The 'newick_label' key only affects trees returned as newick format, and specifies what should be
+    placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
+    of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
+    'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
+    feature that was originally used to define the sequence).  'protein_sequence_id' indicates that the
+    kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
+    the contig sequence id is added.  Note that trees are typically built with protein sequences OR
+    contig sequences. If you select one type of sequence, but the tree was built with the other type, then
+    no labels will be added.  The default value if none is specified is 'raw'.
     
-    todo: provide a way to get meta data about this tree, possibly in a separate function, but may
-    not be needed if this is provided by the ER model.
+    The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
+    how they are returned.  'none' indicates that no bootstrap values are returned.
+    
     */
-    funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (newick_tree);
+    funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (tree);
     
-    /* Returns a list of the specifed trees in newick format, or an empty string for each tree_id that
-    was not found. Note: this function may not be needed if this functionality is provided by the auto-gen ER code
+    /* Performs exactly the same function as get_tree, but accepts a list of ids instead, and returns
+    a list of trees.
     */    
-    funcdef get_trees(list<kbase_id> tree_ids, mapping<string,string> options) returns (list<newick_tree>);
+    funcdef get_trees(list<kbase_id> tree_ids, mapping<string,string> options) returns (list<tree>);
+    
+    /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
+    is identified and used to retrieve all trees by ID that were built using the given protein sequence. */
+    funcdef get_tree_ids_by_feature(list <kbase_id> feature_ids) returns (list<kbase_id>);
+    
+    /* Given a list of kbase ids of a protein sequences (their MD5s), retrieve the tree ids of trees that
+    were built based on these sequences. */
+    funcdef get_tree_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
+    
+    /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
+    is identified and used to retrieve all alignments by ID that were built using the given protein sequence. */
+    funcdef get_alignment_ids_by_feature(list <kbase_id> feature_ids) returns (list<kbase_id>);
+    
+    /* Given a list of kbase ids of a protein sequences (their MD5s), retrieve the alignment ids of trees that
+    were built based on these sequences. */
+    funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
+  
+    
+    
+    
+    
     
     /* Returns a list of all IDs of all trees in the database that match the given flags (right now
     the only flag indicates if the tree is active or not, meaning the latest version of the tree,
     but this should be extended to accept more args and possible queries.
+    NOTE: This method no longer is needed because it can be done via the CDMI
     */ 
-    funcdef all_tree_ids(bool is_active) returns (list <kbase_id>);
+    /* funcdef all_tree_ids(bool is_active) returns (list <kbase_id>); */
 
     /* Returns all tree IDs in which the entire portion of the given sequence (which can optionally
-    include start and end positions of the sequence) is used in the alignment which generates the
-    tree.
+    include start and end positions of the sequence) is used in the alignment which generates the tree.
     todo: should beg/end just be included in some options hash?
     todo: define contents of options hash, which will allow more complex queries, such as returning
           only active trees, or trees of a particuar hieght, etc...
-    */
     funcdef get_trees_with_entire_seq(fasta sequence, position beg, position end, mapping<string,string> options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which some portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the tree.
-    */
     funcdef get_trees_with_overlapping_seq(fasta sequence, position beg, position end, mapping<string,string> options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which the entire portion of the given domain is used in the alignment
     which generates the tree (usually the tree will be constructed based on this domain). NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-    */
     funcdef get_trees_with_entire_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
+    */
     
     /* Returns all tree IDs in which some portion of the given domain is used in the alignment
     which generates the tree (usually such trees will be constructed based on a similar domain created
     with an alternative method, so the entire domain may not be contained).  NOT FUNCTIONAL UNTIL KBASE HAS HOMOLOGUE/DOMAIN LOOKUPS
-    */
     funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
+    */
     
-    
-    
-    
+
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE-BASED FEATURE/SEQUENCE LOOKUPS */
@@ -252,7 +279,7 @@ module Tree
     a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
     parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
     */
-    funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);
+    /*funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);*/
 
  
      /* Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
@@ -270,7 +297,7 @@ module Tree
     method requires that the tree was built from a multiple sequence alignment and that the tree/alignment is stored
     in KBASE.  This method returns
     */
-    funcdef add_node_to_tree(kbase_id tree_id, kbase_id sequence_id, mapping<string,string> options) returns (newick_tree);
+    /* funcdef add_node_to_tree(kbase_id tree_id, kbase_id sequence_id, mapping<string,string> options) returns (newick_tree); */
 
  
     /* *********************************************************************************************** */
@@ -279,11 +306,11 @@ module Tree
  
     /* Given an alignment in FASTA format, build a phylogenetic tree using the options indicated.
     */
-    funcdef build_tree_from_fasta(fasta_alignment alignment, mapping<string,string>options) returns (newick_tree);
+    /* funcdef build_tree_from_fasta(fasta_alignment alignment, mapping<string,string>options) returns (newick_tree); */
     
     /* Given a set of sequences in FASTA format, construct a sequence alignment with the options indicated.
     */
-    funcdef align_sequences(list<fasta> sequences, mapping<string,string>options) returns (fasta_alignment);
+    /* funcdef align_sequences(list<fasta> sequences, mapping<string,string>options) returns (fasta_alignment); */
  
  
     /* *********************************************************************************************** */
@@ -291,10 +318,10 @@ module Tree
     /* *********************************************************************************************** */
 
     /* Given a tree, render it in HTML/JAVASCRIPT and return the page. */
-    funcdef draw_web_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);
+    funcdef draw_html_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);
     
     /* Given a tree, render it as an SVG object and return the drawing. */
-    funcdef draw_svg_tree(newick_tree tree, mapping<string,string>display_options) returns (svg_file);
+    /* funcdef draw_svg_tree(newick_tree tree, mapping<string,string>display_options) returns (svg_file); */
 
 
     

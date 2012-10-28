@@ -1,26 +1,32 @@
 #!/usr/bin/perl
-# This script tests the service calls which use the compiled KBTreeUtil functionality, which is implemented
-# on the backend in C++.  These functions do not query the CDS, but instead manipulate tree objects.
+# This script tests the service calls which provide tree introspection methods - which basically means
+# that these methods take an input tree (usually) in newick format, and returns some property of the
+# tree, such as a list of leaves or the number of nodes.  Most of these methods use a compiled C++
+# library on the backend, so this suite of tests also makes sure that this c++ library is functioning properly.
 #
 #  author:  msneddon
 #  created: 8/9/2012
+#  last updated: 10/27/2012, msneddon
 use strict;
 use warnings;
 
 use Test::More tests => 27;
 use Data::Dumper;
 use Test::More;
-use lib "../lib/";
+
+use FindBin;
+use lib "$FindBin::Bin/..";
+use TreeTestConfig qw(getHost getPort);
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS INSTALLED
-#  NOTE: for initial testing, you may have to modify TreesClient.pm to also
-#        point to the legacy interface
-use_ok("JSON::RPC::Legacy::Client");
+use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
-# MAKE A CONNECTION AND ENSURE WE ARE CONNECTED
-my $tree_service_url = "http://140.221.92.144:7047";
-my $client = Bio::KBase::Tree::Client->new($tree_service_url);
+
+# MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)
