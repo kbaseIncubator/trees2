@@ -13,17 +13,20 @@ use warnings;
 use Test::More tests => 27;
 use Data::Dumper;
 use Test::More;
-use lib "../lib/";
+
+use FindBin;
+use lib "$FindBin::Bin/..";
+use TreeTestConfig qw(getHost getPort);
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS INSTALLED
-#  NOTE: for initial testing, you may have to modify TreesClient.pm to also
-#        point to the legacy interface
-use_ok("JSON::RPC::Legacy::Client");
+use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
-# MAKE A CONNECTION AND ENSURE WE ARE CONNECTED
-my $tree_service_url = "http://140.221.92.144:7047";
-my $client = Bio::KBase::Tree::Client->new($tree_service_url);
+
+# MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)

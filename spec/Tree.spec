@@ -228,7 +228,7 @@ module Tree
     
     /* Given a list of kbase ids of a protein sequences (their MD5s), retrieve the alignment ids of trees that
     were built based on these sequences. */
-    funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> feature_ids) returns (list<kbase_id>);
+    funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
   
     
     
@@ -279,7 +279,7 @@ module Tree
     a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
     parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
     */
-    funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);
+    /*funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);*/
 
  
      /* Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose

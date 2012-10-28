@@ -634,6 +634,7 @@ sub get_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree
+    $return = "(mr_tree)";
     #END get_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -708,7 +709,7 @@ sub get_trees
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_trees
-    $return = "(mr_trees)";
+    $return = ["(mr_tree_1)","mr.tree2"];
     #END get_trees
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -852,6 +853,11 @@ sub get_tree_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_protein_sequence
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ?', @{ $protein_sequence_ids },
+	    [qw(Tree(id))]);
+    $return = \@rows;
     #END get_tree_ids_by_protein_sequence
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -921,6 +927,11 @@ sub get_alignment_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_feature
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ?', @{ $feature_ids },
+	    [qw(Alignment(id))]);
+    $return = \@rows;
     #END get_alignment_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -937,7 +948,7 @@ sub get_alignment_ids_by_feature
 
 =head2 get_alignment_ids_by_protein_sequence
 
-  $return = $obj->get_alignment_ids_by_protein_sequence($feature_ids)
+  $return = $obj->get_alignment_ids_by_protein_sequence($protein_sequence_ids)
 
 =over 4
 
@@ -946,7 +957,7 @@ sub get_alignment_ids_by_feature
 =begin html
 
 <pre>
-$feature_ids is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a kbase_id
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -956,7 +967,7 @@ kbase_id is a string
 
 =begin text
 
-$feature_ids is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a kbase_id
 $return is a reference to a list where each element is a kbase_id
 kbase_id is a string
 
@@ -977,10 +988,10 @@ were built based on these sequences.
 sub get_alignment_ids_by_protein_sequence
 {
     my $self = shift;
-    my($feature_ids) = @_;
+    my($protein_sequence_ids) = @_;
 
     my @_bad_arguments;
-    (ref($feature_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"feature_ids\" (value was \"$feature_ids\")");
+    (ref($protein_sequence_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"protein_sequence_ids\" (value was \"$protein_sequence_ids\")");
     if (@_bad_arguments) {
 	my $msg = "Invalid arguments passed to get_alignment_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
@@ -990,6 +1001,11 @@ sub get_alignment_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_protein_sequence
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ?', @{ $protein_sequence_ids },
+	    [qw(Tree(id))]);
+    $return = \@rows;
     #END get_alignment_ids_by_protein_sequence
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -997,95 +1013,6 @@ sub get_alignment_ids_by_protein_sequence
 	my $msg = "Invalid returns passed to get_alignment_ids_by_protein_sequence:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_alignment_ids_by_protein_sequence');
-    }
-    return($return);
-}
-
-
-
-
-=head2 substitute_node_names_with_kbase_ids
-
-  $return = $obj->substitute_node_names_with_kbase_ids($trees, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$trees is a reference to a list where each element is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a newick_tree
-kbase_id is a string
-newick_tree is a tree
-tree is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$trees is a reference to a list where each element is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a newick_tree
-kbase_id is a string
-newick_tree is a tree
-tree is a string
-
-
-=end text
-
-
-
-=item Description
-
-Given a list of kbase identifiers for a tree, substitutes the leaf node labels with actual kbase sequence
-identifiers.  If a particular alignment row maps to a single sequence, this is straightforward.  If an
-alignmnt row maps to multiple sequences, then the current behavior is not yet defined (likely will be
-a concatenated list of sequence ids that compose the alignment row).  Options Hash allows addiional
-parameters to be passed (parameter list is also currently not defined yet and is currently ignored.)
-
-=back
-
-=cut
-
-sub substitute_node_names_with_kbase_ids
-{
-    my $self = shift;
-    my($trees, $options) = @_;
-
-    my @_bad_arguments;
-    (ref($trees) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"trees\" (value was \"$trees\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to substitute_node_names_with_kbase_ids:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'substitute_node_names_with_kbase_ids');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN substitute_node_names_with_kbase_ids
-    
-    # 1) retrieve the tree
-    # 2) find cooresponding alignment and alignment rows
-    # 3) extract the feature ids or sequence IDs from the alignment row table with the original internal tree node id
-    # 4) create a c++ tree lib tree object
-    # 5) replace the names with the feature IDs or sequenceIDs
-    # 6) (optionally) lookup and add annotations
-    # 7) return the newick tree
-    
-    $return = "hello mr. tree., sent from substitute_node_labels_with_kbase_ids";
-    #END substitute_node_names_with_kbase_ids
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to substitute_node_names_with_kbase_ids:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'substitute_node_names_with_kbase_ids');
     }
     return($return);
 }
@@ -1151,7 +1078,7 @@ sub get_kbase_ids_from_alignment_row
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_kbase_ids_from_alignment_row
-    $return = "(mr_tree)";
+    $return = [""];
     #END get_kbase_ids_from_alignment_row
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1227,6 +1154,7 @@ sub draw_html_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN draw_html_tree
+    $return = "<html>\n<head></head>\n<body>\n".$tree."\n</body>\n</html>\n";
     #END draw_html_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
