@@ -1,9 +1,12 @@
 #!/usr/bin/perl
-# This script tests the service calls which use the compiled KBTreeUtil functionality, which is implemented
-# on the backend in C++.  These functions do not query the CDS, but instead manipulate tree objects.
+# This script tests the service calls which provide tree introspection methods - which basically means
+# that these methods take an input tree (usually) in newick format, and returns some property of the
+# tree, such as a list of leaves or the number of nodes.  Most of these methods use a compiled C++
+# library on the backend, so this suite of tests also makes sure that this c++ library is functioning properly.
 #
 #  author:  msneddon
 #  created: 8/9/2012
+#  last updated: 10/27/2012, msneddon
 use strict;
 use warnings;
 
