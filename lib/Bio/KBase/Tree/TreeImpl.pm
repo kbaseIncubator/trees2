@@ -779,11 +779,22 @@ sub get_tree_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_feature
+    
+    # not sure how to construct this query without just looping through...
+    # also, it would be nice to make sure trees are distinct
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ?', @{ $feature_ids },
+    my @allrows = ();
+    foreach (@{$feature_ids}) {
+	my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ? ORDER BY Tree(id)', $_,
 	    [qw(Tree(id))]);
-    $return = \@rows;
+	@allrows = (@allrows,@rows);
+    }
+    my @return_list = ();
+    foreach (@allrows) { push(@return_list,${$_}[0]); }
+    @return_list = sort(@return_list);
+    $return = \@return_list;
+    
     #END get_tree_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
