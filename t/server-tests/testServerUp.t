@@ -8,6 +8,7 @@
 #  created: 5/21/2012
 use strict;
 use warnings;
+use Data::Dumper;
 
 use FindBin;
 use lib "$FindBin::Bin/..";
@@ -31,7 +32,10 @@ my $callobj = {
 };
 my $res = $client->call($host.":".$port, $callobj);
 ok($client->status_line =~ m/^200/,"test a valid rpc call");
-if(!($client->status_line =~ m/^200/)) { print "SERVER RESPONSE: '".$client->status_line."'\n"; }
+if(!($client->status_line =~ m/^200/)) {
+    print "SERVER RESPONSE: '".$client->status_line."'\n";
+    print "SERVICE MSSG: '".$client->error_message."\n";
+}
 ok($res,"test that a valid RPC call returned something");
 if($res) { ok(!$res->is_error,"test that valid RPC call returned a json" ); }
 else {ok(0,"test that a valid RPC call returned a json"); }
