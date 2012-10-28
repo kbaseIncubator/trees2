@@ -1,12 +1,11 @@
 #!/usr/bin/perl
-# This script tests the service calls which provide tree introspection methods - which basically means
-# that these methods take an input tree (usually) in newick format, and returns some property of the
-# tree, such as a list of leaves or the number of nodes.  Most of these methods use a compiled C++
-# library on the backend, so this suite of tests also makes sure that this c++ library is functioning properly.
+# This script tests the set of functions that retrieve records from kbase.  Because it currently
+# connects to the CDM, it is difficult to test results for exact matches because this will change
+# as data gets loaded or new trees are built.  So to 
 #
 #  author:  msneddon
-#  created: 8/9/2012
-#  last updated: 10/27/2012, msneddon
+#  created: 10/25/2012
+#  last updated: 10/28/2012
 use strict;
 use warnings;
 
@@ -28,11 +27,39 @@ print "-> attempting to connect to:'".$host.":".$port."'\n";
 my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 ok(defined($client),"instantiating tree client");
 
+my $tree_ids=[];
 ######### TEST SET 1 ######### 
-# TRY TO RENAME NODES IN THE TREE
-my $listOfIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
-my $tree_ids=$client->get_tree_ids_by_feature($listOfIds);
+# TRY TO RETRIEVE TREES BASED ON FEATURE ID
+#my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
+#my $tree_ids=$client->get_tree_ids_by_feature($listOfFeatureIds);
+#print Dumper($tree_ids);
+
+######### TEST SET 2 ######### 
+# TRY TO RETRIEVE TREES BASED ON PROTEIN SEQUENCE ID
+#my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
+#$tree_ids=$client->get_tree_ids_by_protein_sequence($listOfProtSeqIds);
+#print Dumper($tree_ids);
+
+######### TEST SET 3 ######### 
+# TRY TO RETRIEVE ALIGNMENTS BASED ON FEATURE ID
+#my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
+#$tree_ids=$client->get_alignment_ids_by_feature($listOfFeatureIds);
+#print Dumper($tree_ids);
+
+######### TEST SET 4 ######### 
+# TRY TO RETRIEVE ALIGNMENTS BASED ON PROTEIN SEQUENCE ID
+#my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
+#$tree_ids=$client->get_alignment_ids_by_protein_sequence($listOfProtSeqIds);
+#print Dumper($tree_ids);
+
+######### TEST SET 5 ######### 
+# TRY TO GET THE ACTUAL TREE FROM A TREE ID
+my $tree_id = 'kb|tree.41'; #36363;
+my $options = {};
+$tree_ids=$client->get_tree($tree_id, $options);
 print Dumper($tree_ids);
+
+
 
 
 done_testing();

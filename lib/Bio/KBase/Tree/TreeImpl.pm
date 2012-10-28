@@ -634,7 +634,33 @@ sub get_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree
-    $return = "(mr_tree)";
+    
+    my $kb = $self->{db};
+    my @rows = $kb->GetAll('Tree',
+	'Tree(id) = ? ORDER BY Tree(id)', $tree_id,
+	[qw(Tree(newick))]);
+    
+    #check if query found something
+    if(@rows) {
+	my @return_rows=();
+	foreach(@rows) {
+	    #process the tree according the command-line options
+	    my $raw_newick = $_;
+	    
+	    #read in the tree
+	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0]);
+	    
+	    #$return = $kb_tree->toNewick(4);
+	    
+	    # push back the tree in the desired format
+	    push(@return_rows, $kb_tree->toNewick(1));
+	}
+    
+	#should only ever be one return, so get the first element, and then the first and only newick
+	$return = @return_rows[0];
+    } else {
+	$return = "";
+    }
     #END get_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -790,9 +816,10 @@ sub get_tree_ids_by_feature
 	    [qw(Tree(id))]);
 	@allrows = (@allrows,@rows);
     }
+    #put the tree ids in a single straight-up list
     my @return_list = ();
     foreach (@allrows) { push(@return_list,${$_}[0]); }
-    @return_list = sort(@return_list);
+    # @return_list = sort(@return_list); #could sort here if we want
     $return = \@return_list;
     
     #END get_tree_ids_by_feature
@@ -864,11 +891,21 @@ sub get_tree_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_protein_sequence
+    # not sure how to construct this query without just looping through...
+    # also, it would be nice to make sure trees are distinct
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ?', @{ $protein_sequence_ids },
+    my @allrows = ();
+    foreach (@{$protein_sequence_ids}) {
+	my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+	    'ContainsAlignedProtein(to-link) = ? ORDER BY Tree(id)', $_,
 	    [qw(Tree(id))]);
-    $return = \@rows;
+	@allrows = (@allrows,@rows);
+    }
+    #put the tree ids in a single straight-up list
+    my @return_list = ();
+    foreach (@allrows) { push(@return_list,${$_}[0]); }
+    # @return_list = sort(@return_list); #could sort here if we want
+    $return = \@return_list;
     #END get_tree_ids_by_protein_sequence
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -938,11 +975,21 @@ sub get_alignment_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_feature
+    # not sure how to construct this query without just looping through...
+    # also, it would be nice to make sure trees are distinct
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ?', @{ $feature_ids },
+    my @allrows = ();
+    foreach (@{$feature_ids}) {
+	my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
+	    'Feature(id) = ? ORDER BY Alignment(id)', $_,
 	    [qw(Alignment(id))]);
-    $return = \@rows;
+	@allrows = (@allrows,@rows);
+    }
+    #put the tree ids in a single straight-up list
+    my @return_list = ();
+    foreach (@allrows) { push(@return_list,${$_}[0]); }
+    # @return_list = sort(@return_list); #could sort here if we want
+    $return = \@return_list;
     #END get_alignment_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1012,11 +1059,21 @@ sub get_alignment_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_protein_sequence
+    # not sure how to construct this query without just looping through...
+    # also, it would be nice to make sure trees are distinct
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ?', @{ $protein_sequence_ids },
-	    [qw(Tree(id))]);
-    $return = \@rows;
+    my @allrows = ();
+    foreach (@{$protein_sequence_ids}) {
+	my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+	    'ContainsAlignedProtein(to-link) = ? ORDER BY Alignment(id)', $_,
+	    [qw(Alignment(id))]);
+	@allrows = (@allrows,@rows);
+    }
+    #put the tree ids in a single straight-up list
+    my @return_list = ();
+    foreach (@allrows) { push(@return_list,${$_}[0]); }
+    # @return_list = sort(@return_list); #could sort here if we want
+    $return = \@return_list;
     #END get_alignment_ids_by_protein_sequence
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
