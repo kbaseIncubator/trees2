@@ -93,10 +93,6 @@ std::string KBTreeLib::getQuotedString(const std::string& s)
 }
 
 
-
-
-
-
 const unsigned int KBNode::NAME_AND_DISTANCE=0;
 const unsigned int KBNode::NAME_DISTANCE_AND_COMMENTS=1;
 const unsigned int KBNode::NAME_ONLY=2;
@@ -117,6 +113,35 @@ void KBNode::clear()
 	this->distanceToParent=NAN;
 	this->bootstrapValue=NAN;
 }
+
+std::string KBNode::getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label)
+{
+	string constructedLabel = "";
+
+	//add pre name comments
+	if(pre_name_decoration.size()>0 && with_comments) { constructedLabel+=("["+getQuotedString(pre_name_decoration)+"]"); }
+	//add label name
+	if(with_label) { constructedLabel+=getQuotedString(name); }
+	//or possibly a bootstrap value if name is empty and bootstrap value exists
+	if(name.size()==0 && !isnan(bootstrapValue) && with_bootstrap_value_as_label) { constructedLabel+=toString(bootstrapValue); }
+	//add post name comments
+	if(post_name_decoration.size()>0) { constructedLabel+=("["+getQuotedString(post_name_decoration)+"]"); }
+
+	//if we are outputting comments or distances, we need a colon.
+	if( (with_distance && !isnan(distanceToParent)) || (with_comments && (pre_dist_decoration.size()>0 || post_dist_decoration.size()>0)) ) {
+		constructedLabel+=":";
+	}
+
+	//add pre dist comments
+	if(pre_dist_decoration.size()>0) { constructedLabel+=("["+getQuotedString(pre_dist_decoration)+"]"); }
+	//add distance
+	if(!isnan(distanceToParent) && with_distance) { constructedLabel+= toString(distanceToParent); }
+	//add post dist comments
+	if(post_dist_decoration.size()>0) {constructedLabel+=("["+getQuotedString(post_dist_decoration)+"]"); }
+
+	return constructedLabel;
+}
+
 
 std::string KBNode::getLabelFromComponents(unsigned int style) {
 
@@ -163,6 +188,10 @@ KBTree::KBTree(const std::string &newickString)
 	this->nodeCount=0;
 	this->verbose=false;
 	this->assumeBootstrapNames=false;
+	this->with_labels=true;
+	this->with_distances=true;
+	this->with_comments=true;
+	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
 }
 KBTree::KBTree(const std::string &newickString,bool verbose)
@@ -170,6 +199,10 @@ KBTree::KBTree(const std::string &newickString,bool verbose)
 	this->nodeCount=0;
 	this->verbose=verbose;
 	this->assumeBootstrapNames=false;
+	this->with_labels=true;
+	this->with_distances=true;
+	this->with_comments=true;
+	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
 }
 KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrapNames)
@@ -177,6 +210,10 @@ KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrap
 	this->nodeCount=0;
 	this->verbose=verbose;
 	this->assumeBootstrapNames=assumeBootstrapNames;
+	this->with_labels=true;
+	this->with_distances=true;
+	this->with_comments=true;
+	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
 }
 
@@ -472,7 +509,13 @@ void printAllNodes(ostream &o)
 
 
 
-std::string KBTree::toNewick() { return toNewick(KBNode::NAME_AND_DISTANCE); }
+std::string KBTree::toNewick() {
+	// retrieve the root node, then call the recursive version of this function
+	std::string newickString="";
+	tree<KBNode>::iterator rootIter = tr.begin();
+	toNewick(rootIter, newickString);
+	return newickString;
+}
 
 std::string KBTree::toNewick(unsigned int style)
 {
@@ -482,6 +525,47 @@ std::string KBTree::toNewick(unsigned int style)
 	toNewick(rootIter, newickString,style);
 	return newickString;
 }
+
+
+
+void KBTree::toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString)
+{
+	assert(currentNode!=NULL);
+	//cout<<"here:"<<newickString<<":"<<(*currentNode)->label<<endl;
+	// First check if we have children, if we do then descend to that child
+	if(tree<KBNode>::number_of_children(currentNode)>0) {
+		//cout<<"  -num of children>0"<<endl;
+		newickString+="(";
+		tree<KBNode>::iterator childIter = currentNode.begin();
+		toNewick(childIter,newickString);
+	}
+
+	// Next check if we have siblings, and if so we have to go there next
+	tree<KBNode>::iterator sibling = tr.next_sibling(currentNode);
+	if(sibling!=NULL && sibling!=tr.end()) {
+		// if we have a next sibling, then go there
+		//cout<<"  -num of siblings>0"<<endl;
+		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
+		newickString+=",";
+		toNewick(sibling,newickString);
+	}
+
+	// If we don't have siblings, do we have a parent? if so go back up
+	else if(tr.parent(currentNode)!=NULL && tr.parent(currentNode)!=tr.end()) {
+		//cout<<"  -has parent"<<endl;
+		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
+		newickString+=")";
+	}
+
+	// And finally, if we don't have a parent, then we're back at root,
+	// so print the label and close the tree with a semicolon.
+	else {
+		//cout<<"  -no siblings, no parent"<<endl;
+		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
+		newickString+=";";
+	}
+}
+
 
 void KBTree::toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString, unsigned int style)
 {

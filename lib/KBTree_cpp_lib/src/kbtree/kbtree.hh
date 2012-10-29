@@ -52,6 +52,11 @@ namespace KBTreeLib {
 			 */
 			std::string getLabelFromComponents(unsigned int style);
 
+			/*! Return a string representation of this Node based on the output style.
+			* @param[in] style Specifies what parts of the node to print to the string.
+			*/
+			std::string getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label);
+
 			static const unsigned int NAME_AND_DISTANCE;             /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
 			static const unsigned int NAME_DISTANCE_AND_COMMENTS;    /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
 			static const unsigned int NAME_ONLY;                     /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
@@ -91,6 +96,10 @@ namespace KBTreeLib {
 			std::string toNewick();
 			std::string toNewick(unsigned int style);
 
+			void setOutputFlagLabel(bool flag) { with_labels=flag; };
+			void setOutputFlagDistances(bool flag) { with_distances=flag; };
+			void setOutputFlagComments(bool flag) { with_comments=flag; };
+			void setOutputFlagBootstrapValuesAsLabels(bool flag) { with_bootstrap_values_as_labels=flag; };
 
 			bool writeNewickToFile(const std::string &filename);
 			bool writeNewickToFile(const std::string &filename,unsigned int style);
@@ -179,6 +188,14 @@ namespace KBTreeLib {
 			unsigned int nodeCount;
 			tree <KBNode> tr;
 
+
+			//////////////////// FLAGS FOR OUTPUTTING THE NEWICK STRING VIA toNewick() ///////////////////////////
+			bool with_labels;
+			bool with_distances;
+			bool with_comments;
+			bool with_bootstrap_values_as_labels;
+
+
 		private:
 
 			bool verbose;
@@ -186,6 +203,8 @@ namespace KBTreeLib {
 
 			/** Internal recursive function called from public toNewick() method.  Never call this method directly **/
 			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString,unsigned int style);
+
+			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString);
 
 
 	};
