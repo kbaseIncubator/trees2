@@ -30,27 +30,27 @@ ok(defined($client),"instantiating tree client");
 my $tree_ids=[];
 ######### TEST SET 1 ######### 
 # TRY TO RETRIEVE TREES BASED ON FEATURE ID
-#my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
-#my $tree_ids=$client->get_tree_ids_by_feature($listOfFeatureIds);
-#print Dumper($tree_ids);
+my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
+$tree_ids=$client->get_tree_ids_by_feature($listOfFeatureIds);
+print Dumper($tree_ids);
 
 ######### TEST SET 2 ######### 
 # TRY TO RETRIEVE TREES BASED ON PROTEIN SEQUENCE ID
-#my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
-#$tree_ids=$client->get_tree_ids_by_protein_sequence($listOfProtSeqIds);
-#print Dumper($tree_ids);
+my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
+$tree_ids=$client->get_tree_ids_by_protein_sequence($listOfProtSeqIds);
+print Dumper($tree_ids);
 
 ######### TEST SET 3 ######### 
 # TRY TO RETRIEVE ALIGNMENTS BASED ON FEATURE ID
-#my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
-#$tree_ids=$client->get_alignment_ids_by_feature($listOfFeatureIds);
-#print Dumper($tree_ids);
+my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
+$tree_ids=$client->get_alignment_ids_by_feature($listOfFeatureIds);
+print Dumper($tree_ids);
 
 ######### TEST SET 4 ######### 
 # TRY TO RETRIEVE ALIGNMENTS BASED ON PROTEIN SEQUENCE ID
-#my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
-#$tree_ids=$client->get_alignment_ids_by_protein_sequence($listOfProtSeqIds);
-#print Dumper($tree_ids);
+my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
+$tree_ids=$client->get_alignment_ids_by_protein_sequence($listOfProtSeqIds);
+print Dumper($tree_ids);
 
 ######### TEST SET 5 ######### 
 # TRY TO GET THE ACTUAL TREE FROM A TREE ID
