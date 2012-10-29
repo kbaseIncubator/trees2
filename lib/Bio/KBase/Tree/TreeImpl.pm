@@ -594,7 +594,8 @@ information.  Currently, the available flags and understood options are listed
     options = [
         format => 'newick',
         newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
-        newick_bootstrap => 'none' || 'internal_node_names'
+        newick_bootstrap => 'none' || 'internal_node_labels'
+        newick_distance => 'none' || 'raw'
     ];
  
 The 'format' key indicates what string format the tree should be returned in.  Currently, there is only
@@ -611,7 +612,12 @@ contig sequences. If you select one type of sequence, but the tree was built wit
 no labels will be added.  The default value if none is specified is 'raw'.
 
 The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
-how they are returned.  'none' indicates that no bootstrap values are returned.
+how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
+indicates that bootstrap values are returned as internal node labels.  Default value is 'internal_node_labels';
+
+The 'newick_distance' key allows control over whether distance labels are generated or not.  If set to
+'none', no distances will be output. Default is 'raw', which outputs the distances exactly as they appeared
+when loaded into kbase.
 
 =back
 
@@ -642,7 +648,8 @@ sub get_tree
     # second parse the parameters and set the defaults
     if (!exists $options->{format})           { $options->{format}="newick"; }
     if (!exists $options->{newick_label})     { $options->{newick_label}="raw"; }
-    if (!exists $options->{newick_bootstrap}) { $options->{newick_bootstrap}="internal_node_names"; }
+    if (!exists $options->{newick_bootstrap}) { $options->{newick_bootstrap}="internal_node_labels"; }
+    if (!exists $options->{newick_distance}) { $options->{newick_bootstrap}="raw"; }
     
     #check if query found something
     if(@rows) {
@@ -650,24 +657,54 @@ sub get_tree
 	foreach(@rows) {
 	    #process the tree according the command-line options
 	    my $raw_newick = $_; my $output_newick="";
-	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0]);
+	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0],0,1);
 	    if($options->{format} eq "newick") {
 		
 		#figure out how to label the nodes
 		if($options->{newick_label} eq "none") {
-		    
-		    #$return = $kb_tree->toNewick(1);
+		    $kb_tree->setOutputFlagLabel(0);
 		} elsif ($options->{newick_label} eq "raw") {
-		    
+		    $kb_tree->setOutputFlagLabel(1);
+		} elsif ($options->{newick_label} eq "feature_id") {
+		    $kb_tree->setOutputFlagLabel(1);
+		    # todo: replace names with feature ids
+		} elsif ($options->{newick_label} eq "protein_sequence_id") {
+		    $kb_tree->setOutputFlagLabel(1);
+		    # todo: replace names with protein sequence ids
+		} elsif ($options->{newick_label} eq "contig_sequence_id") {
+		    $kb_tree->setOutputFlagLabel(1);      
+		    # todo: replace names with contig sequence ids
 		} else {
 		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_label'\n";
 		    $msg = $msg."You set 'newick_label' to be: '".$options->{newick_label}."'";
 		    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_tree');
 		}
+		
+		# figure out the bootstrap output option
+		if ($options->{newick_bootstrap} eq "none") {
+		    $kb_tree->setOutputFlagBootstrapValuesAsLabels(0);   
+		} elsif ($options->{newick_bootstrap} eq "internal_node_labels") {
+		    $kb_tree->setOutputFlagBootstrapValuesAsLabels(1);      
+		} else {
+		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_bootstrap'\n";
+		    $msg = $msg."You set 'newick_bootstrap' to be: '".$options->{newick_bootstrap}."'";
+		    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_tree');
+		}
+		
+		# figure out the distance output option
+		if ($options->{newick_distance} eq "none") {
+		    $kb_tree->setOutputFlagDistances(0);   
+		} elsif ($options->{newick_bootstrap} eq "raw") {
+		    $kb_tree->setOutputFlagDistances(1);   
+		} else {
+		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_distance'\n";
+		    $msg = $msg."You set 'newick_distance' to be: '".$options->{newick_distance}."'";
+		    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_tree');
+		}
 	    
 		# push back the tree in the desired format
+		push(@return_rows, $kb_tree->toNewick());
 		
-		push(@return_rows, $kb_tree->toNewick(1));
 	    } else {
 		my $msg = "Invalid option passed to get_tree. Only 'format=>newick' is currently supported.\n";
 		$msg = $msg."You specified the output format to be: '".$options->{format}."'";

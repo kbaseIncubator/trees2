@@ -360,7 +360,8 @@ information.  Currently, the available flags and understood options are listed
     options = [
         format => 'newick',
         newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
-        newick_bootstrap => 'none' || 'internal_node_names'
+        newick_bootstrap => 'none' || 'internal_node_labels'
+        newick_distance => 'none' || 'raw'
     ];
  
 The 'format' key indicates what string format the tree should be returned in.  Currently, there is only
@@ -377,7 +378,12 @@ contig sequences. If you select one type of sequence, but the tree was built wit
 no labels will be added.  The default value if none is specified is 'raw'.
 
 The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
-how they are returned.  'none' indicates that no bootstrap values are returned.
+how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
+indicates that bootstrap values are returned as internal node labels.  Default value is 'internal_node_labels';
+
+The 'newick_distance' key allows control over whether distance labels are generated or not.  If set to
+'none', no distances will be output. Default is 'raw', which outputs the distances exactly as they appeared
+when loaded into kbase.
 
 =cut
 

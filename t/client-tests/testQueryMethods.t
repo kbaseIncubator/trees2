@@ -42,20 +42,24 @@ print Dumper($tree_ids);
 
 ######### TEST SET 3 ######### 
 # TRY TO RETRIEVE ALIGNMENTS BASED ON FEATURE ID
-my $listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
+$listOfFeatureIds = ['kb|g.9988.peg.1744','kb|g.9988.peg.1741'];
 $tree_ids=$client->get_alignment_ids_by_feature($listOfFeatureIds);
 print Dumper($tree_ids);
 
 ######### TEST SET 4 ######### 
 # TRY TO RETRIEVE ALIGNMENTS BASED ON PROTEIN SEQUENCE ID
-my $listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
+$listOfProtSeqIds = ['b3421022c78785ebfd349762870e9fef','2845879451b5c84036e9284018669922'];
 $tree_ids=$client->get_alignment_ids_by_protein_sequence($listOfProtSeqIds);
 print Dumper($tree_ids);
 
 ######### TEST SET 5 ######### 
 # TRY TO GET THE ACTUAL TREE FROM A TREE ID
 my $tree_id = 'kb|tree.41'; #36363;
-my $options = {format=>"newick"};
+my $options = {format=>"newick",
+               newick_label=>"none",
+               newick_bootstrap=>"none",
+               newick_distance=>"none"};
+#these options should return just the tree structure without any labels, distances, or bootstrap values.
 my $tree=$client->get_tree($tree_id, $options);
 print Dumper($tree);
 
