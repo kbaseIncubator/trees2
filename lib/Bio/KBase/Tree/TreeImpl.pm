@@ -649,7 +649,7 @@ sub get_tree
     if (!exists $options->{format})           { $options->{format}="newick"; }
     if (!exists $options->{newick_label})     { $options->{newick_label}="raw"; }
     if (!exists $options->{newick_bootstrap}) { $options->{newick_bootstrap}="internal_node_labels"; }
-    if (!exists $options->{newick_distance}) { $options->{newick_bootstrap}="raw"; }
+    if (!exists $options->{newick_distance}) { $options->{newick_distance}="raw"; }
     
     #check if query found something
     if(@rows) {
@@ -694,7 +694,7 @@ sub get_tree
 		# figure out the distance output option
 		if ($options->{newick_distance} eq "none") {
 		    $kb_tree->setOutputFlagDistances(0);   
-		} elsif ($options->{newick_bootstrap} eq "raw") {
+		} elsif ($options->{newick_distance} eq "raw") {
 		    $kb_tree->setOutputFlagDistances(1);   
 		} else {
 		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_distance'\n";
