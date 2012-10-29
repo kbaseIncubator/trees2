@@ -635,25 +635,46 @@ sub get_tree
     my($return);
     #BEGIN get_tree
     
+    # first get the tree
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Tree',
-	'Tree(id) = ? ORDER BY Tree(id)', $tree_id,
-	[qw(Tree(newick))]);
+    my @rows = $kb->GetAll('Tree','Tree(id) = ? ORDER BY Tree(id)', $tree_id,[qw(Tree(newick))]);
+    
+    # second parse the parameters and set the defaults
+    if (!exists $options->{format})           { $options->{format}="newick"; }
+    if (!exists $options->{newick_label})     { $options->{newick_label}="raw"; }
+    if (!exists $options->{newick_bootstrap}) { $options->{newick_bootstrap}="internal_node_names"; }
     
     #check if query found something
     if(@rows) {
 	my @return_rows=();
 	foreach(@rows) {
 	    #process the tree according the command-line options
-	    my $raw_newick = $_;
-	    
-	    #read in the tree
+	    my $raw_newick = $_; my $output_newick="";
 	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0]);
+	    if($options->{format} eq "newick") {
+		
+		#figure out how to label the nodes
+		if($options->{newick_label} eq "none") {
+		    
+		    #$return = $kb_tree->toNewick(1);
+		} elsif ($options->{newick_label} eq "raw") {
+		    
+		} else {
+		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_label'\n";
+		    $msg = $msg."You set 'newick_label' to be: '".$options->{newick_label}."'";
+		    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_tree');
+		}
 	    
-	    #$return = $kb_tree->toNewick(4);
+		# push back the tree in the desired format
+		
+		push(@return_rows, $kb_tree->toNewick(1));
+	    } else {
+		my $msg = "Invalid option passed to get_tree. Only 'format=>newick' is currently supported.\n";
+		$msg = $msg."You specified the output format to be: '".$options->{format}."'";
+		Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_tree');
+	    }
 	    
-	    # push back the tree in the desired format
-	    push(@return_rows, $kb_tree->toNewick(1));
+	   
 	}
     
 	#should only ever be one return, so get the first element, and then the first and only newick

@@ -33,16 +33,19 @@ cpp-libs:
 test: test-client test-scripts
 	echo "running client and script tests"
 
-test-all: test-client test-scripts test-server
+test-all: test-server test-client test-scripts
 
+# probably this should be updated to search the proper directory and run all tests...
 test-client:
-	$(DEPLOY_RUNTIME)/bin/perl $$t ;
+	$(DEPLOY_RUNTIME)/bin/perl $(TOP_DIR)/modules/$(SERVICE)/t/client-tests/testBasicResponses.t
+	$(DEPLOY_RUNTIME)/bin/perl $(TOP_DIR)/modules/$(SERVICE)/t/client-tests/testIntrospectionMethods.t
+	$(DEPLOY_RUNTIME)/bin/perl $(TOP_DIR)/modules/$(SERVICE)/t/client-tests/testQueryMethods.t
 
 test-scripts:
 	echo "no scripts to test yet.  Run test-client instead."
 
 test-server:
-	echo "no server only tests yet.  Run test-client or test-scripts instead."
+	$(DEPLOY_RUNTIME)/bin/perl $(TOP_DIR)/modules/$(SERVICE)/t/server-tests/testServerUp.t
 
 
 # here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-server)

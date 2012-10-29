@@ -9,7 +9,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 50;
+use Test::More tests => 3;
 use Data::Dumper;
 use Test::More;
 
@@ -55,11 +55,9 @@ print Dumper($tree_ids);
 ######### TEST SET 5 ######### 
 # TRY TO GET THE ACTUAL TREE FROM A TREE ID
 my $tree_id = 'kb|tree.41'; #36363;
-my $options = {};
-$tree_ids=$client->get_tree($tree_id, $options);
-print Dumper($tree_ids);
-
-
+my $options = {format=>"newick"};
+my $tree=$client->get_tree($tree_id, $options);
+print Dumper($tree);
 
 
 done_testing();
