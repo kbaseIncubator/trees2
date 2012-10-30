@@ -45,6 +45,8 @@ namespace KBTreeLib {
 			replaces the name as 'to name'. */
 			void replaceNodeNames(const std::string &replacements);
 			
+			void replaceNodeNamesOrMakeBlank(const std::string &replacements);
+			
 			
 			/*  Prints the structure of the tree to standard out */
 			void printTree();

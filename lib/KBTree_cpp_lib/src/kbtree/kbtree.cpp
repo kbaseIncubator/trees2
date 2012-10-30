@@ -737,7 +737,36 @@ void KBTree::replaceNodeNames(const std::string &replacements) {
 	replaceNodeNames(nodeNameMap);
 }
 
-void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
+void KBTree::replaceNodeNamesOrMakeBlank(const std::string &replacements) {
+	map<string,string> nodeNameMap;
+	string delimiters = ";",fromName="",toName="";
+	size_t current; size_t next = -1;
+	do {
+		current = next + 1;
+		next = replacements.find_first_of( delimiters, current );
+		fromName = replacements.substr( current, next - current );
+		trim(fromName);
+
+		current = next + 1;
+		next = replacements.find_first_of( delimiters, current );
+		toName = replacements.substr( current, next - current );
+		trim(toName);
+
+		if(fromName.size()==0) { continue; }
+		if(nodeNameMap.find(fromName)==nodeNameMap.end()) {
+			nodeNameMap.insert(pair<string,string>(fromName,toName));
+		} else {
+			cout<<"++KBTREE WARNING--  YOU PROVIDED TWO NODES TO BE RENAMED IN THE LIST THAT HAVE THE SAME NAME: '"<<fromName<<"'"<<endl;
+		}
+	}
+	while (next != string::npos);
+	replaceNodeNames(nodeNameMap,true);
+}
+
+void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames) {
+	replaceNodeNames(nodeNames,false);
+}
+void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames, bool defaultToBlankIfNotFound)
 {
 	tree<KBNode>::post_order_iterator node;
 	map<string,string>::iterator name;
@@ -746,9 +775,21 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames)
 		if(verbose) { cout<<"looking at node:"<<(*node).getName()<<endl; }
 		if( name!=nodeNames.end() ) {
 			(*node).name=name->second;
+		} else if(defaultToBlankIfNotFound) {
+			(*node).name="";
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
 
 bool KBTree::writeNewickToFile(const std::string &filename) {
 	return writeNewickToFile(filename,KBNode::NAME_AND_DISTANCE);

@@ -145,11 +145,28 @@ namespace KBTreeLib {
 			 */
 			void replaceNodeNames(std::map<std::string,std::string> &nodeNames);
 
+			/**
+			* replaces names of nodes in the tree.  This preforms an EXACT string match (ignoring
+			* trailing and leading white space) so it is case sensitive and has no regular expression
+			* characteristics.
+			* @param string originalNodeName[] - array of strings to be found and replaced
+			* @param string replacementNodeName[] - array of strings to be plugged in
+			* @param unsigned int n_names - length of the arrays
+			*/
+			void replaceNodeNames(std::map<std::string,std::string> &nodeNames, bool defaultToBlankIfNotFound);
+
 			/** string should be in format from1;to1;from2;to2;...
 				thus, there everything is delimited by a semicolon, and is parsed in pairs (must have an
 				even number of tokens or else you'll get an error!
 			 */
 			void replaceNodeNames(const std::string &replacements);
+
+			/** string should be in format from1;to1;from2;to2;...
+				thus, there everything is delimited by a semicolon, and is parsed in pairs (must have an
+				even number of tokens or else you'll get an error!
+				Does everything that replaceNodeNames does, but if a name can't be found then the name is set to an empty string.
+			*/
+			void replaceNodeNamesOrMakeBlank(const std::string &replacements);
 
 
 			/**
