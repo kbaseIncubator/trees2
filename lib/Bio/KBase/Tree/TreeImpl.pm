@@ -658,6 +658,7 @@ sub get_tree
 	    #process the tree according the command-line options
 	    my $raw_newick = $_; my $output_newick="";
 	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0],0,1);
+	    
 	    if($options->{format} eq "newick") {
 		
 		#figure out how to label the nodes
@@ -667,13 +668,39 @@ sub get_tree
 		    $kb_tree->setOutputFlagLabel(1);
 		} elsif ($options->{newick_label} eq "feature_id") {
 		    $kb_tree->setOutputFlagLabel(1);
-		    # todo: replace names with feature ids
+		    # replace names with feature ids
+		    $kb_tree->setOutputFlagLabel(1);
+		    # todo: replace names with contig sequence ids
+		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
+		    my $replacement_str="";
+		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
+			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+		    }
+		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "protein_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
-		    # todo: replace names with protein sequence ids
+		    # replace names with protein sequence ids
+		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
+		    my $replacement_str="";
+		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
+			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+		    }
+		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "contig_sequence_id") {
-		    $kb_tree->setOutputFlagLabel(1);      
+		    $kb_tree->setOutputFlagLabel(1);
 		    # todo: replace names with contig sequence ids
+		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
+			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+			    [qw(AlignmentRow(row-id) ContainsAlignedDNA(to-link))]);
+		    my $replacement_str="";
+		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
+			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+		    }
+		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} else {
 		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_label'\n";
 		    $msg = $msg."You set 'newick_label' to be: '".$options->{newick_label}."'";

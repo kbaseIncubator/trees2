@@ -87,6 +87,10 @@ public class KBTree {
     KBTreeUtilJNI.KBTree_replaceNodeNames(swigCPtr, this, replacements);
   }
 
+  public void replaceNodeNamesOrMakeBlank(String replacements) {
+    KBTreeUtilJNI.KBTree_replaceNodeNamesOrMakeBlank(swigCPtr, this, replacements);
+  }
+
   public void printTree() {
     KBTreeUtilJNI.KBTree_printTree(swigCPtr, this);
   }

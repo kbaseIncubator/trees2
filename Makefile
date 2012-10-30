@@ -20,6 +20,10 @@ PID_FILE = $(SERVICE_DIR)/service.pid
 ACCESS_LOG_FILE = $(SERVICE_DIR)/log/access.log
 ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 
+
+.PHONY : test
+
+
 # default target is all, which for now simply builds the CPP libs only
 default: all
 

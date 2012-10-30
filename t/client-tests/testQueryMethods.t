@@ -64,4 +64,13 @@ my $tree=$client->get_tree($tree_id, $options);
 print Dumper($tree);
 
 
+$tree_id = 'kb|tree.36394'; #36363;
+$options = {format=>"newick",
+               newick_label=>"feature_id",
+               newick_bootstrap=>"none",
+               newick_distance=>"none"};
+$tree=$client->get_tree($tree_id, $options);
+print Dumper($tree);
+
+
 done_testing();
