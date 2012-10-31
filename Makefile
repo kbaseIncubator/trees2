@@ -90,7 +90,7 @@ deploy-server-libs:
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Tree.psgi $(TARGET)/lib/.
 	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/Tree/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
+	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib/lib/perl_interface/KBTreeUtil.bundle $(TARGET)/lib/.
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/forester_1005.jar $(TARGET)/lib/.
 	echo "deployed server for $(SERVICE)."
 

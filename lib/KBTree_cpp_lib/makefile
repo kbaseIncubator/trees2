@@ -27,9 +27,10 @@ UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 PERL_CC_OPTIONS := $(shell perl -MExtUtils::Embed -e ccopts)
 PERL_LD_OPTIONS := $(shell perl -MExtUtils::Embed -e ldopts)
-PERL_LIB_CMD := -bundle -o $(OUT_DIR)/perl_interface/KBTreeUtil.bundle
-JAVA_HEADER_PATH := $(shell javaconfig Headers)
-JAVA_LIB_CMD := -framework JavaVM -bundle -o $(OUT_DIR)/java_interface/libKBTreeUtil.jnilib
+PERL_LIB_CMD := -arch i386 -bundle -o $(OUT_DIR)/perl_interface/KBTreeUtil.bundle
+#JAVA_HEADER_PATH := $(shell javaconfig Headers)
+JAVA_HEADER_PATH := "/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers/"
+JAVA_LIB_CMD := -arch i386 -framework JavaVM -bundle -o $(OUT_DIR)/java_interface/libKBTreeUtil.jnilib
 else ifeq ($(UNAME),Linux)
 PERL_CC_OPTIONS := $(shell perl -MConfig -e 'print join(" ", @Config{qw(ccflags optimize cccdlflags)}, "-I$$Config{archlib}/CORE")')
 PERL_LD_OPTIONS := $(shell perl -MConfig -e 'print $$Config{lddlflags}')
@@ -65,18 +66,18 @@ clean-swig:
 perl-lib : $(OUT_DIR)/perl_interface/kbtree_wrap.o $(OUT_DIR)/perl_interface/kbtree.o
 	g++ $(PERL_LIB_CMD) $(OUT_DIR)/perl_interface/kbtree_wrap.o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_LD_OPTIONS)
 $(OUT_DIR)/perl_interface/kbtree_wrap.o : $(SWIG_PERL_WRAP_FILE)
-	g++ -fpic -O3 -c $(SWIG_PERL_WRAP_FILE) $(PERL_CC_OPTIONS) -o $(OUT_DIR)/perl_interface/kbtree_wrap.o
+	g++ -arch i386 -fpic -O3 -c $(SWIG_PERL_WRAP_FILE) $(PERL_CC_OPTIONS) -o $(OUT_DIR)/perl_interface/kbtree_wrap.o
 $(OUT_DIR)/perl_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
-	g++ -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_CC_OPTIONS)
+	g++ -arch i386 -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_CC_OPTIONS)
 
 # this will always link and compile, even if object files are built
 java-lib : $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
 	g++ $(JAVA_LIB_CMD) $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
 	javac $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtilJNI.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTree.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtil.java
 $(OUT_DIR)/java_interface/kbtree_wrap.o : $(SWIG_JAVA_WRAP_FILE)
-	g++ -fpic -O3 -c $(SWIG_JAVA_WRAP_FILE) -I$(JAVA_HEADER_PATH) -o $(OUT_DIR)/java_interface/kbtree_wrap.o -fno-strict-aliasing
+	g++ -arch i386 -fpic -O3 -c $(SWIG_JAVA_WRAP_FILE) -I$(JAVA_HEADER_PATH) -o $(OUT_DIR)/java_interface/kbtree_wrap.o -fno-strict-aliasing
 $(OUT_DIR)/java_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
-	g++ -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/java_interface/kbtree.o -fno-strict-aliasing
+	g++ -arch i386 -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/java_interface/kbtree.o -fno-strict-aliasing
 
 
 
