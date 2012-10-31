@@ -29,4 +29,9 @@ public class KBTreeUtilJNI {
   public final static native long KBTree_getLeafCount(long jarg1, KBTree jarg1_);
   public final static native String KBTree_getAllLeafNames(long jarg1, KBTree jarg1_);
   public final static native String KBTree_getAllNodeNames(long jarg1, KBTree jarg1_);
+  public final static native void KBTree_resetBreadthFirstIterToRoot(long jarg1, KBTree jarg1_);
+  public final static native boolean KBTree_breadthFirstIterNext(long jarg1, KBTree jarg1_);
+  public final static native String KBTree_breadthFirstIterGetName(long jarg1, KBTree jarg1_);
+  public final static native long KBTree_breadthFirstIterMarkNode(long jarg1, KBTree jarg1_);
+  public final static native boolean KBTree_breadthFirstIterSetToNode(long jarg1, KBTree jarg1_, long jarg2);
 }

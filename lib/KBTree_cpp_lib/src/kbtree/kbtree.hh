@@ -47,7 +47,7 @@ namespace KBTreeLib {
 			/*! Returns the bootstrap value of this node (from parsing the original label), or NAN if no distance was set */
 			double getBootstrapValue() const { return bootstrapValue; };
 
-			/*! Return a string representation of this Node based on the output style.
+			/*! DEPRECATED!  Return a string representation of this Node based on the output style.
 			 * @param[in] style Specifies what parts of the node to print to the string.
 			 */
 			std::string getLabelFromComponents(unsigned int style);
@@ -57,12 +57,12 @@ namespace KBTreeLib {
 			*/
 			std::string getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label);
 
-			static const unsigned int NAME_AND_DISTANCE;             /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
-			static const unsigned int NAME_DISTANCE_AND_COMMENTS;    /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
-			static const unsigned int NAME_ONLY;                     /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
-			static const unsigned int DISTANCE_ONLY;                 /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
-			static const unsigned int STRUCTURE_ONLY;                /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
-			static const unsigned int ORIGINAL_LABEL;                /*!< Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int NAME_AND_DISTANCE;             /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int NAME_DISTANCE_AND_COMMENTS;    /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int NAME_ONLY;                     /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int DISTANCE_ONLY;                 /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int STRUCTURE_ONLY;                /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
+			static const unsigned int ORIGINAL_LABEL;                /*!< DEPRECATED! Constant INT to specify output style format for input to getLabelFromComponents(int style)  */
 
 		protected:
 			void clear();                      /*!< set all pointers to null, all strings to empty.  This is method is also used for initialization */
@@ -83,9 +83,9 @@ namespace KBTreeLib {
 	 */
 	class KBTree {
 		public:
-			KBTree(const string &newickString);
-			KBTree(const string &newickString, bool verbose);
-            KBTree(const std::string &newickString, bool verbose, bool assumeBootstrapNames);
+			KBTree(const string &newickString);  /*!< Create a new tree by parsing a newick represented tree.  */
+			KBTree(const string &newickString, bool verbose); /*!< Create a new tree by parsing the newick tree, and optionally outputting debug messages  */
+            KBTree(const std::string &newickString, bool verbose, bool assumeBootstrapNames); /*!< Create an empty node with empty, non-null strings for name, comments, labels.  Distance to parent is NAN.  */
 			~KBTree();
 
 			/** allows nodes to count themselves in a tree when the node is created */
@@ -192,6 +192,16 @@ namespace KBTreeLib {
 			void printTree(ostream &o);
 			static void printTree(ostream &o, const tree<KBNode>& tr, tree<KBNode>::pre_order_iterator it, tree<KBNode>::pre_order_iterator end);
 
+
+			// set of methods to traverse a tree, node by node, in a breadth first search, and mark specific
+			// nodes for future fast retrieval.
+			void resetBreadthFirstIterToRoot();
+			bool breadthFirstIterNext(); // true if able to find next node, false if at end of tree
+			std::string breadthFirstIterGetName();
+			unsigned int breadthFirstIterMarkNode();
+			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
+
+
 		protected:
 
 			//////////////////// NEWICK PARSING METHODS ///////////////////////////
@@ -211,6 +221,13 @@ namespace KBTreeLib {
 			bool with_distances;
 			bool with_comments;
 			bool with_bootstrap_values_as_labels;
+
+
+			/////////////////// Structure for storing iterators to nodes in the tree
+
+			tree<KBNode>::breadth_first_iterator bfi;
+			std::vector<tree<KBNode>::breadth_first_iterator> bfiNodeIndex;
+
 
 
 		private:

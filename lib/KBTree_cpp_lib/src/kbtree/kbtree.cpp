@@ -882,3 +882,45 @@ unsigned int KBTree::getLeafCount()
 }
 
 
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// set of methods to traverse a tree, node by node, in a breadth first search, and mark specific
+// nodes for future fast retrieval.
+void KBTree::resetBreadthFirstIterToRoot() {
+	this->bfi = tr.begin_breadth_first();
+}
+bool KBTree::breadthFirstIterNext() {
+	if(this->bfi!=tr.end_breadth_first()) {
+		bfi++;
+		if(this->bfi!=tr.end_breadth_first()) {
+			return true;
+		}
+	}
+	return false;
+}
+std::string KBTree::breadthFirstIterGetName() {
+	if(this->bfi!=tr.end_breadth_first()) {
+		return (*bfi).getName();
+	}
+	return "END_OF_KB_TREE";
+}
+unsigned int KBTree::breadthFirstIterMarkNode() {
+	this->bfiNodeIndex.push_back(tree<KBNode>::breadth_first_iterator(this->bfi));
+	return bfiNodeIndex.size()-1;
+}
+bool KBTree::breadthFirstIterSetToNode(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) {
+		this->bfi = tr.end_breadth_first();
+		return false;
+	}
+	this->bfi = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+	return true;
+}
+
+
+
+
+
+
+
+

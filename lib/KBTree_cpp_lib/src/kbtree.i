@@ -62,6 +62,24 @@ namespace KBTreeLib {
             
             /* returns a string of all the node names, concatenated as name1;name2;name3; */
             std::string getAllNodeNames();
+            
+            
+            /* set the tree's breadth first iterator to the root node */
+            void resetBreadthFirstIterToRoot();
+            /* advance the tree's breadth first iterator to the next node, which returns true
+            if there is a next node, or false if you are attempting to advance past the last
+            node in the traversal */
+			bool breadthFirstIterNext();
+			/* get the name of the node currently pointed to by the breadth first search iterator */
+			std::string breadthFirstIterGetName();
+			/* mark the current position of the iterator and return a handle so that you can always
+			reset to that node again */
+			unsigned int breadthFirstIterMarkNode();
+			/* set the tree's breadth first node iterator to the specified node, returns true if
+			the node marker was found, false otherwise  */
+			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
+            
+            
     };
     
 };

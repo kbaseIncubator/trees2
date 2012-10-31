@@ -581,6 +581,79 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getAllNodeNames
 }
 
 
+SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1resetBreadthFirstIterToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  (arg1)->resetBreadthFirstIterToRoot();
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterNext(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jboolean jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (bool)(arg1)->breadthFirstIterNext();
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetName(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (arg1)->breadthFirstIterGetName();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterMarkNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  unsigned int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (unsigned int)(arg1)->breadthFirstIterMarkNode();
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterSetToNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  jboolean jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  unsigned int arg2 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  result = (bool)(arg1)->breadthFirstIterSetToNode(arg2);
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
 #ifdef __cplusplus
 }
 #endif

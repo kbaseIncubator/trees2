@@ -88,6 +88,11 @@ sub DESTROY {
 *getLeafCount = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getLeafCount;
 *getAllLeafNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getAllLeafNames;
 *getAllNodeNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getAllNodeNames;
+*resetBreadthFirstIterToRoot = *Bio::KBase::Tree::TreeCppUtilc::KBTree_resetBreadthFirstIterToRoot;
+*breadthFirstIterNext = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterNext;
+*breadthFirstIterGetName = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName;
+*breadthFirstIterMarkNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterMarkNode;
+*breadthFirstIterSetToNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterSetToNode;
 sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
