@@ -46,12 +46,10 @@ endif
 all: perl-lib java-lib
 
 
-swig: $(SWIG_PERL_WRAP_FILE) $(SWIG_JAVA_WRAP_FILE)
-$(SWIG_PERL_WRAP_FILE) : $(SWIG_FILE)
+swig:
 	mkdir -p $(OUT_DIR)/perl_interface/Bio/KBase/Tree
 	swig -c++ -perl5 -module "Bio::KBase::Tree::TreeCppUtil" -outdir $(OUT_DIR)/perl_interface/ -o $(SWIG_PERL_WRAP_FILE) $(SWIG_FILE)
 	mv $(OUT_DIR)/perl_interface/TreeCppUtil.pm $(OUT_DIR)/perl_interface/Bio/KBase/Tree/TreeCppUtil.pm
-$(SWIG_JAVA_WRAP_FILE) : $(SWIG_FILE)
 	swig -c++ -java -outdir $(OUT_DIR)/java_interface/KBTreeUtil -package KBTreeUtil -o $(SWIG_JAVA_WRAP_FILE) $(SWIG_FILE)
 
 clean-swig:
