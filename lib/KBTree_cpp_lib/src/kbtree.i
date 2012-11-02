@@ -84,6 +84,9 @@ namespace KBTreeLib {
 			be found or if this is the root node, then this returns the empty string.
 			Note that this function has the side effect of reseting the iterator to root */
 			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
+			std::string breadthFirstIterGetParentName();
+			
+			
             
     };
     

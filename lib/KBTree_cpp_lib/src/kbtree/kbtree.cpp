@@ -927,7 +927,12 @@ std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 	}
 	return path;
 }
-
+std::string KBTree::breadthFirstIterGetParentName() {
+	if(bfi.has_parent()) {
+		return (*tr.parent(bfi)).getName();
+	}
+	return "";
+}
 
 
 

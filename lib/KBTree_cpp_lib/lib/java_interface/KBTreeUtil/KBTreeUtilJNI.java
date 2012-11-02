@@ -35,4 +35,5 @@ public class KBTreeUtilJNI {
   public final static native long KBTree_breadthFirstIterMarkNode(long jarg1, KBTree jarg1_);
   public final static native boolean KBTree_breadthFirstIterSetToNode(long jarg1, KBTree jarg1_, long jarg2);
   public final static native String KBTree_breadthFirstIterGetPathToRoot(long jarg1, KBTree jarg1_, long jarg2);
+  public final static native String KBTree_breadthFirstIterGetParentName(long jarg1, KBTree jarg1_);
 }
