@@ -78,7 +78,12 @@ namespace KBTreeLib {
 			/* set the tree's breadth first node iterator to the specified node, returns true if
 			the node marker was found, false otherwise  */
 			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
-            
+			/* Returns a string representation of the path from this node to the root node in the 
+			hierarchy.  The string is formatted as node names delimited by semicolons.  The list begins
+			with the immediate parent, and ends with the name of the root node.  If the node marker cannot
+			be found or if this is the root node, then this returns the empty string.
+			Note that this function has the side effect of reseting the iterator to root */
+			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
             
     };
     

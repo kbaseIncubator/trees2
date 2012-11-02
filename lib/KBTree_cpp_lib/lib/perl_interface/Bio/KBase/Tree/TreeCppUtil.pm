@@ -93,6 +93,7 @@ sub DESTROY {
 *breadthFirstIterGetName = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName;
 *breadthFirstIterMarkNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterMarkNode;
 *breadthFirstIterSetToNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterSetToNode;
+*breadthFirstIterGetPathToRoot = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetPathToRoot;
 sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);

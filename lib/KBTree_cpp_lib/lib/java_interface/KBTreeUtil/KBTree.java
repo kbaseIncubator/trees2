@@ -131,4 +131,8 @@ public class KBTree {
     return KBTreeUtilJNI.KBTree_breadthFirstIterSetToNode(swigCPtr, this, nodeMarker);
   }
 
+  public String breadthFirstIterGetPathToRoot(long nodeMarker) {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetPathToRoot(swigCPtr, this, nodeMarker);
+  }
+
 }

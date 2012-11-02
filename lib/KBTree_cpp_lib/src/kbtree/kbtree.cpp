@@ -918,6 +918,15 @@ bool KBTree::breadthFirstIterSetToNode(unsigned int nodeMarker) {
 }
 
 
+std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
+	if(!this->breadthFirstIterSetToNode(nodeMarker)) { return ""; }
+	std::string path="";
+	while( bfi.has_parent() ){
+		bfi = tr.parent(bfi);
+		path += (*bfi).getName()+";";
+	}
+	return path;
+}
 
 
 

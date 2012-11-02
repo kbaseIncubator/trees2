@@ -654,6 +654,23 @@ SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIt
 }
 
 
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetPathToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  unsigned int arg2 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  arg2 = (unsigned int)jarg2; 
+  result = (arg1)->breadthFirstIterGetPathToRoot(arg2);
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
 #ifdef __cplusplus
 }
 #endif

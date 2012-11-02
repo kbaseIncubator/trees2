@@ -200,6 +200,7 @@ namespace KBTreeLib {
 			std::string breadthFirstIterGetName();
 			unsigned int breadthFirstIterMarkNode();
 			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
+			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
 
 
 		protected:
