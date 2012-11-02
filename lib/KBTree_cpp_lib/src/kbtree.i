@@ -51,6 +51,9 @@ namespace KBTreeLib {
 			/*  Prints the structure of the tree to standard out */
 			void printTree();
 			
+			/*  Prints the structure of the tree to a string */
+			std::string printTreeToString();
+			
 			/* returns the total number of nodes in the tree, including internal nodes */			
             unsigned int getNodeCount() const;
             

@@ -186,6 +186,7 @@ namespace KBTreeLib {
 			void printOutNamesAllPossibleTraversals(ostream &o);
 
 			void printTree();
+			std::string printTreeToString();
 			/**
 			 * Prints the tree to the given output stream in an indented format.  Used primarily for debugging.
 			 */

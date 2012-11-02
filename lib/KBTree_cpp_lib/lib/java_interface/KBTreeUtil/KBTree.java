@@ -95,6 +95,10 @@ public class KBTree {
     KBTreeUtilJNI.KBTree_printTree(swigCPtr, this);
   }
 
+  public String printTreeToString() {
+    return KBTreeUtilJNI.KBTree_printTreeToString(swigCPtr, this);
+  }
+
   public long getNodeCount() {
     return KBTreeUtilJNI.KBTree_getNodeCount(swigCPtr, this);
   }

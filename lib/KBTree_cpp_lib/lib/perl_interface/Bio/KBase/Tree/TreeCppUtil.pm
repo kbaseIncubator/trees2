@@ -84,6 +84,7 @@ sub DESTROY {
 *replaceNodeNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNames;
 *replaceNodeNamesOrMakeBlank = *Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNamesOrMakeBlank;
 *printTree = *Bio::KBase::Tree::TreeCppUtilc::KBTree_printTree;
+*printTreeToString = *Bio::KBase::Tree::TreeCppUtilc::KBTree_printTreeToString;
 *getNodeCount = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getNodeCount;
 *getLeafCount = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getLeafCount;
 *getAllLeafNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getAllLeafNames;
