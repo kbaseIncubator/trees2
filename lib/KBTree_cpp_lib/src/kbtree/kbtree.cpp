@@ -473,12 +473,24 @@ void KBTree::passLeadingWhiteSpace(const std::string &newickString, unsigned int
 }
 
 void KBTree::printTree() { printTree(cout); }
+std::string KBTree::printSimpleTreeToString() {
+	string pretty_tree;
+	tree<KBNode>::pre_order_iterator it  =this->tr.begin();
+	tree<KBNode>::pre_order_iterator end =this->tr.end();
+	int rootdepth=tr.depth(it);
+	while(it!=end) {
+		for(int i=0; i<tr.depth(it)-rootdepth; ++i) { pretty_tree += "   "; }
+		pretty_tree += " -";
+		pretty_tree += (*it).name; pretty_tree+="\n";
+		++it;
+	}
+	return pretty_tree;
+}
 
 std::string KBTree::printTreeToString() {
 	std::stringstream ss;
 	printTree(ss);
 	return ss.str();
-
 }
 void KBTree::printTree(ostream &o) {
 	KBTree::printTree(o,this->tr,this->tr.begin(),this->tr.end());

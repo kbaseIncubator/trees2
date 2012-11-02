@@ -95,6 +95,10 @@ public class KBTree {
     KBTreeUtilJNI.KBTree_printTree(swigCPtr, this);
   }
 
+  public String printSimpleTreeToString() {
+    return KBTreeUtilJNI.KBTree_printSimpleTreeToString(swigCPtr, this);
+  }
+
   public String printTreeToString() {
     return KBTreeUtilJNI.KBTree_printTreeToString(swigCPtr, this);
   }

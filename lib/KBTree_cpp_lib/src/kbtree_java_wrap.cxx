@@ -521,6 +521,21 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *
 }
 
 
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printSimpleTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (arg1)->printSimpleTreeToString();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
 SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;

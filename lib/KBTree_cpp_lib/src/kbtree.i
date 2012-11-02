@@ -51,6 +51,10 @@ namespace KBTreeLib {
 			/*  Prints the structure of the tree to standard out */
 			void printTree();
 			
+			
+			/*  Prints the structure of the tree to a string with names of nodes only */
+			std::string printSimpleTreeToString();
+			
 			/*  Prints the structure of the tree to a string */
 			std::string printTreeToString();
 			
