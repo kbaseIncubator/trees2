@@ -197,13 +197,23 @@ namespace KBTreeLib {
 
 			// set of methods to traverse a tree, node by node, in a breadth first search, and mark specific
 			// nodes for future fast retrieval.
-			void resetBreadthFirstIterToRoot();
-			bool breadthFirstIterNext(); // true if able to find next node, false if at end of tree
-			std::string breadthFirstIterGetName();
-			unsigned int breadthFirstIterMarkNode();
-			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
+			//NOT THREAD SAFE!! - if you iterate this way, you MUST ensure that you are the only one who can call these methods! Concurrent calls
+			//will clobber your iterator!
+			void resetBreadthFirstIterToRoot();  //NOT THREAD SAFE!!
+			bool breadthFirstIterNext(); //NOT THREAD SAFE!!  // true if able to find next node, false if at end of tree
+			unsigned int breadthFirstIterMarkNode();//NOT THREAD SAFE!!
+			bool breadthFirstIterSetToNode(unsigned int nodeMarker); //NOT THREAD SAFE!!
+			std::string breadthFirstIterGetName(); // NOT THEAD SAFE!!
+
+			// These methods are thread safe.  They do not affect the global iterator, and assume that the node you are working on
+			// has already been marked
+			std::string breadthFirstIterGetName(unsigned int nodeMarker);
 			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
-			std::string breadthFirstIterGetParentName();
+			std::string breadthFirstIterGetParentName(unsigned int nodeMarker);
+			std::string breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker);
+			std::string breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker);
+
+
 
 
 		protected:

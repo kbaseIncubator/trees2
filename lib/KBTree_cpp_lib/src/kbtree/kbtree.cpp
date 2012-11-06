@@ -937,22 +937,76 @@ bool KBTree::breadthFirstIterSetToNode(unsigned int nodeMarker) {
 }
 
 
-std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
-	if(!this->breadthFirstIterSetToNode(nodeMarker)) { return ""; }
-	std::string path="";
-	while( bfi.has_parent() ){
-		bfi = tr.parent(bfi);
-		path += (*bfi).getName()+";";
-	}
-	return path;
-}
-std::string KBTree::breadthFirstIterGetParentName() {
-	if(bfi.has_parent()) {
-		return (*tr.parent(bfi)).getName();
+
+std::string KBTree::breadthFirstIterGetName(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+	if(node!=tr.end_breadth_first()) {
+		return (*node).getName();
 	}
 	return "";
 }
 
+std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+	std::string path="";
+	while( node.has_parent() ){
+		node = tr.parent(node);
+		path += (*node).getName()+";";
+	}
+	return path;
+}
+std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+	if(node.has_parent()) {
+		return (*tr.parent(node)).getName();
+	}
+	return "";
+}
+
+std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+
+	std::string namelist = "";
+	//int starting_depth = tr.depth(node);
+	//cout<<"starting depth "<<starting_depth<<endl;
+	//while(node++) {
+	//	if(node==tr.end_breadth_first()) { break; }
+	//	if (tr.depth(node) >= starting_depth) {
+	//
+	//	}
+	//}
+	//for(;tr.depth(node)>starting_depth && node!=tr.end_breadth_first(); node++) {
+	//	cout<<"here!!"<<endl;
+	//	namelist += (*node).getName();
+	//}
+
+	return namelist;
+}
+
+std::string KBTree::breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker) {
+	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
+
+	std::string namelist = "";
+	//int starting_depth = tr.depth(node);
+	//cout<<"starting depth "<<starting_depth<<endl;
+	//while(node++) {
+	//	if(node==tr.end_breadth_first()) { break; }
+	//	if (tr.depth(node) >= starting_depth) {
+	//
+	//	}
+	//}
+	//for(;tr.depth(node)>starting_depth && node!=tr.end_breadth_first(); node++) {
+	//	cout<<"here!!"<<endl;
+	//	namelist += (*node).getName();
+	//}
+
+	return namelist;
+}
 
 
 

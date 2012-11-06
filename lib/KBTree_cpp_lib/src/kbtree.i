@@ -71,27 +71,43 @@ namespace KBTreeLib {
             std::string getAllNodeNames();
             
             
-            /* set the tree's breadth first iterator to the root node */
+            /* set the tree's breadth first iterator to the root node.  NOT THREAD SAFE */
             void resetBreadthFirstIterToRoot();
+            
             /* advance the tree's breadth first iterator to the next node, which returns true
             if there is a next node, or false if you are attempting to advance past the last
-            node in the traversal */
+            node in the traversal. NOT THREAD SAFE */
 			bool breadthFirstIterNext();
-			/* get the name of the node currently pointed to by the breadth first search iterator */
+			
+			/* returns the name at the current iter position.  NOT THREAD SAFE*/
 			std::string breadthFirstIterGetName();
+			
 			/* mark the current position of the iterator and return a handle so that you can always
-			reset to that node again */
+			reset to that node again. NOT THREAD SAFE */
 			unsigned int breadthFirstIterMarkNode();
+			
 			/* set the tree's breadth first node iterator to the specified node, returns true if
-			the node marker was found, false otherwise  */
+			the node marker was found, false otherwise. NOT THREAD SAFE  */
 			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
+			
+			
+
+			/* get the name of the node that was marked with the given id */
+			std::string breadthFirstIterGetName(unsigned int nodeMarker);
+			
 			/* Returns a string representation of the path from this node to the root node in the 
 			hierarchy.  The string is formatted as node names delimited by semicolons.  The list begins
 			with the immediate parent, and ends with the name of the root node.  If the node marker cannot
 			be found or if this is the root node, then this returns the empty string.
 			Note that this function has the side effect of reseting the iterator to root */
 			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
-			std::string breadthFirstIterGetParentName();
+			
+			std::string breadthFirstIterGetParentName(unsigned int nodeMarker);
+			
+			
+			std::string breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker);
+			
+			std::string breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker);
 			
 			
             

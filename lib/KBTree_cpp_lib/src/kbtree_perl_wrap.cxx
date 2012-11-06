@@ -3006,7 +3006,7 @@ XS(_wrap_KBTree_breadthFirstIterNext) {
 }
 
 
-XS(_wrap_KBTree_breadthFirstIterGetName) {
+XS(_wrap_KBTree_breadthFirstIterGetName__SWIG_0) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
     void *argp1 = 0 ;
@@ -3100,6 +3100,116 @@ XS(_wrap_KBTree_breadthFirstIterSetToNode) {
 }
 
 
+XS(_wrap_KBTree_breadthFirstIterGetName__SWIG_1) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    unsigned int arg2 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    unsigned int val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_breadthFirstIterGetName(self,nodeMarker);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_breadthFirstIterGetName" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    ecode2 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "KBTree_breadthFirstIterGetName" "', argument " "2"" of type '" "unsigned int""'");
+    } 
+    arg2 = static_cast< unsigned int >(val2);
+    result = (arg1)->breadthFirstIterGetName(arg2);
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    
+    XSRETURN(argvi);
+  fail:
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_breadthFirstIterGetName) {
+  dXSARGS;
+  
+  {
+    unsigned long _index = 0;
+    SWIG_TypeRank _rank = 0; 
+    if (items == 1) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 1;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_1:
+    
+    if (items == 2) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 2;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_2:
+    
+  dispatch:
+    switch(_index) {
+    case 1:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_breadthFirstIterGetName__SWIG_0); return;
+    case 2:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_breadthFirstIterGetName__SWIG_1); return;
+    }
+  }
+  
+  croak("No matching function for overloaded 'KBTree_breadthFirstIterGetName'");
+  XSRETURN(0);
+}
+
+
 XS(_wrap_KBTree_breadthFirstIterGetPathToRoot) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
@@ -3141,25 +3251,111 @@ XS(_wrap_KBTree_breadthFirstIterGetPathToRoot) {
 XS(_wrap_KBTree_breadthFirstIterGetParentName) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    unsigned int arg2 ;
     void *argp1 = 0 ;
     int res1 = 0 ;
+    unsigned int val2 ;
+    int ecode2 = 0 ;
     int argvi = 0;
     std::string result;
     dXSARGS;
     
-    if ((items < 1) || (items > 1)) {
-      SWIG_croak("Usage: KBTree_breadthFirstIterGetParentName(self);");
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_breadthFirstIterGetParentName(self,nodeMarker);");
     }
     res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
     if (!SWIG_IsOK(res1)) {
       SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_breadthFirstIterGetParentName" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
     }
     arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
-    result = (arg1)->breadthFirstIterGetParentName();
+    ecode2 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "KBTree_breadthFirstIterGetParentName" "', argument " "2"" of type '" "unsigned int""'");
+    } 
+    arg2 = static_cast< unsigned int >(val2);
+    result = (arg1)->breadthFirstIterGetParentName(arg2);
     ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
     
     XSRETURN(argvi);
   fail:
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_breadthFirstIterGetAllChildrenNames) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    unsigned int arg2 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    unsigned int val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_breadthFirstIterGetAllChildrenNames(self,nodeMarker);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_breadthFirstIterGetAllChildrenNames" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    ecode2 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "KBTree_breadthFirstIterGetAllChildrenNames" "', argument " "2"" of type '" "unsigned int""'");
+    } 
+    arg2 = static_cast< unsigned int >(val2);
+    result = (arg1)->breadthFirstIterGetAllChildrenNames(arg2);
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    
+    XSRETURN(argvi);
+  fail:
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_KBTree_breadthFirstIterGetAllDescendantNames) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    unsigned int arg2 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    unsigned int val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: KBTree_breadthFirstIterGetAllDescendantNames(self,nodeMarker);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_breadthFirstIterGetAllDescendantNames" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    ecode2 = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "KBTree_breadthFirstIterGetAllDescendantNames" "', argument " "2"" of type '" "unsigned int""'");
+    } 
+    arg2 = static_cast< unsigned int >(val2);
+    result = (arg1)->breadthFirstIterGetAllDescendantNames(arg2);
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    
+    XSRETURN(argvi);
+  fail:
+    
     
     SWIG_croak_null();
   }
@@ -3218,11 +3414,13 @@ static swig_command_info swig_commands[] = {
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_getAllNodeNames", _wrap_KBTree_getAllNodeNames},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_resetBreadthFirstIterToRoot", _wrap_KBTree_resetBreadthFirstIterToRoot},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterNext", _wrap_KBTree_breadthFirstIterNext},
-{"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName", _wrap_KBTree_breadthFirstIterGetName},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterMarkNode", _wrap_KBTree_breadthFirstIterMarkNode},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterSetToNode", _wrap_KBTree_breadthFirstIterSetToNode},
+{"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName", _wrap_KBTree_breadthFirstIterGetName},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetPathToRoot", _wrap_KBTree_breadthFirstIterGetPathToRoot},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetParentName", _wrap_KBTree_breadthFirstIterGetParentName},
+{"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetAllChildrenNames", _wrap_KBTree_breadthFirstIterGetAllChildrenNames},
+{"Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetAllDescendantNames", _wrap_KBTree_breadthFirstIterGetAllDescendantNames},
 {0,0}
 };
 /* -----------------------------------------------------------------------------

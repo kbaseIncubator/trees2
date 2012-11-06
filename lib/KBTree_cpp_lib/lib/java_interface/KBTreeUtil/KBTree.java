@@ -128,7 +128,7 @@ public class KBTree {
   }
 
   public String breadthFirstIterGetName() {
-    return KBTreeUtilJNI.KBTree_breadthFirstIterGetName(swigCPtr, this);
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetName__SWIG_0(swigCPtr, this);
   }
 
   public long breadthFirstIterMarkNode() {
@@ -139,12 +139,24 @@ public class KBTree {
     return KBTreeUtilJNI.KBTree_breadthFirstIterSetToNode(swigCPtr, this, nodeMarker);
   }
 
+  public String breadthFirstIterGetName(long nodeMarker) {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetName__SWIG_1(swigCPtr, this, nodeMarker);
+  }
+
   public String breadthFirstIterGetPathToRoot(long nodeMarker) {
     return KBTreeUtilJNI.KBTree_breadthFirstIterGetPathToRoot(swigCPtr, this, nodeMarker);
   }
 
-  public String breadthFirstIterGetParentName() {
-    return KBTreeUtilJNI.KBTree_breadthFirstIterGetParentName(swigCPtr, this);
+  public String breadthFirstIterGetParentName(long nodeMarker) {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetParentName(swigCPtr, this, nodeMarker);
+  }
+
+  public String breadthFirstIterGetAllChildrenNames(long nodeMarker) {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetAllChildrenNames(swigCPtr, this, nodeMarker);
+  }
+
+  public String breadthFirstIterGetAllDescendantNames(long nodeMarker) {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetAllDescendantNames(swigCPtr, this, nodeMarker);
   }
 
 }

@@ -92,11 +92,13 @@ sub DESTROY {
 *getAllNodeNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_getAllNodeNames;
 *resetBreadthFirstIterToRoot = *Bio::KBase::Tree::TreeCppUtilc::KBTree_resetBreadthFirstIterToRoot;
 *breadthFirstIterNext = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterNext;
-*breadthFirstIterGetName = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName;
 *breadthFirstIterMarkNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterMarkNode;
 *breadthFirstIterSetToNode = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterSetToNode;
+*breadthFirstIterGetName = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetName;
 *breadthFirstIterGetPathToRoot = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetPathToRoot;
 *breadthFirstIterGetParentName = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetParentName;
+*breadthFirstIterGetAllChildrenNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetAllChildrenNames;
+*breadthFirstIterGetAllDescendantNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_breadthFirstIterGetAllDescendantNames;
 sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
