@@ -81,6 +81,8 @@ namespace KBTreeLib {
 			
 			/* returns the name at the current iter position.  NOT THREAD SAFE*/
 			std::string breadthFirstIterGetName();
+			/* returns the name of the parent at the current iter position.  NOT THREAD SAFE */
+			std::string breadthFirstIterGetParentName();
 			
 			/* mark the current position of the iterator and return a handle so that you can always
 			reset to that node again. NOT THREAD SAFE */

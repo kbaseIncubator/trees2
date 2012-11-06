@@ -131,6 +131,10 @@ public class KBTree {
     return KBTreeUtilJNI.KBTree_breadthFirstIterGetName__SWIG_0(swigCPtr, this);
   }
 
+  public String breadthFirstIterGetParentName() {
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetParentName__SWIG_0(swigCPtr, this);
+  }
+
   public long breadthFirstIterMarkNode() {
     return KBTreeUtilJNI.KBTree_breadthFirstIterMarkNode(swigCPtr, this);
   }
@@ -148,7 +152,7 @@ public class KBTree {
   }
 
   public String breadthFirstIterGetParentName(long nodeMarker) {
-    return KBTreeUtilJNI.KBTree_breadthFirstIterGetParentName(swigCPtr, this, nodeMarker);
+    return KBTreeUtilJNI.KBTree_breadthFirstIterGetParentName__SWIG_1(swigCPtr, this, nodeMarker);
   }
 
   public String breadthFirstIterGetAllChildrenNames(long nodeMarker) {

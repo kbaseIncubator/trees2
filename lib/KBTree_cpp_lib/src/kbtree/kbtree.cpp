@@ -193,6 +193,7 @@ KBTree::KBTree(const std::string &newickString)
 	this->with_comments=true;
 	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
+	this->resetBreadthFirstIterToRoot();
 }
 KBTree::KBTree(const std::string &newickString,bool verbose)
 {
@@ -204,6 +205,7 @@ KBTree::KBTree(const std::string &newickString,bool verbose)
 	this->with_comments=true;
 	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
+	this->resetBreadthFirstIterToRoot();
 }
 KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrapNames)
 {
@@ -215,6 +217,7 @@ KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrap
 	this->with_comments=true;
 	this->with_bootstrap_values_as_labels=true;
 	this->initializeFromNewick(newickString);
+	this->resetBreadthFirstIterToRoot();
 }
 
 KBTree::~KBTree()
@@ -956,6 +959,12 @@ std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 		path += (*node).getName()+";";
 	}
 	return path;
+}
+std::string KBTree::breadthFirstIterGetParentName() {
+	if(bfi.has_parent()) {
+		return (*tr.parent(bfi)).getName();
+	}
+	return "";
 }
 std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }

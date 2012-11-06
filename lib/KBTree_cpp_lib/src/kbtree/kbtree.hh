@@ -204,6 +204,7 @@ namespace KBTreeLib {
 			unsigned int breadthFirstIterMarkNode();//NOT THREAD SAFE!!
 			bool breadthFirstIterSetToNode(unsigned int nodeMarker); //NOT THREAD SAFE!!
 			std::string breadthFirstIterGetName(); // NOT THEAD SAFE!!
+			std::string breadthFirstIterGetParentName(); //NOT THREAD SAFE!!
 
 			// These methods are thread safe.  They do not affect the global iterator, and assume that the node you are working on
 			// has already been marked

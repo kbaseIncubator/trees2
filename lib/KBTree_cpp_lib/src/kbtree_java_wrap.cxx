@@ -652,6 +652,21 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  result = (arg1)->breadthFirstIterGetParentName();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
 SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterMarkNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
@@ -718,7 +733,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;

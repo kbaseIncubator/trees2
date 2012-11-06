@@ -3034,6 +3034,34 @@ XS(_wrap_KBTree_breadthFirstIterGetName__SWIG_0) {
 }
 
 
+XS(_wrap_KBTree_breadthFirstIterGetParentName__SWIG_0) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_breadthFirstIterGetParentName(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_breadthFirstIterGetParentName" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    result = (arg1)->breadthFirstIterGetParentName();
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
 XS(_wrap_KBTree_breadthFirstIterMarkNode) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
@@ -3248,7 +3276,7 @@ XS(_wrap_KBTree_breadthFirstIterGetPathToRoot) {
 }
 
 
-XS(_wrap_KBTree_breadthFirstIterGetParentName) {
+XS(_wrap_KBTree_breadthFirstIterGetParentName__SWIG_1) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
     unsigned int arg2 ;
@@ -3283,6 +3311,78 @@ XS(_wrap_KBTree_breadthFirstIterGetParentName) {
     
     SWIG_croak_null();
   }
+}
+
+
+XS(_wrap_KBTree_breadthFirstIterGetParentName) {
+  dXSARGS;
+  
+  {
+    unsigned long _index = 0;
+    SWIG_TypeRank _rank = 0; 
+    if (items == 1) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_1;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 1;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_1:
+    
+    if (items == 2) {
+      SWIG_TypeRank _ranki = 0;
+      SWIG_TypeRank _rankm = 0;
+      SWIG_TypeRank _pi = 1;
+      int _v = 0;
+      {
+        void *vptr = 0;
+        int res = SWIG_ConvertPtr(ST(0), &vptr, SWIGTYPE_p_KBTreeLib__KBTree, 0);
+        _v = SWIG_CheckState(res);
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      {
+        {
+          int res = SWIG_AsVal_unsigned_SS_int SWIG_PERL_CALL_ARGS_2(ST(1), NULL);
+          _v = SWIG_CheckState(res);
+        }
+      }
+      if (!_v) goto check_2;
+      _ranki += _v*_pi;
+      _rankm += _pi;
+      _pi *= SWIG_MAXCASTRANK;
+      if (!_index || (_ranki < _rank)) {
+        _rank = _ranki; _index = 2;
+        if (_rank == _rankm) goto dispatch;
+      }
+    }
+  check_2:
+    
+  dispatch:
+    switch(_index) {
+    case 1:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_breadthFirstIterGetParentName__SWIG_0); return;
+    case 2:
+      PUSHMARK(MARK); SWIG_CALLXS(_wrap_KBTree_breadthFirstIterGetParentName__SWIG_1); return;
+    }
+  }
+  
+  croak("No matching function for overloaded 'KBTree_breadthFirstIterGetParentName'");
+  XSRETURN(0);
 }
 
 
