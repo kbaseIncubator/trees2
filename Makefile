@@ -2,7 +2,6 @@
 SERVICE = trees
 SERVICE_PSGI_FILE = Tree.psgi
 SERVICE_PORT = 7047
-CLIENT_TESTS = $(wildcard t/client-tests/*.t)
 
 #standalone variables which are replaced when run via /kb/dev_container/Makefile
 TOP_DIR = ../..
@@ -53,10 +52,9 @@ test-server:
 
 
 # here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-server)
-deploy: deploy-client deploy-scripts
-	echo "OK... Done deploying clients and scripts of $(SERVICE)."
+deploy: deploy-all
 
-deploy-all: deploy-client deploy-scripts deploy-server
+deploy-all: deploy-client deploy-scripts deploy-server deploy-docs
 	echo "OK... Done deploying ALL artifacts (includes clients, scripts and server) of $(SERVICE)."
 
 deploy-client:
@@ -125,6 +123,9 @@ deploy-server-start_scripts:
 	cp start_service $(SERVICE_DIR)/
 	cp stop_service $(SERVICE_DIR)/
 	cp reboot_service $(SERVICE_DIR)/
+
+deploy-docs:
+	
 
 # this undeploy target is a custom hack for Trees.  we might want to create a general version of this functionality
 undeploy-all: clean
