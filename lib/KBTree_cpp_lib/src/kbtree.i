@@ -16,7 +16,7 @@ namespace KBTreeLib {
             KBTree(const std::string &newickString, bool verbose, bool assumeBootstrapNames);
             ~KBTree();
             
-            /*  Returns a newick string representation of the tree */
+            /*  Returns a newick string representation of the tree, in a style set by the various setOutputFlag methods */
 			std::string toNewick();
 			
 			void setOutputFlagLabel(bool flag);
@@ -25,7 +25,7 @@ namespace KBTreeLib {
 			void setOutputFlagBootstrapValuesAsLabels(bool flag);
 			
 			
-			
+            
 			std::string toNewick(unsigned int style);
 			
 			/*  Writes the newick string representation of the tree to a newick file */
@@ -71,44 +71,62 @@ namespace KBTreeLib {
             std::string getAllNodeNames();
             
             
-            /* set the tree's breadth first iterator to the root node.  NOT THREAD SAFE */
+            /* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            set the tree's breadth first iterator to the root node. */
             void resetBreadthFirstIterToRoot();
             
-            /* advance the tree's breadth first iterator to the next node, which returns true
+            /* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            advance the tree's breadth first iterator to the next node, which returns true
             if there is a next node, or false if you are attempting to advance past the last
-            node in the traversal. NOT THREAD SAFE */
+            node in the traversal. */
 			bool breadthFirstIterNext();
 			
-			/* returns the name at the current iter position.  NOT THREAD SAFE*/
+			/* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            returns the name at the current iter position. */
 			std::string breadthFirstIterGetName();
-			/* returns the name of the parent at the current iter position.  NOT THREAD SAFE */
+			
+			/* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            returns the name of the parent at the current iter position. */
 			std::string breadthFirstIterGetParentName();
 			
-			/* mark the current position of the iterator and return a handle so that you can always
-			reset to that node again. NOT THREAD SAFE */
+			/* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            mark the current position of the iterator and return a handle so that you can always
+			reset to that node again. */
 			unsigned int breadthFirstIterMarkNode();
 			
-			/* set the tree's breadth first node iterator to the specified node, returns true if
-			the node marker was found, false otherwise. NOT THREAD SAFE  */
+			/* NOT THREAD SAFE!  USE IN SERVICES WITH CAUTION!
+            set the tree's breadth first node iterator to the specified node, returns true if
+			the node marker was found, false otherwise.  */
 			bool breadthFirstIterSetToNode(unsigned int nodeMarker);
 			
 			
 
-			/* get the name of the node that was marked with the given id */
+			/* get the name of the node that was marked with the given id.  This function is safe to run
+			concurrently by multiple service calls */
 			std::string breadthFirstIterGetName(unsigned int nodeMarker);
 			
 			/* Returns a string representation of the path from this node to the root node in the 
 			hierarchy.  The string is formatted as node names delimited by semicolons.  The list begins
 			with the immediate parent, and ends with the name of the root node.  If the node marker cannot
-			be found or if this is the root node, then this returns the empty string.
-			Note that this function has the side effect of reseting the iterator to root */
+			be found or if this is the root node, then this returns the empty string. This function is safe
+			to run concurrently by multiple service calls. */
 			std::string breadthFirstIterGetPathToRoot(unsigned int nodeMarker);
 			
+			/* returns the name of the parent node at the given node marker.  Returns an empty string
+			if the node marker points to the root node, or the node marker does not exist.  This function is
+			safe to run concurrently by multiple service calls. */
 			std::string breadthFirstIterGetParentName(unsigned int nodeMarker);
 			
-			
+			/* Returns a string list of all children names of the given node marker. Names are delimited by 
+			semicolons and there is no defined ordering in the node names.  The list does not include the name 
+			of the node at the the node marker.  Returns an empty string if the marker is not valid or the
+			node has no children.  This function is safe to run concurrently by multiple service calls. */
 			std::string breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker);
 			
+			/* Returns a string list of all descendant names of the given node marker in a breadth first
+			ordering.  Names are delimited by semicolons.  The list does not include the name of the node
+			at the the node marker.  Returns an empty string if the marker is not valid or the node has
+			no children/descendants.  This function is safe to run concurrently by multiple service calls. */
 			std::string breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker);
 			
 			

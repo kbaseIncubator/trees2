@@ -950,6 +950,7 @@ bool KBTree::breadthFirstIterSetToNode(unsigned int nodeMarker) {
 
 std::string KBTree::breadthFirstIterGetName(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	if(node!=tr.end_breadth_first()) {
 		return (*node).getName();
@@ -959,6 +960,7 @@ std::string KBTree::breadthFirstIterGetName(unsigned int nodeMarker) {
 
 std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	std::string path="";
 	while( node.has_parent() ){
@@ -970,6 +972,7 @@ std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 
 std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	if(node.has_parent()) {
 		return (*tr.parent(node)).getName();
@@ -979,6 +982,7 @@ std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 
 std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
+	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	std::string namelist = "";
 	for(tree<KBNode>::sibling_iterator child = tr.begin(node);child!=tr.end(node);child++) {
@@ -990,6 +994,7 @@ std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker)
 std::string KBTree::breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
 	std::string namelist = "";
+	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node( this->bfiNodeIndex.at(nodeMarker) );
 	node.clear(); // clear the queue so we only search the subtree
 	node++; // drop the given node, cause we don't want to return that one.
