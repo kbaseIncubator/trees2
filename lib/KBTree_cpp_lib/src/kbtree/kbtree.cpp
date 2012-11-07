@@ -980,6 +980,10 @@ std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker)
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 
 	std::string namelist = "";
+	for(tree<KBNode>::sibling_iterator child = tr.begin(node);child!=tr.end(node);child++) {
+		namelist+=(*child).getName()+";";
+	}
+
 	//int starting_depth = tr.depth(node);
 	//cout<<"starting depth "<<starting_depth<<endl;
 	//while(node++) {
