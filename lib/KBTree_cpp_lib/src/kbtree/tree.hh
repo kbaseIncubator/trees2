@@ -16,6 +16,9 @@
 // -added method "erase_and_reparent_children" to erase a potentially internal node without
 //   deleting its children, instead reparenting its children to point to this node's parent
 //
+// -added method "clear" to breadth_first_queued_iter to allow breadth first searches begining
+//   at internal nodes.  Traverse to the node of interest, call clear, then only the subtree
+//   below that given node will be traversed.
 
 /** \mainpage tree.hh
     \author   Kasper Peeters
@@ -179,6 +182,9 @@ class tree {
 				breadth_first_queued_iterator&  operator++();
 				breadth_first_queued_iterator   operator++(int);
 				breadth_first_queued_iterator&  operator+=(unsigned int);
+
+				/* method which allows us to clear the queue, and set the iterator at the proper location */
+				void clear();
 
 			private:
 				std::queue<tree_node *> traversal_queue;
@@ -2390,6 +2396,15 @@ tree<T, tree_node_allocator>::breadth_first_queued_iterator::breadth_first_queue
 	{
 	traversal_queue.push(tn);
 	}
+
+template <class T, class tree_node_allocator>
+void tree<T, tree_node_allocator>::breadth_first_queued_iterator::clear()
+{
+	while(!traversal_queue.empty()) {
+		traversal_queue.pop();
+	}
+	traversal_queue.push(this->node);
+}
 
 template <class T, class tree_node_allocator>
 tree<T, tree_node_allocator>::breadth_first_queued_iterator::breadth_first_queued_iterator(const iterator_base& other)

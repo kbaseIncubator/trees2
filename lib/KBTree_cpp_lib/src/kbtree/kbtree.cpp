@@ -926,6 +926,13 @@ std::string KBTree::breadthFirstIterGetName() {
 	}
 	return "END_OF_KB_TREE";
 }
+
+std::string KBTree::breadthFirstIterGetParentName() {
+	if(bfi.has_parent()) {
+		return (*tr.parent(bfi)).getName();
+	}
+	return "";
+}
 unsigned int KBTree::breadthFirstIterMarkNode() {
 	this->bfiNodeIndex.push_back(tree<KBNode>::breadth_first_iterator(this->bfi));
 	return bfiNodeIndex.size()-1;
@@ -960,12 +967,7 @@ std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 	}
 	return path;
 }
-std::string KBTree::breadthFirstIterGetParentName() {
-	if(bfi.has_parent()) {
-		return (*tr.parent(bfi)).getName();
-	}
-	return "";
-}
+
 std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
@@ -978,46 +980,22 @@ std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
-
 	std::string namelist = "";
 	for(tree<KBNode>::sibling_iterator child = tr.begin(node);child!=tr.end(node);child++) {
 		namelist+=(*child).getName()+";";
 	}
-
-	//int starting_depth = tr.depth(node);
-	//cout<<"starting depth "<<starting_depth<<endl;
-	//while(node++) {
-	//	if(node==tr.end_breadth_first()) { break; }
-	//	if (tr.depth(node) >= starting_depth) {
-	//
-	//	}
-	//}
-	//for(;tr.depth(node)>starting_depth && node!=tr.end_breadth_first(); node++) {
-	//	cout<<"here!!"<<endl;
-	//	namelist += (*node).getName();
-	//}
-
 	return namelist;
 }
 
 std::string KBTree::breadthFirstIterGetAllDescendantNames(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
-	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
-
 	std::string namelist = "";
-	//int starting_depth = tr.depth(node);
-	//cout<<"starting depth "<<starting_depth<<endl;
-	//while(node++) {
-	//	if(node==tr.end_breadth_first()) { break; }
-	//	if (tr.depth(node) >= starting_depth) {
-	//
-	//	}
-	//}
-	//for(;tr.depth(node)>starting_depth && node!=tr.end_breadth_first(); node++) {
-	//	cout<<"here!!"<<endl;
-	//	namelist += (*node).getName();
-	//}
-
+	tree<KBNode>::breadth_first_queued_iterator node( this->bfiNodeIndex.at(nodeMarker) );
+	node.clear(); // clear the queue so we only search the subtree
+	node++; // drop the given node, cause we don't want to return that one.
+	for(; node!=tr.end_breadth_first(); node++) {
+		namelist+=(*node).getName()+";";
+	}
 	return namelist;
 }
 
