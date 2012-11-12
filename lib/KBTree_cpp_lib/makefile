@@ -20,6 +20,10 @@ SWIG_FILE := $(SRC_PATH)/kbtree.i
 SWIG_PERL_WRAP_FILE := $(SRC_PATH)/kbtree_perl_wrap.cxx
 SWIG_JAVA_WRAP_FILE := $(SRC_PATH)/kbtree_java_wrap.cxx
 
+# NEEDED TO GET PATHS TO THE CORRECT JAVA INSTALL DIRECTORY - NOTE THAT WE ONLY SUPPORT COMPILING
+# WITHIN THE KBASE ENVIRONMENT...
+DEPLOY_RUNTIME ?= /kb/runtime
+
 # DETERMINE IF WE ARE MAC OR LINUX (this is clearly a hack, a better option would
 # be to actually write a configure script)
 UNAME := $(shell uname)
@@ -28,13 +32,13 @@ ifeq ($(UNAME),Darwin)
 PERL_CC_OPTIONS := $(shell perl -MExtUtils::Embed -e ccopts)
 PERL_LD_OPTIONS := $(shell perl -MExtUtils::Embed -e ldopts)
 PERL_LIB_CMD := -bundle -o $(OUT_DIR)/perl_interface/KBTreeUtil.bundle
-JAVA_HEADER_PATH := $(shell javaconfig Headers)
+JAVA_HEADER_PATH := -I"$(shell javaconfig Headers)"
 JAVA_LIB_CMD := -framework JavaVM -bundle -o $(OUT_DIR)/java_interface/libKBTreeUtil.jnilib
 else ifeq ($(UNAME),Linux)
 PERL_CC_OPTIONS := $(shell perl -MConfig -e 'print join(" ", @Config{qw(ccflags optimize cccdlflags)}, "-I$$Config{archlib}/CORE")')
 PERL_LD_OPTIONS := $(shell perl -MConfig -e 'print $$Config{lddlflags}')
 PERL_LIB_CMD := -shared -o $(OUT_DIR)/perl_interface/TreeCppUtil.so
-JAVA_HEADER_PATH := "/usr/lib/jvm/java-7-openjdk-amd64/include"
+JAVA_HEADER_PATH := -I"$(DEPLOY_RUNTIME)/java/include/" -I"$(DEPLOY_RUNTIME)/java/include/linux/"
 JAVA_LIB_CMD := -shared -o $(OUT_DIR)/java_interface/libKBTreeUtil.so
 endif
 
@@ -72,7 +76,7 @@ java-lib : $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbt
 	g++ $(JAVA_LIB_CMD) $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
 	javac $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtilJNI.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTree.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtil.java
 $(OUT_DIR)/java_interface/kbtree_wrap.o : $(SWIG_JAVA_WRAP_FILE)
-	g++ -fpic -O3 -c $(SWIG_JAVA_WRAP_FILE) -I$(JAVA_HEADER_PATH) -o $(OUT_DIR)/java_interface/kbtree_wrap.o -fno-strict-aliasing
+	g++ -fpic -O3 -c $(SWIG_JAVA_WRAP_FILE) $(JAVA_HEADER_PATH) -o $(OUT_DIR)/java_interface/kbtree_wrap.o -fno-strict-aliasing
 $(OUT_DIR)/java_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
 	g++ -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/java_interface/kbtree.o -fno-strict-aliasing
 
