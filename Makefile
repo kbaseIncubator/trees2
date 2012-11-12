@@ -30,7 +30,7 @@ all: cpp-libs
 
 # building the CPP libs amounts to calling another makefile
 cpp-libs:
-	cd "$(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib"; make all
+	cd "$(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib"; make all DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
 
 # here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-server)
 test: test-client test-scripts
