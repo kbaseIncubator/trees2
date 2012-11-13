@@ -215,11 +215,6 @@ module Tree
     */
     funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (tree);
     
-    /* Performs exactly the same function as get_tree, but accepts a list of ids instead, and returns
-    a list of trees.
-    */    
-    funcdef get_trees(list<kbase_id> tree_ids, mapping<string,string> options) returns (list<tree>);
-    
     /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
     is identified and used to retrieve all trees by ID that were built using the given protein sequence. */
     funcdef get_tree_ids_by_feature(list <kbase_id> feature_ids) returns (list<kbase_id>);

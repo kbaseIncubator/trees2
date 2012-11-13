@@ -8,9 +8,9 @@ This KBase service provides helper methods for performing data access and manipu
 of multiple sequence alignments (MSAs) and phylogenetic trees.  It also includes support
 to build alignments and trees from sequence data using a variety of popular methods.
 This KBase module includes a c++ tree library wrapped in a SWIG interface which can
-be downloaded and used locally.  Because it is wrapped in SWIG, the functions can be
-called currently from Java and Perl, but potentially from a host of other languages
-as well (see http://www.swig.org/).
+be downloaded and used locally.  Because it is wrapped in SWIG, the methods can be
+called from Java, Perl, and potentially from a host of other languages as well (see
+http://www.swig.org/).
 
 
 Dependencies
