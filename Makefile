@@ -16,6 +16,7 @@ ROOT_DEV_MODULE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 # including the common makefile gives us a handle to the service directory.  This is
 # where we will (for now) dump the service log files
 include $(TOP_DIR)/tools/Makefile.common
+$(SERVICE_DIR) ?= /kb/deployment/services/$(SERVICE)
 PID_FILE = $(SERVICE_DIR)/service.pid
 ACCESS_LOG_FILE = $(SERVICE_DIR)/log/access.log
 ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
@@ -97,8 +98,8 @@ deploy-scripts:
 	echo "No scripts yet to deploy."
 
 deploy-docs:
-	mkdir -p $(TARGET)/services/$(SERVICE_NAME)/webroot
-	cp docs/*.html $(TARGET)/services/$(SERVICE_NAME)/webroot/.
+	mkdir -p $(SERVICE_DIR)/webroot
+	cp docs/*.html $(SERVICE_DIR)/webroot/.
 	
 	
 
@@ -106,7 +107,7 @@ deploy-docs:
 deploy-server: deploy-server-libs deploy-server-start_scripts
 
 deploy-server-libs:
-	mkdir -p $(TARGET)/lib/Bio/KBase/Tree
+	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/Service.pm $(TARGET)/lib/Bio/KBase/Tree/.
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/TreeImpl.pm $(TARGET)/lib/Bio/KBase/Tree/.
 	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
