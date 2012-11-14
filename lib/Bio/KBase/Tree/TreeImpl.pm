@@ -23,6 +23,7 @@ last updated oct 2012
 #BEGIN_HEADER
 use Data::Dumper;
 use Config::Simple;
+use List::MoreUtils qw(uniq);
 use Bio::KBase::CDMI::CDMI;
 use Bio::KBase::Tree::TreeCppUtil;
 #use Bio::KBase::Tree::ForesterParserWrapper;
@@ -589,7 +590,7 @@ tree is a string
 
 Returns the specified tree in the specified format, or an empty string if the tree does not exist.
 The options hash provides a way to return the tree with different labels replaced or with different attached meta
-information.  Currently, the available flags and understood options are listed 
+information.  Currently, the available flags and understood options are listed below. 
 
     options = [
         format => 'newick',
@@ -605,7 +606,8 @@ The 'newick_label' key only affects trees returned as newick format, and specifi
 placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
 of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
 'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
-feature that was originally used to define the sequence).  'protein_sequence_id' indicates that the
+feature that was originally used to define the sequence). Note that exemplar feature_ids are not
+defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
 kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
 the contig sequence id is added.  Note that trees are typically built with protein sequences OR
 contig sequences. If you select one type of sequence, but the tree was built with the other type, then
@@ -643,7 +645,7 @@ sub get_tree
     
     # first get the tree
     my $kb = $self->{db};
-    my @rows = $kb->GetAll('Tree','Tree(id) = ? ORDER BY Tree(id)', $tree_id,[qw(Tree(newick))]);
+    my @rows = $kb->GetAll('Tree','Tree(id) = ?', $tree_id,[qw(Tree(newick))]);
     
     # second parse the parameters and set the defaults
     if (!exists $options->{format})           { $options->{format}="newick"; }
@@ -667,40 +669,99 @@ sub get_tree
 		} elsif ($options->{newick_label} eq "raw") {
 		    $kb_tree->setOutputFlagLabel(1);
 		} elsif ($options->{newick_label} eq "feature_id") {
+		    # go from feature id to sequence to lookup trees
+		    #$kb_tree->setOutputFlagLabel(1);
+		    #my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+			#    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
+			#    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
+		    #my $replacement_str="";
+		    #for my $i (0 .. $#feature_ids) {
+			#if ($i>=1) {
+			#    $replacement_str = $replacement_str.${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";"
+			#	; #unless ( ${$feature_ids[$i]}[0] eq ${$feature_ids[$i-1]}[0]);
+			#} else {
+			#    $replacement_str = ${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";";
+			#}
+		    #}
+		    #Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $replacement_str, method_name => 'get_tree');
+		    #$kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		    
+		    # go from exemplar feature stored directly in the tree
 		    $kb_tree->setOutputFlagLabel(1);
 		    # replace names with feature ids
-		    $kb_tree->setOutputFlagLabel(1);
-		    # todo: replace names with contig sequence ids
-		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+		    my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ?', $tree_id,
 			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
 		    my $replacement_str="";
-		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
-			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+		    foreach (@feature_ids) { #might be a better way to concatenate this list...
+		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+			
+			print ${$_}[0].";".${$_}[1].";\n";
 		    }
+		    print $replacement_str."\n\n";
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "protein_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
-		    # replace names with protein sequence ids
-		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+		    my @prot_seq_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', $tree_id,
 			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
 		    my $replacement_str="";
+		    # could be more than one sequence per row, so we have to check for this
+		    #for my $i (0 .. $#prot_seq_ids) {
+			#if ($i>=1) {
+			#    $replacement_str = $replacement_str.${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";"
+			#	; #unless ( ${$feature_ids[$i]}[0] eq ${$feature_ids[$i-1]}[0]);
+			#} else {
+			#    $replacement_str = ${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";";
+			#}
+		    #}
+		    
+		    
+		    
 		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
 			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
+			print ${$_}[0].";".${$_}[1].";\n";
 		    }
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "contig_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
 		    # todo: replace names with contig sequence ids
-		    my @prot_seq_ids = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
-			    'Tree(id) = ? ORDER BY AlignmentRow(row-number)', $tree_id,
+		    my @contig_seq_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedDNA(to-link)', $tree_id,
 			    [qw(AlignmentRow(row-id) ContainsAlignedDNA(to-link))]);
 		    my $replacement_str="";
-		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
+		    
+		    
+		    
+		    foreach (@contig_seq_ids) { #might be a better way to concatenate this list...
 			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
 		    }
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		} elsif ($options->{newick_label} eq "scientific_name") {
+		    #$kb_tree->setOutputFlagLabel(1);
+		    # first get feature ids
+		    #my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			#    'IsBuiltFromAlignment(from_link) = ?', $tree_id,
+			#    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
+		    # query one more time to get scientific names
+		    #my $n = @feature_ids;
+		    #my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+		    #my $constraint = "IsOwnedBy(from_link) IN $targets ORDER BY IsOwnedBy(from_link)";
+		    #my @names = $kb->GetAll('IsOwnedBy Genome',
+			#$constraint, \@feature_ids,
+			#[qw(IsOwnedBy(from_link) Genome(scientific_name))]);
+		    
+		    #return Dumper(@feature_ids);
+		    
+		    #my $replacement_str="";
+		    #for my $i (0 .. $#names) {
+			#$replacement_str = $replacement_str.$feature_ids[$i](0).";".$names[$i][1].";";
+		    #}
+		    #$kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		    
+		    
+		    
+		    
 		} else {
 		    my $msg = "Invalid option passed to get_tree. Unrecognized value for option key: 'newick_label'\n";
 		    $msg = $msg."You set 'newick_label' to be: '".$options->{newick_label}."'";
@@ -753,81 +814,6 @@ sub get_tree
 	my $msg = "Invalid returns passed to get_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_tree');
-    }
-    return($return);
-}
-
-
-
-
-=head2 get_trees
-
-  $return = $obj->get_trees($tree_ids, $options)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$tree_ids is a reference to a list where each element is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a tree
-kbase_id is a string
-tree is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$tree_ids is a reference to a list where each element is a kbase_id
-$options is a reference to a hash where the key is a string and the value is a string
-$return is a reference to a list where each element is a tree
-kbase_id is a string
-tree is a string
-
-
-=end text
-
-
-
-=item Description
-
-Performs exactly the same function as get_tree, but accepts a list of ids instead, and returns
-a list of trees.
-
-=back
-
-=cut
-
-sub get_trees
-{
-    my $self = shift;
-    my($tree_ids, $options) = @_;
-
-    my @_bad_arguments;
-    (ref($tree_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"tree_ids\" (value was \"$tree_ids\")");
-    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_trees:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_trees
-    $return = ["(mr_tree_1)","mr.tree2"];
-    #END get_trees
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_trees:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_trees');
     }
     return($return);
 }
@@ -890,23 +876,22 @@ sub get_tree_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_feature
+    # 1) construct and execute the query
+    my $kb = $self->{db};    
+    my $n = @$feature_ids;
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "IsProteinFor(to_link) IN $targets ORDER BY IsBuiltFromAlignment(from_link)";
+    my @rows = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+	    $constraint, $feature_ids,
+	    [qw(IsBuiltFromAlignment(from_link))]);
     
-    # not sure how to construct this query without just looping through...
-    # also, it would be nice to make sure trees are distinct
-    my $kb = $self->{db};
-    my @allrows = ();
-    foreach (@{$feature_ids}) {
-	my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ? ORDER BY Tree(id)', $_,
-	    [qw(Tree(id))]);
-	@allrows = (@allrows,@rows);
-    }
-    #put the tree ids in a single straight-up list
+    #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@allrows) { push(@return_list,${$_}[0]); }
-    # @return_list = sort(@return_list); #could sort here if we want
+    foreach (@rows) { push(@return_list,${$_}[0]); }
+    #3) remove duplicates
+    my @return_list = uniq(@return_list);
+    #4) return the result
     $return = \@return_list;
-    
     #END get_tree_ids_by_feature
     my @_bad_returns;
     (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -976,20 +961,21 @@ sub get_tree_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_tree_ids_by_protein_sequence
-    # not sure how to construct this query without just looping through...
-    # also, it would be nice to make sure trees are distinct
-    my $kb = $self->{db};
-    my @allrows = ();
-    foreach (@{$protein_sequence_ids}) {
-	my @rows = $kb->GetAll('Tree IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-	    'ContainsAlignedProtein(to-link) = ? ORDER BY Tree(id)', $_,
-	    [qw(Tree(id))]);
-	@allrows = (@allrows,@rows);
-    }
-    #put the tree ids in a single straight-up list
+    # 1) construct and execute the query
+    my $kb = $self->{db};    
+    my $n = @$protein_sequence_ids;
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "ContainsAlignedProtein(to_link) IN $targets ORDER BY IsBuiltFromAlignment(from_link)";
+    my @rows = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+	    $constraint, $protein_sequence_ids,
+	    [qw(IsBuiltFromAlignment(from_link))]);
+    
+    #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@allrows) { push(@return_list,${$_}[0]); }
-    # @return_list = sort(@return_list); #could sort here if we want
+    foreach (@rows) { push(@return_list,${$_}[0]); }
+    #3) remove duplicates
+    my @return_list = uniq(@return_list);
+    #4) return the result
     $return = \@return_list;
     #END get_tree_ids_by_protein_sequence
     my @_bad_returns;
@@ -1060,20 +1046,20 @@ sub get_alignment_ids_by_feature
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_feature
-    # not sure how to construct this query without just looping through...
-    # also, it would be nice to make sure trees are distinct
-    my $kb = $self->{db};
-    my @allrows = ();
-    foreach (@{$feature_ids}) {
-	my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor Feature',
-	    'Feature(id) = ? ORDER BY Alignment(id)', $_,
-	    [qw(Alignment(id))]);
-	@allrows = (@allrows,@rows);
-    }
-    #put the tree ids in a single straight-up list
+    # 1) construct and execute the query
+    my $kb = $self->{db};    
+    my $n = @$feature_ids;
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "IsProteinFor(to_link) IN $targets ORDER BY IncludesAlignmentRow(from_link)";
+    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+	    $constraint, $feature_ids,
+	    [qw(IncludesAlignmentRow(from_link))]);
+    #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@allrows) { push(@return_list,${$_}[0]); }
-    # @return_list = sort(@return_list); #could sort here if we want
+    foreach (@rows) { push(@return_list,${$_}[0]); }
+    #3) remove duplicates
+    my @return_list = uniq(@return_list);
+    #4) return the result
     $return = \@return_list;
     #END get_alignment_ids_by_feature
     my @_bad_returns;
@@ -1144,20 +1130,21 @@ sub get_alignment_ids_by_protein_sequence
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN get_alignment_ids_by_protein_sequence
-    # not sure how to construct this query without just looping through...
-    # also, it would be nice to make sure trees are distinct
-    my $kb = $self->{db};
-    my @allrows = ();
-    foreach (@{$protein_sequence_ids}) {
-	my @rows = $kb->GetAll('Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-	    'ContainsAlignedProtein(to-link) = ? ORDER BY Alignment(id)', $_,
-	    [qw(Alignment(id))]);
-	@allrows = (@allrows,@rows);
-    }
-    #put the tree ids in a single straight-up list
+    # 1) construct and execute the query
+    my $kb = $self->{db};    
+    my $n = @$protein_sequence_ids;
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "ContainsAlignedProtein(to_link) IN $targets ORDER BY IncludesAlignmentRow(from_link)";
+    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein',
+	    $constraint, $protein_sequence_ids,
+	    [qw(IncludesAlignmentRow(from_link))]);
+    
+    #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@allrows) { push(@return_list,${$_}[0]); }
-    # @return_list = sort(@return_list); #could sort here if we want
+    foreach (@rows) { push(@return_list,${$_}[0]); }
+    #3) remove duplicates
+    my @return_list = uniq(@return_list);
+    #4) return the result
     $return = \@return_list;
     #END get_alignment_ids_by_protein_sequence
     my @_bad_returns;

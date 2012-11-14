@@ -1,10 +1,12 @@
-# configurable variables 
+##################################################################################
+# configurable variables which can be updated
 SERVICE = trees
 SERVICE_NAME = Tree
 SERVICE_PSGI_FILE = Tree.psgi
 SERVICE_PORT = 7047
 
-#standalone variables which are replaced when run via /kb/dev_container/Makefile
+##################################################################################
+#Additional configuration variables which are pulled from the e
 TOP_DIR = ../..
 DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
@@ -105,17 +107,6 @@ deploy-docs:
 
 # deploys all libraries and scripts needed to start the server
 deploy-server: deploy-server-libs deploy-server-start_scripts
-
-deploy-server-libs:
-	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
-	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/Service.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/TreeImpl.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Bio/KBase/Tree/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp $(TOP_DIR)/modules/$(SERVICE)/lib/Tree.psgi $(TARGET)/lib/.
-	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/Tree/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp -vr $(TOP_DIR)/modules/$(SERVICE)/lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
-	cp $(TOP_DIR)/modules/$(SERVICE)/lib/forester_1005.jar $(TARGET)/lib/.
-	echo "deployed server for $(SERVICE)."
 
 deploy-server-libs:
 	# copy over the general purpose libs

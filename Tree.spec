@@ -182,7 +182,7 @@ module Tree
     
     /* Returns the specified tree in the specified format, or an empty string if the tree does not exist.
     The options hash provides a way to return the tree with different labels replaced or with different attached meta
-    information.  Currently, the available flags and understood options are listed 
+    information.  Currently, the available flags and understood options are listed below. 
     
         options = [
             format => 'newick',
@@ -195,14 +195,15 @@ module Tree
     support for 'newick'. The default value if not specified is 'newick'.
     
     The 'newick_label' key only affects trees returned as newick format, and specifies what should be
-    placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
-    of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
-    'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
-    feature that was originally used to define the sequence).  'protein_sequence_id' indicates that the
-    kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
-    the contig sequence id is added.  Note that trees are typically built with protein sequences OR
-    contig sequences. If you select one type of sequence, but the tree was built with the other type, then
-    no labels will be added.  The default value if none is specified is 'raw'.
+placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
+of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
+'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
+feature that was originally used to define the sequence). Note that exemplar feature_ids are not
+defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
+kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
+the contig sequence id is added.  Note that trees are typically built with protein sequences OR
+contig sequences. If you select one type of sequence, but the tree was built with the other type, then
+no labels will be added.  The default value if none is specified is 'raw'.
     
     The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
     how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
@@ -224,7 +225,7 @@ module Tree
     funcdef get_tree_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
     
     /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
-    is identified and used to retrieve all alignments by ID that were built using the given protein sequence. */
+    is identified and used to retrieve all alignments by ID that were built using the given protein sequence.*/
     funcdef get_alignment_ids_by_feature(list <kbase_id> feature_ids) returns (list<kbase_id>);
     
     /* Given a list of kbase ids of a protein sequences (their MD5s), retrieve the alignment ids of trees that
@@ -232,17 +233,6 @@ module Tree
     funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
   
     
-    
-    
-    
-    
-    /* Returns a list of all IDs of all trees in the database that match the given flags (right now
-    the only flag indicates if the tree is active or not, meaning the latest version of the tree,
-    but this should be extended to accept more args and possible queries.
-    NOTE: This method no longer is needed because it can be done via the CDMI
-    */ 
-    /* funcdef all_tree_ids(bool is_active) returns (list <kbase_id>); */
-
     /* Returns all tree IDs in which the entire portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the tree.
     todo: should beg/end just be included in some options hash?
