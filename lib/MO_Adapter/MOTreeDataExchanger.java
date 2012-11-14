@@ -70,6 +70,7 @@ public class MOTreeDataExchanger {
 		else if(GROUP.compareTo("SMART")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 885 -E 2.04e-5"; }
 		else if(GROUP.compareTo("SSF")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2019 -E 0.02"; }
 		else if(GROUP.compareTo("TIGRFAMs")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="--cut_tc"; }
+		else if(GROUP.compareTo("Adhoc")==0) { 	      	ALN_METHOD="FastBLAST-topHomologs.pl"; ALN_PARAM=""; }
 	}
 	
 	public static void main(String[] args) 
