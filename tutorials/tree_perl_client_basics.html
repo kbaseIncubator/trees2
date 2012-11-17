@@ -1,0 +1,263 @@
+<h1>Alignment and Phylogentic Tree Perl Client Basics</h1>
+
+<h4>Purpose</h4>
+This tutorial covers basic usage of the alignment and phylogenetic tree services through
+perl client libraries.  At the end of this tutorial, you will be able to query KBase for
+phylogenetic trees by features or sequences, perform basic manipulations of the tree, and
+create a simple html rendering of a tree.
+
+<h4>Prerequisite Activties</h4>
+This tutorial assumes that you have basic familiarity with Perl and some experience with
+the KBase Central Data Model (CDM) and Central Data Model API (CDMI).  We recommend that
+you first follow the <a href="http://kbase.us/developer-zone/tutorials/apis/getting-started-with-kbase-apis/extracting-data-from-the-cs-using-the-cs-api-some-typical-examples/">
+Extracting Data from the CS Using the CS API</a> tutorial and look through the
+<a href="http://kbase.us/developer-zone/api-documentation/cdmi-api/">CDMI Documentation</a>.
+
+<h4>Related Tutorials</h4>
+none.
+
+
+<h2>Introduction</h3>
+
+<p>The Central Store (CS) of KBase includes a large set of precomputed multiple sequence
+alignments and phylogentic trees covering a diverse range of gene families.  Large portions of most protein
+coding features of KBase are mapped to at least a few alignments and trees.  Alignment and tree data can
+be retrieved using the Central Data Model API (CDMI) or CS command line scripts.  Working with Tree based
+data can be challenging, however, because it requires working with tree structures and not just tab
+delimited file formats.</p>
+
+<p>The phylogenetic tree services provides a set of query and tree manipulations methods that make it easier
+to retrieve the trees or alignments you need and use them for further analysis.  This tutorial will guide you
+through using the perl client libraries to invoke these methods.</p>
+
+<p>Trees in KBase are stored by default in Newick format (http://en.wikipedia.org/wiki/Newick_format), which
+is a succinct, text-based format for representing tree structures.  Richer meta data associated with particular
+trees or nodes is stored directly in the CDM so that it is more easily searchable.  Phylogenentic trees are
+generally built from sequence alignments.  With KBase built trees, or trees which have associated alignment data
+available, KBase will store the relationship between trees and thier alignments. </p>
+
+
+<h2>Retrieving trees</h2>
+
+<p>All trees stored in the Central Data Store (CDS) of KBase can be retrieved by the standard Central Data Model API (CDMI).
+For instance, code to retrieve a set of trees by tree ID along with their associated newick data is shown below.</p>
+<pre>
+    use Bio::KBase::CDMI::CDMIClient;
+    my $cdmi = Bio::KBase::CDMI::CDMIClient->new_for_script();
+    my $tree_data = $cdmi->get_entity_Tree(["kb|tree.41"], ["status", "method", "parameters", "newick"]);
+</pre>
+<p>In this example, we create a new CDMI object, then use the standard pattern of 'get_entity' to retrieve data
+for a specific tree.  This call to the CDMI will store the result in a hash as shown below. (Note that the full
+newick string was omitted here for brevity).</p>
+<pre>
+    $VAR1 = {
+          'kb|tree.41' => {
+                            'parameters' => '--spr 4 -cat 20',
+                            'newick' => '( .... );',
+                            'status' => 'active',
+                            'id' => 'kb|tree.41',
+                            'method' => 'FastTree 2.1.2 SSE3'
+                          }
+        };
+</pre>
+<p>In the above example, the labels of the newick string will reference particular rows ids of a sequence alignment.  The
+row IDs must be unique within the alignment/tree, but may not be a direct ID of any other KBase object.  This is because
+alignments may be composed of a concatenation of multiple sequences.  This is needed, for instance, when building an alignment
+that will be used to construct a species tree.  Therefore, to search for the set of trees that contain a particular protein
+sequence directly through the CDMI, you must traverse several entities and relationships starting with 'ContainsAlignedProtein'
+and ending with 'Tree'.</p>
+<p>The Tree service provides a shortcut for this type of query.  To find a set of trees that include some segment of a given
+protein sequence, use the following code:</p>
+<pre>
+    use Bio::KBase::Tree::Client;
+    my $TreeService = Bio::KBase::Tree::Client->new("http://localhost:7047");
+    my $tree_ids=$TreeService->get_tree_ids_by_protein_sequence(["cf3c6b5c1f4f24f69866333d4daeb3c8"]);
+</pre>
+<p>The first line declares that we are using the Tree service.  The second line creates a new client that links to
+the specified service location.  The third line calls a method which returns a set of tree ids that contain
+at least some portion of the protein sequence indicated by the sequence MD5 value.  Remember that in KBase, multiple
+features can share the exact same protien sequence.  Therefore, it is often best to search directly for a specific
+protein sequence.  Alternatively, you can query directly based on featue ID.  In this case, the protein sequence of
+the feature ID is determined and used to identify trees which contain that protein sequence.  The code to do so is:</p>
+<pre>
+    $tree_ids=$TreeService->get_tree_ids_by_feature(["kb|g.371.peg.4539"]);
+</pre>
+<p>In both of these cases, you are returned a list of trees which contain the specified protein sequence.</p>
+<pre>
+    $VAR1 = [
+          'kb|tree.10094',
+          'kb|tree.10547',
+          'kb|tree.11177',
+          'kb|tree.11397',
+          'kb|tree.15024',
+          'kb|tree.20035',
+          'kb|tree.24782',
+          'kb|tree.9399'
+        ];
+</pre>
+<p>As mentioned earlier, you can use these tree IDs with the CDMI to retrieve additional information
+directly.  Alternatively, the Tree service provides a method that simplifies simple lookups by aggregating some properties
+about each of the trees, including the number of leaves and nodes and the alignment ids of the
+alignments that were used to build the tree, if they exist.  To quickly obtain this information in a simple hash, use the
+following code:</p>
+<pre>
+    my $tree_data=$TreeService->get_tree_data($tree_ids);
+</pre>
+<p>This code will take the list of tree IDs, analyze each tree, and assemble useful meta data
+about each tree.  Note that for very large trees or long lists, this method may take some time to complete. Calling
+the above function returns a hash with labeled information about each tree, as shown below.  Only the first two
+trees in the list are reproduced here.</p>
+<pre>
+    $VAR1 = {
+          'kb|tree.10094' => {
+                               'source_id' => 'tree00010100',
+                               'tree_contruction_method' => 'FastTree 2.1.2 SSE3',
+                               'source_db' => 'SEED',
+                               'status' => 'active',
+                               'date_created' => '1344482065',
+                               'leaf_count' => 2506,
+                               'tree_construction_parameters' => '--spr 4 -cat 20',
+                               'node_count' => 4963,
+                               'alignment_id' => 'kb|aln.10094',
+                               'type' => 'sequence_alignment'
+                             },
+          'kb|tree.15024' => {
+                               'source_id' => 'tree00015030',
+                               'tree_contruction_method' => 'FastTree 2.1.2 SSE3',
+                               'source_db' => 'SEED',
+                               'status' => 'active',
+                               'date_created' => '1344501012',
+                               'leaf_count' => 1482,
+                               'tree_construction_parameters' => '--spr 4 -cat 20',
+                               'node_count' => 2952,
+                               'alignment_id' => 'kb|aln.15024',
+                               'type' => 'sequence_alignment'
+                             },
+            ...
+            };
+</pre>
+<p>Similarly, you can quickly retrieve information about a particular alignment by executing the following code.
+<pre>
+    my $tree_data=$TreeService->get_alignment_data("kb|aln.15024");
+</pre>
+<p>which in this case produces the following result:</p>
+<pre>
+    $VAR1 = {
+          'kb|aln.15024' => {
+                              'source_id' => 'SEED',
+                              'is_concatenation' => '0',
+                              'n_rows' => '1482',
+                              'n_cols' => '1929',
+                              'source_db' => 'SEED',
+                              'status' => 'active',
+                              'alignment_protocol' => 'Sequences were identified with PSI-BLAST, trimmed to PSI-BLAST profile, aligned and treed',
+                              'date_created' => '1344501012',
+                              'sequence_type' => 'Protein',
+                              'alignment_construction_method' => 'MAFFT v6.818b',
+                              'tree_ids' => [
+                                              'kb|tree.15024'
+                                            ],
+                              'alignment_construction_parameters' => '--op 1.53 --maxiterate 1000 --linsi'
+                            }
+        };
+
+</pre>
+
+
+<h2>Extracting basic information from a tree</h2>
+<p>Now that we have found a tree we want to investigate further, let's start using more of the functionality of
+the Tree service.  First, we must retrieve the actual structure of the tree we want to work with.  Remember
+that the labels in the tree are only required to correspond directly to alignment rows.  Therefore, the tree
+service provides a function which retrieves the tree structure, but replaces
+node labels with something more useful, such as the MD5 of the original protein sequences.</p>
+<p>To retrieve the actual tree structure, use the following code:</p>
+<pre>
+    my $tree_id = 'kb|tree.15024';
+    my $options = {
+               newick_label=>"protein_sequence_id",
+               newick_bootstrap=>"none",
+               newick_distance=>"raw"};
+    my $tree = $TreeService->get_tree($tree_id, $options);
+</pre>
+<p>This method accepts an options hash which defines how we want the labels of the tree returned to us. ... </p>
+
+<p>Now that we have the structure of the tree in newick format, we can perform a variety of operations to inspect
+the nodes and structure of the Tree.  We can first simply compute the total number of leaves and nodes of the
+tree with two simple function calls:</p>
+<pre>
+    my $node_count = $TreeService->get_node_count($tree);
+    my $leaf_count = $TreeService->get_leaf_count($tree);
+    print "Node Count: ".$node_count."\nLeaf Count: ".$leaf_count."\n";
+</pre>
+<pre>
+    Node Count: 2952
+    Leaf Count: 1482
+</pre>
+<p>We can also assemble a list of all the leaf labels </p>
+<pre>
+    my $leaf_labels = $TreeService->extract_leaf_node_names($tree);
+</pre>
+<pre>
+    $VAR1 = [
+          '5fbe6b9e15365d9cd153749d555ade93',
+          'fa04ae7eae013ddba59333034de2635e',
+          'a15d7022f62ea0a6bb67b0bb917b1d7c',
+
+            ...
+            
+            '4ab1cc69cf33b8cd016868dc30f1ac50',
+            '1b86437371f55285b6c29fde1a029071'
+        ];
+
+</pre>
+<p>Given a tree structure, there are a number of methods that the Tree service provides which can operate on
+a tree structure.  Many third party libraries, such as Bio Perl, also provide utility methods for manipulating tree
+structures once they are in newick format.</p>
+
+
+<h2>Manipulating the labels of trees</h2>
+<p>Given the tree structure and a list of the labels of each node in terms of protein sequences, we
+can now query the CDS to identify what these protein sequences are, and potenitally what roles they serve.  One
+way to do this is to simply use the "get_tree" method with different parameters, which will allow you to replace
+the labels of the tree with a growing set of alternative kbase ids or human readable descriptions.  If you want
+more control over the labeling of nodes, however, there are additional functions that we provide to do so.  The
+basic approach is to retrieve the tree structure, extract the names of the leaves, process the names in some way
+(perhaps by looking up additional information), then finally replacing the labels with exactly the information you
+want.  Here is a small example of how to perform these steps.</p>
+
+<p>First we retrieve a tree as before, indicating that we want to replace the labels with a canonical feature
+id (which is typically the original gene from which the protein sequence was retrieved to build the tree).  Note
+that not all trees in KBase are built alike, so this option may not work on all trees.</p>
+<pre>
+    
+</pre>
+<p>Now, as before, extract the names of each node using the the Tree service API.</p>
+<pre></pre>
+<p>At this point, we have a list of feature IDs. Next, we will simply lookup the scientific name of the genome
+from which each feature originated and the functional annotation of each feature.  We can do this using the
+CDMI as follows:</p>
+<pre></pre>
+<p>Now we can assemble a hash that indicates for each feature</p>
+
+<h2>Displaying the tree</h2>
+<p>There are many ways to visualize a phylogenetic tree and decorate it with additional information.  Displaying
+large trees in an intuitive, interactive, and useful way is still an open challenge.  This Tree service API does
+not attempt to solve all such problems, but instead seeks to provide a few simple ways for visualizing trees and
+methods that allow you to take the structure of the Tree and export it into a format that is compatible with
+third party phylogentic software.  You have already learned how to extract the tree into a newick format with
+labels of your choosing.  The Newick format is compatible with many other software libraries.  Here we will simply
+demonstrate a couple alternative ways to quickly view the contents of a tree.</p>
+<p>First, visualize a tree as a simple string with the following command:</p>
+<pre></pre>
+<p>The tree library also provides an HTML-based renderer for tree data.  Call this method with the following code:</p>
+<pre>
+    my $display_options = {};
+    my $tree_in_html = $TreeService->draw_html_tree($tree,$display_options);
+    open (TREE_HTML_FILE, '>tree.html');
+    print TREE_HTML_FILE $tree_in_html;
+    close (TREE_HTML_FILE);
+</pre>
+<p>This will render a tree as an html object and return a string containing the display.  The tree will look something
+like this:</p>
+
+
