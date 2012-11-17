@@ -33,7 +33,6 @@ my $func_calls = {
                 get_node_count => ["((a,b)c);"],
                 get_leaf_count => ["((a,b)c);"],
                 get_tree => ["kb|tree.123", {format=>'newick'}],
-                get_trees => [ ["kb|tree.1","kb|tree.2","kb|tree.4"], {format=>'newick'}],
                 get_tree_ids_by_feature => [ ["kb|g.fake"] ],
                 get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
                 get_alignment_ids_by_feature => [ ["kb|g.fake"]],
@@ -52,10 +51,20 @@ use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-my $host=getHost(); my $port=getPort();
-print "-> attempting to connect to:'".$host.":".$port."'\n";
-my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+#my $host=getHost(); my $port=getPort();
+#print "-> attempting to connect to:'".$host.":".$port."'\n";
+#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+
+#NEW VERSION WITH AUTO START / STOP SERVICE
+use lib "$FindBin::Bin/.";
+use Server;
+my ($pid, $url) = Server::start('Tree');
+print "-> attempting to connect to:'".$url."'\n";
+my $client = Bio::KBase::Tree::Client->new($url);
+
 ok(defined($client),"instantiating tree client");
+
+
 
 
 # LOOP THROUGH ALL THE REMOTE CALLS AND MAKE SURE WE GOT SOMETHING

@@ -762,13 +762,16 @@ void KBTree::replaceNodeNames(const std::string &replacements) {
 void KBTree::replaceNodeNamesOrMakeBlank(const std::string &replacements) {
 	map<string,string> nodeNameMap;
 	string delimiters = ";",fromName="",toName="";
-	size_t current; size_t next = -1;
+	size_t current=0; size_t next = 0;
 	do {
-		current = next + 1;
+		//if we are starting the list, then start at zero
+		if(next==0) { current=0; }
+		else { current = next + 1; }
+		if(current>replacements.length()-1) { break; }
 		next = replacements.find_first_of( delimiters, current );
 		fromName = replacements.substr( current, next - current );
 		trim(fromName);
-
+		
 		current = next + 1;
 		next = replacements.find_first_of( delimiters, current );
 		toName = replacements.substr( current, next - current );

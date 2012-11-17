@@ -18,11 +18,18 @@ use Test::More tests => 6;
 
 #  MAKE SURE WE LOCALLY HAVE JSON RPC LIBS (TEST 1)
 use_ok("JSON::RPC::Client");
-
-# CREATE A JSON RPC CLIENT AND DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE
 my $client = new JSON::RPC::Client;
-my $host=getHost(); my $port=getPort();
-print "-> attempting to connect to:'".$host.":".$port."'\n";
+
+# DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE
+#my $host=getHost(); my $port=getPort();
+#print "-> attempting to connect to:'".$host.":".$port."'\n";
+#my $url = $host.":".$port;
+
+# DETERMINE URL AUTOMATICALLY
+use lib "$FindBin::Bin/.";
+use Server;
+my ($pid, $url) = Server::start('Tree');
+print "-> attempting to connect to:'".$url."'\n";
 
 
 # MAKE A VALID RPC CALL (TEST 2,3,4)
@@ -30,7 +37,7 @@ my $callobj = {
     method  => 'Tree.get_node_count',
     params  => ["(a,(b,c))"],
 };
-my $res = $client->call($host.":".$port, $callobj);
+my $res = $client->call($url, $callobj);
 ok($client->status_line =~ m/^200/,"test a valid rpc call");
 if(!($client->status_line =~ m/^200/)) {
     print "SERVER RESPONSE: '".$client->status_line."'\n";
@@ -46,7 +53,7 @@ $callobj = {
     method  => 'made_up_call_which_does_not_exist!',
     params  => [ '123fakeParameter' ],
 };
-$res = $client->call($host.":".$port, $callobj);
+$res = $client->call($url, $callobj);
 ok($client->status_line =~ m/^500/,"test invalid rpc call");
 ok(!$res,"test invalid rpc call returned nothing");
 

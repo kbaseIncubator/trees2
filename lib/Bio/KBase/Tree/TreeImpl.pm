@@ -13,10 +13,11 @@ Tree
 
 KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
-Set of functions and tools for building, querying, 
+This service provides a set of methods for querying, manipulating, and analyzing multiple
+sequence alignments and phylogenetic trees.
 
 created 5/21/2012 - msneddon
-last updated oct 2012
+last updated nov 2012
 
 =cut
 
@@ -26,6 +27,7 @@ use Config::Simple;
 use List::MoreUtils qw(uniq);
 use Bio::KBase::CDMI::CDMI;
 use Bio::KBase::Tree::TreeCppUtil;
+use ffxtree;
 #use Bio::KBase::Tree::ForesterParserWrapper;
 #END_HEADER
 
@@ -365,7 +367,7 @@ node_name is a string
 =item Description
 
 Given a tree in newick format, list the names of ALL the nodes.  Note that for some trees, such as
-those originating from MicrobesOnline, the names of internal nodes are bootstrap values, but will still
+those originating from MicrobesOnline, the names of internal nodes may be bootstrap values, but will still
 be returned by this function.
 
 =back
@@ -695,8 +697,6 @@ sub get_tree
 		    my $replacement_str="";
 		    foreach (@feature_ids) { #might be a better way to concatenate this list...
 		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
-			
-			print ${$_}[0].";".${$_}[1].";\n";
 		    }
 		    print $replacement_str."\n\n";
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
@@ -706,21 +706,14 @@ sub get_tree
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', $tree_id,
 			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
 		    my $replacement_str="";
-		    # could be more than one sequence per row, so we have to check for this
-		    #for my $i (0 .. $#prot_seq_ids) {
-			#if ($i>=1) {
-			#    $replacement_str = $replacement_str.${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";"
-			#	; #unless ( ${$feature_ids[$i]}[0] eq ${$feature_ids[$i-1]}[0]);
-			#} else {
-			#    $replacement_str = ${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";";
-			#}
-		    #}
-		    
-		    
-		    
-		    foreach (@prot_seq_ids) { #might be a better way to concatenate this list...
-			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
-			print ${$_}[0].";".${$_}[1].";\n";
+		    # could be more than one sequence per row, so we have to check for this and only add the first one
+		    for my $i (0 .. $#prot_seq_ids) {
+			if ($i>=1) {
+			    $replacement_str = $replacement_str.${$prot_seq_ids[$i]}[0].";".${$prot_seq_ids[$i]}[1].";"
+			    unless ( ${$prot_seq_ids[$i]}[0] eq ${$prot_seq_ids[$i-1]}[0]);
+			} else {
+			    $replacement_str = ${$prot_seq_ids[$i]}[0].";".${$prot_seq_ids[$i]}[1].";";
+			}
 		    }
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "contig_sequence_id") {
@@ -758,8 +751,6 @@ sub get_tree
 			#$replacement_str = $replacement_str.$feature_ids[$i](0).";".$names[$i][1].";";
 		    #}
 		    #$kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
-		    
-		    
 		    
 		    
 		} else {
@@ -814,6 +805,286 @@ sub get_tree
 	my $msg = "Invalid returns passed to get_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_tree');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_tree_data
+
+  $return = $obj->get_tree_data($tree_ids)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree_ids is a reference to a list where each element is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a tree_meta_data
+kbase_id is a string
+tree_meta_data is a reference to a hash where the following keys are defined:
+	alignment_id has a value which is a kbase_id
+	type has a value which is a string
+	status has a value which is a string
+	date_created has a value which is a timestamp
+	tree_contruction_method has a value which is a string
+	tree_construction_parameters has a value which is a string
+	tree_protocol has a value which is a string
+	node_count has a value which is an int
+	leaf_count has a value which is an int
+	source_db has a value which is a string
+	source_id has a value which is a string
+timestamp is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree_ids is a reference to a list where each element is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a tree_meta_data
+kbase_id is a string
+tree_meta_data is a reference to a hash where the following keys are defined:
+	alignment_id has a value which is a kbase_id
+	type has a value which is a string
+	status has a value which is a string
+	date_created has a value which is a timestamp
+	tree_contruction_method has a value which is a string
+	tree_construction_parameters has a value which is a string
+	tree_protocol has a value which is a string
+	node_count has a value which is an int
+	leaf_count has a value which is an int
+	source_db has a value which is a string
+	source_id has a value which is a string
+timestamp is a string
+
+
+=end text
+
+
+
+=item Description
+
+Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
+data may not be available for trees which are not built from alignments.  Also note that this method
+computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
+lists.  If you do not need this full meta information structure, it may be faster to directly query the
+CDS for just the field you need using the CDMI.
+
+=back
+
+=cut
+
+sub get_tree_data
+{
+    my $self = shift;
+    my($tree_ids) = @_;
+
+    my @_bad_arguments;
+    (ref($tree_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"tree_ids\" (value was \"$tree_ids\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_tree_data:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_tree_data');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_tree_data
+    $return = {};
+    if (@{$tree_ids}) {
+	#First get just the tree specific data
+	my $kb = $self->{db};
+	my $n = @$tree_ids;
+	my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+	my $constraint = "Tree(id) IN $targets";
+	my @rows = $kb->GetAll('Treed Tree',
+		$constraint, $tree_ids,
+		[qw(Tree(id) Tree(status) Tree(data-type) Tree(timestamp) Tree(method) Tree(parameters) Tree(protocol) Treed(from_link) Tree(source-id) Tree(newick) )]);
+	#2) put the tree ids in a single straight-up list
+	foreach (@rows) {
+	    my $val = $_;
+	    my $res = {};
+	    $res->{alignment_id} = "";
+	    $res->{status} = ${$val}[1];
+	    $res->{type} = ${$val}[2];
+	    $res->{date_created} = ${$val}[3];
+	    $res->{tree_contruction_method} = ${$val}[4];
+	    $res->{tree_construction_parameters} = ${$val}[5];
+	    $res->{tree_protocol} = ${$val}[6];
+	    $res->{source_db} = ${$val}[7];
+	    $res->{source_id} = ${$val}[8];
+	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$val}[9],0,1);
+	    $res->{node_count} = $kb_tree->getNodeCount();
+	    $res->{leaf_count} = $kb_tree->getLeafCount();
+	    $return->{${$val}[0]} = $res;
+	}
+	
+	#now get information from alignments if we can (this will only work for trees built from alignments)
+	my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+	my $constraint = "IsBuiltFromAlignment(from_link) IN $targets";
+	my @rows = $kb->GetAll('IsBuiltFromAlignment',
+		$constraint, $tree_ids,
+		[qw(IsBuiltFromAlignment(from_link) IsBuiltFromAlignment(to_link))]);
+	foreach (@rows) {
+	    my $val = $_;
+	    $return->{${$val}[0]}->{alignment_id} = ${$val}[1];
+	}
+    }
+    
+    #END get_tree_data
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_tree_data:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_tree_data');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_alignment_data
+
+  $return = $obj->get_alignment_data($alignment_ids)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$alignment_ids is a reference to a list where each element is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is an alignment_meta_data
+kbase_id is a string
+alignment_meta_data is a reference to a hash where the following keys are defined:
+	tree_ids has a value which is a reference to a list where each element is a kbase_id
+	status has a value which is a string
+	sequence_type has a value which is a string
+	is_concatenation has a value which is a string
+	date_created has a value which is a timestamp
+	n_rows has a value which is an int
+	n_cols has a value which is an int
+	alignment_construction_method has a value which is a string
+	alignment_construction_parameters has a value which is a string
+	alignment_protocol has a value which is a string
+	source_db has a value which is a string
+	source_id has a value which is a string
+timestamp is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$alignment_ids is a reference to a list where each element is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is an alignment_meta_data
+kbase_id is a string
+alignment_meta_data is a reference to a hash where the following keys are defined:
+	tree_ids has a value which is a reference to a list where each element is a kbase_id
+	status has a value which is a string
+	sequence_type has a value which is a string
+	is_concatenation has a value which is a string
+	date_created has a value which is a timestamp
+	n_rows has a value which is an int
+	n_cols has a value which is an int
+	alignment_construction_method has a value which is a string
+	alignment_construction_parameters has a value which is a string
+	alignment_protocol has a value which is a string
+	source_db has a value which is a string
+	source_id has a value which is a string
+timestamp is a string
+
+
+=end text
+
+
+
+=item Description
+
+Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
+data may not be available for trees which are not built from alignments.  Also note that this method
+computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
+lists.  If you do not need this full meta information structure, it may be faster to directly query the
+CDS for just the field you need using the CDMI.
+
+=back
+
+=cut
+
+sub get_alignment_data
+{
+    my $self = shift;
+    my($alignment_ids) = @_;
+
+    my @_bad_arguments;
+    (ref($alignment_ids) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"alignment_ids\" (value was \"$alignment_ids\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_alignment_data:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_data');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_alignment_data
+    
+    #get just the alignment specific data
+    my $kb = $self->{db};
+    my $n = @$alignment_ids;
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "Alignment(id) IN $targets";
+    my @rows = $kb->GetAll('Alignment WasAlignedBy',
+	    $constraint, $alignment_ids,
+	    [qw(Alignment(id) Alignment(status) Alignment(sequence_type) Alignment(is_concatenation) Alignment(timestamp)
+	     Alignment(n_rows) Alignment(n_cols) Alignment(method) Alignment(parameters) Alignment(protocol) WasAlignedBy(to_link) Alignment(source-id) )]);
+    # put the data into a proper hash
+    $return = {};
+    foreach (@rows) {
+	my $val = $_;
+	my $res = {};
+	$res->{tree_ids} = [ ];
+	$res->{status} = ${$val}[1];
+	$res->{sequence_type} = ${$val}[2];
+	$res->{is_concatenation} = ${$val}[3];
+	$res->{date_created} = ${$val}[4];
+	$res->{n_rows} = ${$val}[5];
+	$res->{n_cols} = ${$val}[6];
+	$res->{alignment_construction_method} = ${$val}[7];
+	$res->{alignment_construction_parameters} = ${$val}[8];
+	$res->{alignment_protocol} = ${$val}[9];
+	$res->{source_db} = ${$val}[10];
+	$res->{source_id} = ${$val}[11];
+	$return->{${$val}[0]} = $res;
+    }
+    
+    #now get information from alignments if we can
+    my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
+    my $constraint = "IsBuiltFromAlignment(to_link) IN $targets";
+    my @rows = $kb->GetAll('IsBuiltFromAlignment',
+	    $constraint, $alignment_ids,
+	    [qw(IsBuiltFromAlignment(to_link) IsBuiltFromAlignment(from_link))]);
+    foreach (@rows) {
+	my $val = $_;
+	push $return->{${$val}[0]}->{tree_ids}, ${$val}[1];
+    }
+    
+    #END get_alignment_data
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_alignment_data:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment_data');
     }
     return($return);
 }
@@ -1294,7 +1565,13 @@ sub draw_html_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN draw_html_tree
-    $return = "<html>\n<head></head>\n<body>\n".$tree."\n</body>\n</html>\n";
+    my ($help, $url, $alias_file, $focus_file, $branch, $collapse_by, $show_file,
+    $desc_file, $keep_file, $link_file, $text_link, $popup_file, $id_file, $title,
+    $min_dx, $dy, $ncolor, $color_by, $anno, $gray, $pseed, $ppseed, $raw, $va_files,
+    $scale_bar, $scale_lbl);
+    my $opts = {raw=>1};
+    my $tree_structure = ffxtree::read_tree(\$tree);
+    $return = ffxtree::tree_to_html($tree_structure,$opts);
     #END draw_html_tree
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1302,6 +1579,76 @@ sub draw_html_tree
 	my $msg = "Invalid returns passed to draw_html_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'draw_html_tree');
+    }
+    return($return);
+}
+
+
+
+
+=head2 draw_simple_string_tree
+
+  $return = $obj->draw_simple_string_tree($tree)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree is a newick_tree
+$return is a string
+newick_tree is a tree
+tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree is a newick_tree
+$return is a string
+newick_tree is a tree
+tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a tree, simply display a simple text rendering of its structure.
+
+=back
+
+=cut
+
+sub draw_simple_string_tree
+{
+    my $self = shift;
+    my($tree) = @_;
+
+    my @_bad_arguments;
+    (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument \"tree\" (value was \"$tree\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to draw_simple_string_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'draw_simple_string_tree');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN draw_simple_string_tree
+    #END draw_simple_string_tree
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to draw_simple_string_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'draw_simple_string_tree');
     }
     return($return);
 }
@@ -1745,7 +2092,20 @@ a string
 
 =item Description
 
-some comment here
+Meta data associated with a tree.
+
+    kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
+    string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
+                  either built from a sequence alignment, or imported directly indexed to genomes.
+    string status - set to 'active' if this is the latest built tree for a particular gene family
+    timestamp date_created - time at which the tree was built/loaded in seconds since the epoch
+    string tree_contruction_method - the name of the software used to construct the tree
+    string tree_construction_parameters - any non-default parameters of the tree construction method
+    string tree_protocol - simple free-form text which may provide additional details of how the tree was built
+    int node_count - total number of nodes in the tree
+    int leaf_count - total number of leaf nodes in the tree (generally this cooresponds to the number of sequences)
+    string source_db - the source database where this tree originated, if one exists
+    string source_id - the id of this tree in an external database, if one exists
 
 
 =item Definition
@@ -1754,15 +2114,17 @@ some comment here
 
 <pre>
 a reference to a hash where the following keys are defined:
-tree_id has a value which is a kbase_id
 alignment_id has a value which is a kbase_id
-meta_info_hash has a value which is a string
-is_active has a value which is a bool
+type has a value which is a string
+status has a value which is a string
 date_created has a value which is a timestamp
-tree_generation_method has a value which is an int
-tree_generation_parameters has a value which is a string
+tree_contruction_method has a value which is a string
+tree_construction_parameters has a value which is a string
+tree_protocol has a value which is a string
+node_count has a value which is an int
+leaf_count has a value which is an int
 source_db has a value which is a string
-source_db_id has a value which is a string
+source_id has a value which is a string
 
 </pre>
 
@@ -1771,15 +2133,17 @@ source_db_id has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-tree_id has a value which is a kbase_id
 alignment_id has a value which is a kbase_id
-meta_info_hash has a value which is a string
-is_active has a value which is a bool
+type has a value which is a string
+status has a value which is a string
 date_created has a value which is a timestamp
-tree_generation_method has a value which is an int
-tree_generation_parameters has a value which is a string
+tree_contruction_method has a value which is a string
+tree_construction_parameters has a value which is a string
+tree_protocol has a value which is a string
+node_count has a value which is an int
+leaf_count has a value which is an int
 source_db has a value which is a string
-source_db_id has a value which is a string
+source_id has a value which is a string
 
 
 =end text
@@ -1796,8 +2160,21 @@ source_db_id has a value which is a string
 
 =item Description
 
-Meta data about an alignment, such as when it was created, parameters used in its creation, etc.
-Todo: determine if this object is necessary, and determine what it should contain
+Meta data associated with an alignment.
+
+    list<kbase_id> tree_ids - the set of trees that were built from this alignment
+    string status - set to 'active' if this is the latest alignment for a particular set of sequences
+    string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
+    bool is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
+                            sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
+    timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
+    int n_rows - number of rows in the alignment
+    int n_cols - number of columns in the alignment
+    string alignment_construction_method - the name of the software tool used to build the alignment
+    string alignment_construction_parameters - set of non-default parameters used to construct the alignment
+    string alignment_protocol - simple free-form text which may provide additional details of how the alignment was built
+    string source_db - the source database where this alignment originated, if one exists
+    string source_id - the id of this alignment in an external database, if one exists
 
 
 =item Definition
@@ -1806,17 +2183,18 @@ Todo: determine if this object is necessary, and determine what it should contai
 
 <pre>
 a reference to a hash where the following keys are defined:
-alignment_id has a value which is a kbase_id
-meta_info_hash has a value which is a string
-is_active has a value which is a bool
-is_concatenation has a value which is a bool
+tree_ids has a value which is a reference to a list where each element is a kbase_id
+status has a value which is a string
+sequence_type has a value which is a string
+is_concatenation has a value which is a string
 date_created has a value which is a timestamp
 n_rows has a value which is an int
-alignment_method has a value which is an int
-alignment_parameters has a value which is a string
-alignment_protocol_description has a value which is a string
+n_cols has a value which is an int
+alignment_construction_method has a value which is a string
+alignment_construction_parameters has a value which is a string
+alignment_protocol has a value which is a string
 source_db has a value which is a string
-source_db_id has a value which is a string
+source_id has a value which is a string
 
 </pre>
 
@@ -1825,17 +2203,18 @@ source_db_id has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-alignment_id has a value which is a kbase_id
-meta_info_hash has a value which is a string
-is_active has a value which is a bool
-is_concatenation has a value which is a bool
+tree_ids has a value which is a reference to a list where each element is a kbase_id
+status has a value which is a string
+sequence_type has a value which is a string
+is_concatenation has a value which is a string
 date_created has a value which is a timestamp
 n_rows has a value which is an int
-alignment_method has a value which is an int
-alignment_parameters has a value which is a string
-alignment_protocol_description has a value which is a string
+n_cols has a value which is an int
+alignment_construction_method has a value which is a string
+alignment_construction_parameters has a value which is a string
+alignment_protocol has a value which is a string
 source_db has a value which is a string
-source_db_id has a value which is a string
+source_id has a value which is a string
 
 
 =end text

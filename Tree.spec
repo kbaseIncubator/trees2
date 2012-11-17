@@ -1,10 +1,11 @@
 /*
 KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
 
-Set of functions and tools for building, querying, 
+This service provides a set of methods for querying, manipulating, and analyzing multiple
+sequence alignments and phylogenetic trees.
 
 created 5/21/2012 - msneddon
-last updated oct 2012
+last updated nov 2012
 */
 module Tree
 {
@@ -74,60 +75,72 @@ module Tree
     /* String in HTML format, used in the KBase Tree library for returning rendered trees. */
     typedef string html_file;
     
-    /* Meta data about a tree, such as when it was created, parameters used in its creation, etc
-    Is this actually needed? Or will this info be accessible through the auto generated methods?
+    
+    /* Meta data associated with a tree.
+    
+        kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
+        string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
+                      either built from a sequence alignment, or imported directly indexed to genomes.
+        string status - set to 'active' if this is the latest built tree for a particular gene family
+        timestamp date_created - time at which the tree was built/loaded in seconds since the epoch
+        string tree_contruction_method - the name of the software used to construct the tree
+        string tree_construction_parameters - any non-default parameters of the tree construction method
+        string tree_protocol - simple free-form text which may provide additional details of how the tree was built
+        int node_count - total number of nodes in the tree
+        int leaf_count - total number of leaf nodes in the tree (generally this cooresponds to the number of sequences)
+        string source_db - the source database where this tree originated, if one exists
+        string source_id - the id of this tree in an external database, if one exists 
     */
     typedef structure {
-        /*some comment here*/
-        kbase_id tree_id;
         kbase_id alignment_id;
-        string meta_info_hash;
-        bool is_active;
+        string type;
+        string status;
         timestamp date_created;
-        int tree_generation_method;
-        string tree_generation_parameters;
+        string tree_contruction_method;
+        string tree_construction_parameters;
+        string tree_protocol;
+        int node_count;
+        int leaf_count;
         string source_db;
-        string source_db_id;
+        string source_id;
     } tree_meta_data;
     
-    /* Meta data about an alignment, such as when it was created, parameters used in its creation, etc.
-    Todo: determine if this object is necessary, and determine what it should contain
+    /* Meta data associated with an alignment.
+    
+        list<kbase_id> tree_ids - the set of trees that were built from this alignment
+        string status - set to 'active' if this is the latest alignment for a particular set of sequences
+        string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
+        bool is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
+                                sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
+        timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
+        int n_rows - number of rows in the alignment
+        int n_cols - number of columns in the alignment
+        string alignment_construction_method - the name of the software tool used to build the alignment
+        string alignment_construction_parameters - set of non-default parameters used to construct the alignment
+        string alignment_protocol - simple free-form text which may provide additional details of how the alignment was built
+        string source_db - the source database where this alignment originated, if one exists
+        string source_id - the id of this alignment in an external database, if one exists
+    
     */
     typedef structure {
-        kbase_id alignment_id;
-        string meta_info_hash;
-        bool is_active;
-        bool is_concatenation;
+        list<kbase_id> tree_ids;
+        string status;
+        string sequence_type;
+        string is_concatenation;
         timestamp date_created;
         int n_rows;
-        int alignment_method;
-        string alignment_parameters;
-        string alignment_protocol_description;
+        int n_cols;
+        string alignment_construction_method;
+        string alignment_construction_parameters;
+        string alignment_protocol;
         string source_db;
-        string source_db_id;
+        string source_id;
     } alignment_meta_data;
     
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE PARSING AND STRING MANIPULATIONS */
     /* *********************************************************************************************** */
-    
-    /* NOTE: methods that are commented out are not yet fully functional or implemented */
-    /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
-    */
-    /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree); */
-    
-    /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
-    */
-    /* funcdef convert_phyloXML2newick(newick_tree tree) returns (phyloXML_tree); */
-    
-    /* Convert a tree encoded in newick format to a tree encded in JSON format.
-    */
-    /* funcdef convert_newick2json(newick_tree tree) returns (json_tree); */
-    
-    /* Convert a tree encoded in JSON format to a tree encded in newick format.
-    */
-    /* funcdef convert_json2newick(json_tree tree) returns (newick_tree); */
     
     
     /* Given a tree in newick format, replace the node names indicated as keys in the 'replacements' mapping
@@ -143,6 +156,25 @@ module Tree
     */
     funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
    
+   
+   
+    /* NOTE: methods that are commented out are not yet fully implemented yet, but will appear in future
+    versions of the Tree service as they are needed / requested.*/
+    /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
+    */
+    /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree); */
+    /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
+    */
+    /* funcdef convert_phyloXML2newick(newick_tree tree) returns (phyloXML_tree); */
+    /* Convert a tree encoded in newick format to a tree encded in JSON format.
+    */
+    /* funcdef convert_newick2json(newick_tree tree) returns (json_tree); */
+    /* Convert a tree encoded in JSON format to a tree encded in newick format.
+    */
+    /* funcdef convert_json2newick(json_tree tree) returns (newick_tree); */
+    
+    
+
     
     
     
@@ -157,7 +189,7 @@ module Tree
     funcdef extract_leaf_node_names(newick_tree tree) returns (list<node_name>);
     
     /* Given a tree in newick format, list the names of ALL the nodes.  Note that for some trees, such as
-    those originating from MicrobesOnline, the names of internal nodes are bootstrap values, but will still
+    those originating from MicrobesOnline, the names of internal nodes may be bootstrap values, but will still
     be returned by this function.
     */
     funcdef extract_node_names(newick_tree tree) returns (list<node_name>);
@@ -195,15 +227,15 @@ module Tree
     support for 'newick'. The default value if not specified is 'newick'.
     
     The 'newick_label' key only affects trees returned as newick format, and specifies what should be
-placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
-of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
-'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
-feature that was originally used to define the sequence). Note that exemplar feature_ids are not
-defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
-kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
-the contig sequence id is added.  Note that trees are typically built with protein sequences OR
-contig sequences. If you select one type of sequence, but the tree was built with the other type, then
-no labels will be added.  The default value if none is specified is 'raw'.
+    placed in the label of each leaf.  'none' indicates that no label is added, so you get the structure
+    of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
+    'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
+    feature that was originally used to define the sequence). Note that exemplar feature_ids are not
+    defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
+    kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
+    the contig sequence id is added.  Note that trees are typically built with protein sequences OR
+    contig sequences. If you select one type of sequence, but the tree was built with the other type, then
+    no labels will be added.  The default value if none is specified is 'raw'.
     
     The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
     how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
@@ -212,9 +244,24 @@ no labels will be added.  The default value if none is specified is 'raw'.
     The 'newick_distance' key allows control over whether distance labels are generated or not.  If set to
     'none', no distances will be output. Default is 'raw', which outputs the distances exactly as they appeared
     when loaded into kbase.
-    
     */
     funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (tree);
+    
+    /* Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
+    data may not be available for trees which are not built from alignments.  Also note that this method
+    computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
+    lists.  If you do not need this full meta information structure, it may be faster to directly query the
+    CDS for just the field you need using the CDMI.
+    */
+    funcdef get_tree_data(list<kbase_id> tree_ids) returns (mapping<kbase_id,tree_meta_data>);
+    
+    /* Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
+    data may not be available for trees which are not built from alignments.  Also note that this method
+    computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
+    lists.  If you do not need this full meta information structure, it may be faster to directly query the
+    CDS for just the field you need using the CDMI.
+    */
+    funcdef get_alignment_data(list<kbase_id> alignment_ids) returns (mapping<kbase_id,alignment_meta_data>);
     
     /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
     is identified and used to retrieve all trees by ID that were built using the given protein sequence. */
@@ -273,7 +320,7 @@ no labels will be added.  The default value if none is specified is 'raw'.
     /*funcdef substitute_node_names_with_kbase_ids(list <kbase_id> trees, mapping<string,string> options) returns (list<newick_tree>);*/
 
  
-     /* Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
+    /* Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
     the given tree. Note: may not be needed if this functionality is possible via the ER model
     */
     funcdef get_kbase_ids_from_alignment_row(kbase_id alignment_id, int row_number) returns (list<kbase_id>);
@@ -313,21 +360,5 @@ no labels will be added.  The default value if none is specified is 'raw'.
     
     /* Given a tree, render it as an SVG object and return the drawing. */
     /* funcdef draw_svg_tree(newick_tree tree, mapping<string,string>display_options) returns (svg_file); */
-
-
-    
-
-
-
-
-    
-
-
-    
-
-
-
-
-
 
 };

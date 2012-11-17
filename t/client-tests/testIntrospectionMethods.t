@@ -24,9 +24,16 @@ use_ok("Bio::KBase::Tree::Client");
 
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-my $host=getHost(); my $port=getPort();
-print "-> attempting to connect to:'".$host.":".$port."'\n";
-my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+#my $host=getHost(); my $port=getPort();
+#print "-> attempting to connect to:'".$host.":".$port."'\n";
+#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+
+#NEW VERSION WITH AUTO START / STOP SERVICE
+use lib "$FindBin::Bin/.";
+use Server;
+my ($pid, $url) = Server::start('Tree');
+my $client = Bio::KBase::Tree::Client->new($url);
+print "-> attempting to connect to:'".$url."'\n";
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)
