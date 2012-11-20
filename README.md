@@ -13,6 +13,20 @@ called from Java, Perl, and potentially from a host of other languages as well (
 http://www.swig.org/).
 
 
+Authors
+---------
+Michael Sneddon, LBL (mwsneddon@lbl.gov)
+Fangfang Xia, ANL (fangfang.xia@gmail.com)
+
+
+Log / Major Release Notes
+---------
+v0.00a - 5/16/2012 - initial repo created
+v0.00a - 8/9/2012 - added / tested link to some MO functions and the cpp library
+v0.01  - 8/16/2012 - independent deployment and test at build meeting of basic configuration (tested on images v9-14)
+v0.02  - 11/20/2012 - prepped for november build, tutorial is now available (tested on image v19)
+
+
 Dependencies
 ----------
 -kbase deployment image (last tested on kbase-image-v19)
@@ -20,7 +34,7 @@ Dependencies
 -KBase CDM module deployed (git repo: kb_seed)
 
 
-Deploying on KBase infrastructure
+Deploying and testing on KBase infrastructure
 ----------
 * boot a fresh KBase image (last tested on v19)
 * login in as ubuntu and get root access with a sudo su
@@ -70,19 +84,6 @@ Starting/Stopping the service, and other notes
   useful for quick debugging and testing.
 
 
-Testing
-----------
-The backend of the tree services are written in Perl (for compatibility with the type compiler), so
-tests are also implemented in Perl and can be found in the 't' directory.  For compliance with KBase,
-there is also a 'test' directory which is currently a sym link to the 't' directory.  In the future,
-if additional non-perl tests are added, the 'test' directory may be converted to an explicit directory.
-
-To run tests, enter the 't' directory and collow the readme file contained there.
-
-Documentation of the supported functions in the tree services can be returned by 
-
-
-
 To Do (Task list, created Aug 8, 2012)
 ----------
 x) Write Loader scripts for importing data in the exchange format into the CDS
@@ -117,14 +118,3 @@ The following 3 tasks should happen concurrently and iteratively, and will be ex
 
 
 
-Authors
----------
-Michael Sneddon, LBL (mwsneddon@lbl.gov)
-Fangfang Xia, ANL (fangfang.xia@gmail.com)
-
-
-Log / Major Release Notes
----------
-v0.00a - 5/16/2012 - initial repo created
-v0.00a - 8/9/2012 - added / tested link to some MO functions and the cpp library
-v0.01  - 8/16/2012 - independent deployment and test at build meeting of basic configuration (tested on images v9-14)

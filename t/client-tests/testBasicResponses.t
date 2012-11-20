@@ -37,7 +37,6 @@ my $func_calls = {
                 get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
                 get_alignment_ids_by_feature => [ ["kb|g.fake"]],
                 get_alignment_ids_by_protein_sequence => [ ["madeUpMD5"] ],
-                get_kbase_ids_from_alignment_row => ["kb|aln.4",5],
                 draw_html_tree => ["((a,b)c);",{option=>"value"}],
                  };
 #############################################################################

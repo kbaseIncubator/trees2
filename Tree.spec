@@ -321,9 +321,10 @@ module Tree
 
  
     /* Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
-    the given tree. Note: may not be needed if this functionality is possible via the ER model
+    the given tree. Note: may not be needed if this functionality is possible via the ER model.
+    NOTE: currently not needed because there are no alignments built from concatenated sequences yet...
     */
-    funcdef get_kbase_ids_from_alignment_row(kbase_id alignment_id, int row_number) returns (list<kbase_id>);
+    /* funcdef get_kbase_ids_from_alignment_row(kbase_id alignment_id, int row_number) returns (list<kbase_id>); */
 
  
  
