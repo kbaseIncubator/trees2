@@ -1432,79 +1432,6 @@ sub get_alignment_ids_by_protein_sequence
 
 
 
-=head2 get_kbase_ids_from_alignment_row
-
-  $return = $obj->get_kbase_ids_from_alignment_row($alignment_id, $row_number)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$alignment_id is a kbase_id
-$row_number is an int
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$alignment_id is a kbase_id
-$row_number is an int
-$return is a reference to a list where each element is a kbase_id
-kbase_id is a string
-
-
-=end text
-
-
-
-=item Description
-
-Given an alignment and a row in the alignment, returns all the kbase_ids of the sequences that compose
-the given tree. Note: may not be needed if this functionality is possible via the ER model
-
-=back
-
-=cut
-
-sub get_kbase_ids_from_alignment_row
-{
-    my $self = shift;
-    my($alignment_id, $row_number) = @_;
-
-    my @_bad_arguments;
-    (!ref($alignment_id)) or push(@_bad_arguments, "Invalid type for argument \"alignment_id\" (value was \"$alignment_id\")");
-    (!ref($row_number)) or push(@_bad_arguments, "Invalid type for argument \"row_number\" (value was \"$row_number\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to get_kbase_ids_from_alignment_row:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_kbase_ids_from_alignment_row');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN get_kbase_ids_from_alignment_row
-    $return = [""];
-    #END get_kbase_ids_from_alignment_row
-    my @_bad_returns;
-    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to get_kbase_ids_from_alignment_row:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'get_kbase_ids_from_alignment_row');
-    }
-    return($return);
-}
-
-
-
-
 =head2 draw_html_tree
 
   $return = $obj->draw_html_tree($tree, $display_options)
@@ -1543,7 +1470,8 @@ html_file is a string
 
 =item Description
 
-Given a tree, render it in HTML/JAVASCRIPT and return the page.
+Given a tree structure in newick, render it in HTML/JAVASCRIPT and return the page as a string. display_options
+provides a way to pass parameters to the tree rendering algorithm, but currently no options are recognized.
 
 =back
 

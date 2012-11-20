@@ -356,7 +356,8 @@ module Tree
     /* METHODS FOR TREE VISUALIZATION */
     /* *********************************************************************************************** */
 
-    /* Given a tree, render it in HTML/JAVASCRIPT and return the page. */
+    /* Given a tree structure in newick, render it in HTML/JAVASCRIPT and return the page as a string. display_options
+    provides a way to pass parameters to the tree rendering algorithm, but currently no options are recognized. */
     funcdef draw_html_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);
     
     /* Given a tree, render it as an SVG object and return the drawing. */
