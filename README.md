@@ -15,40 +15,44 @@ http://www.swig.org/).
 
 Dependencies
 ----------
--kbase deployment image (last tested on kbase-image-v17)
+-kbase deployment image (last tested on kbase-image-v19)
 -KBase typespec module deployed (git repo: typecomp)
 -KBase CDM module deployed (git repo: kb_seed)
 
--NOTE: If linking to the forrester library (not active by default), you need a working installation of 
- perl module Inline::Java, which is not yet added to the bootstrap
- scripts.  To install on kbase-image-v14, source the user-env.sh file (see below)
- so that your environment will point to the kbase runtime.  Then to enter:
-    sudo JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
- Running cpan for the first time will require setting up some initial config settings.
- All of the default options (answering yes) worked for us.  Inline::Java also asks to
- install/compile a JNI option (so that a separate JVM process is not required at
- runtime), but this is not necessary and has not been tested.
 
 Deploying on KBase infrastructure
 ----------
-* boot a fresh KBase image (last tested on v17)
+* boot a fresh KBase image (last tested on v19)
 * login in as ubuntu and get root access with a sudo su
 * enter the following commands:
 
+#First, create the dev_container environment
 cd /kb
 git clone ssh://kbase@git.kbase.us/dev_container
-cd /kb/dev_container/modules # note: on v17, I had to create this directory first
-git clone ssh://kbase@git.kbase.us/trees
-git clone ssh://kbase@git.kbase.us/kb_seed
-git clone ssh://kbase@git.kbase.us/typecomp  #OPTIONAL: required to rebuild from typespec
+
+#Second, build the type compiler
+cd /kb/dev_container/modules
+git clone ssh://kbase@git.kbase.us/typecomp
 cd /kb/dev_container
 ./bootstrap /kb/runtime
 source user-env.sh
-# NOTE: see above for more details about the Inline::Java dependency, which
-# is currently not required to deploy
-# JAVA_HOME=/kb/runtime/jdk1.6.0_30 cpan install Inline::Java
-make deploy # this will deploy only the scripts and clients
-cd 
+make
+
+#Third, check out the kb_seed and tree modules
+cd /kb/dev_container/modules
+git clone ssh://kbase@git.kbase.us/kb_seed
+git clone ssh://kbase@git.kbase.us/trees
+
+# make and deploy the services
+cd /kb/dev_container
+make
+make deploy
+
+# to test the tree service (using the deployed client)
+cd /kb/deployment
+source user-env.sh
+cd /kb/dev_container/modules/trees
+make test
 
 
 Starting/Stopping the service, and other notes
