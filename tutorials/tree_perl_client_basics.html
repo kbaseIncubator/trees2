@@ -1,45 +1,45 @@
-<h1>Alignment and Phylogentic Tree Perl Client Basics</h1>
+<h1>Alignment and Phylogenetic Tree Service - Perl Client Basics</h1>
 
 <h4>Purpose</h4>
-This tutorial covers basic usage of the alignment and phylogenetic tree services through
-perl client libraries.  At the end of this tutorial, you will be able to query KBase for
+This tutorial covers basic usage of the alignment and phylogenetic tree service through
+Perl client libraries.  At the end of this tutorial, you will be able to query KBase for
 phylogenetic trees by features or sequences, perform basic manipulations of the tree, and
-create a simple html rendering of a tree.
+create a simple HTML rendering of a tree.
 
-<h4>Prerequisite Activties</h4>
+<h4>Prerequisite Activities</h4>
 This tutorial assumes that you have basic familiarity with Perl and some experience with
 the KBase Central Data Model (CDM) and Central Data Model API (CDMI).  We recommend that
 you first follow the <a href="http://kbase.us/developer-zone/tutorials/apis/getting-started-with-kbase-apis/extracting-data-from-the-cs-using-the-cs-api-some-typical-examples/">
 Extracting Data from the CS Using the CS API</a> tutorial and look through the
 <a href="http://kbase.us/developer-zone/api-documentation/cdmi-api/">CDMI Documentation</a>.
+It may also be helpful to inspect the alignment and tree elements of the
+<a href="http://kbase.us/developer-zone/cdm-er-browser">entity-relationship model of the CDM</a>.
 
 <h4>Related Tutorials</h4>
 none.
 
 
-<h2>Introduction</h3>
 
+<h2>Introduction</h3>
 <p>The Central Store (CS) of KBase includes a large set of precomputed multiple sequence
-alignments and phylogentic trees covering a diverse range of gene families.  Large portions of most protein
+alignments and phylogenetic trees covering a diverse range of gene families.  Most protein
 coding features of KBase are mapped to at least a few alignments and trees.  Alignment and tree data can
-be retrieved using the Central Data Model API (CDMI) or CS command line scripts.  Working with Tree based
+be retrieved using the Central Data Model API (CDMI) or CS command line scripts.  Working with tree-based
 data can be challenging, however, because it requires working with tree structures and not just tab
 delimited file formats.</p>
-
-<p>The phylogenetic tree services provides a set of query and tree manipulations methods that make it easier
-to retrieve the trees or alignments you need and use them for further analysis.  This tutorial will guide you
-through using the perl client libraries to invoke these methods.</p>
-
-<p>Trees in KBase are stored by default in Newick format (http://en.wikipedia.org/wiki/Newick_format), which
+<p>The KBase Phylogenetic Tree Service provides a set of query and tree manipulations methods that make it easier
+to retrieve and manipulate phylogenetic tree data objects and prepare them for further analysis.  This tutorial will guide you
+through the basic steps of using the Perl client libraries of the Tree Service.</p>
+<p>Trees in KBase are stored by default in <a href="http://en.wikipedia.org/wiki/Newick_format">Newick format</a>, which
 is a succinct, text-based format for representing tree structures.  Richer meta data associated with particular
-trees or nodes is stored directly in the CDM so that it is more easily searchable.  Phylogenentic trees are
-generally built from sequence alignments.  With KBase built trees, or trees which have associated alignment data
-available, KBase will store the relationship between trees and thier alignments. </p>
+trees or nodes is stored directly in the CDM so that it is more amenable to search.  Most phylogenetic trees are
+constructed from sequence alignments.  When associated alignment data is available, KBase will store the relationship
+between trees and their alignments in the relationship named 'IsUsedToBuildTree'. </p>
 
 
-<h2>Retrieving trees</h2>
 
-<p>All trees stored in the Central Data Store (CDS) of KBase can be retrieved by the standard Central Data Model API (CDMI).
+<h2>Retrieiving trees by protein or feature ID</h2>
+<p>All trees in the Central Data Store (CDS) can be retrieved by the standard Central Data Model API (CDMI).
 For instance, code to retrieve a set of trees by tree ID along with their associated newick data is shown below.</p>
 <pre>
     use Bio::KBase::CDMI::CDMIClient;
@@ -47,7 +47,8 @@ For instance, code to retrieve a set of trees by tree ID along with their associ
     my $tree_data = $cdmi->get_entity_Tree(["kb|tree.41"], ["status", "method", "parameters", "newick"]);
 </pre>
 <p>In this example, we create a new CDMI object, then use the standard pattern of 'get_entity' to retrieve data
-for a specific tree.  This call to the CDMI will store the result in a hash as shown below. (Note that the full
+for a specific tree.  Specifically, we ask to retrieve the 'status', 'method', 'parameters', and 'newick' attributes of
+the tree.  This call to the CDMI returns the result in a hash structure that is shown below. (Note that the full
 newick string was omitted here for brevity).</p>
 <pre>
     $VAR1 = {
@@ -60,10 +61,10 @@ newick string was omitted here for brevity).</p>
                           }
         };
 </pre>
-<p>In the above example, the labels of the newick string will reference particular rows ids of a sequence alignment.  The
-row IDs must be unique within the alignment/tree, but may not be a direct ID of any other KBase object.  This is because
-alignments may be composed of a concatenation of multiple sequences.  This is needed, for instance, when building an alignment
-that will be used to construct a species tree.  Therefore, to search for the set of trees that contain a particular protein
+<p>The node labels of the newick string representation each reference a particular row ID of a sequence alignment (corresponding to
+a single sequence in an alignment).  The row ID is unique within the alignment or tree, but the ID is not necessarily a KBase sequence
+or feature ID.  Some alignments (Such as species trees) are composed of a concatenation of multiple sequences, so row IDs map instead to an AlignementRow object
+which in turn maps to actual protein or DNA sequences.  Therefore, to search for the set of trees that contain a particular protein
 sequence directly through the CDMI, you must traverse several entities and relationships starting with 'ContainsAlignedProtein'
 and ending with 'Tree'.</p>
 <p>The Tree service provides a shortcut for this type of query.  To find a set of trees that include some segment of a given
@@ -73,16 +74,19 @@ protein sequence, use the following code:</p>
     my $TreeService = Bio::KBase::Tree::Client->new("http://localhost:7047");
     my $tree_ids=$TreeService->get_tree_ids_by_protein_sequence(["cf3c6b5c1f4f24f69866333d4daeb3c8"]);
 </pre>
-<p>The first line declares that we are using the Tree service.  The second line creates a new client that links to
-the specified service location.  The third line calls a method which returns a set of tree ids that contain
-at least some portion of the protein sequence indicated by the sequence MD5 value.  Remember that in KBase, multiple
-features can share the exact same protien sequence.  Therefore, it is often best to search directly for a specific
-protein sequence.  Alternatively, you can query directly based on featue ID.  In this case, the protein sequence of
-the feature ID is determined and used to identify trees which contain that protein sequence.  The code to do so is:</p>
+<p>The first line declares that we are using the Tree Service client library.  The second line of code creates a new client
+object that links to the URL of the Tree service.  The third line calls a method that returns a set of tree ids that contain
+at least some portion of the specified protein sequence ID.  Like all protein sequnces in KBase, the protein sequence ID is
+the computed MD5 is identified by the MD5 hash of the sequence.</p>
+<p>Alternatively, you can search for trees based on feature IDs with the code below.  This method maps the feature ID to
+a protein sequence, then searches for any trees which were built from alignments including this protein sequence.  Keep in mind
+that multiple features can encode for the exact same protein sequence.</p>
 <pre>
     $tree_ids=$TreeService->get_tree_ids_by_feature(["kb|g.371.peg.4539"]);
 </pre>
-<p>In both of these cases, you are returned a list of trees which contain the specified protein sequence.</p>
+<p>Whether you search based on a protein sequence ID or a feature ID, these Tree Service methods return
+a list of tree IDs indicating the set of trees built from alignments of the specified protein sequences.  For example,
+the queries shown above generate results that will look similar to this:</p>
 <pre>
     $VAR1 = [
           'kb|tree.10094',
@@ -95,18 +99,21 @@ the feature ID is determined and used to identify trees which contain that prote
           'kb|tree.9399'
         ];
 </pre>
-<p>As mentioned earlier, you can use these tree IDs with the CDMI to retrieve additional information
-directly.  Alternatively, the Tree service provides a method that simplifies simple lookups by aggregating some properties
-about each of the trees, including the number of leaves and nodes and the alignment ids of the
-alignments that were used to build the tree, if they exist.  To quickly obtain this information in a simple hash, use the
+
+
+
+<h2>Retrieving Tree and Alignment Meta Data</h2>
+<p>As mentioned earlier, you can always use tree IDs with the CDMI to retrieve any information stored in the CDM.  Alternatively, the
+Tree Service also provides a shortcut for simplifying simple lookups by aggregating properties
+about each of the trees, such as the total number of nodes and leaves.  To obtain this information as a simple hash, use the
 following code:</p>
 <pre>
     my $tree_data=$TreeService->get_tree_data($tree_ids);
 </pre>
-<p>This code will take the list of tree IDs, analyze each tree, and assemble useful meta data
-about each tree.  Note that for very large trees or long lists, this method may take some time to complete. Calling
-the above function returns a hash with labeled information about each tree, as shown below.  Only the first two
-trees in the list are reproduced here.</p>
+<p>This code takes the list of tree IDs that you generated earlier, analyzes the structure of each tree, and assembles useful meta data.
+Note that because the actual structure of the tree is analyzed, this method may take an extended time to complete for very large trees or very
+long lists of IDs. Calling the above function returns a hash containing labeled information about each tree, in a data structure shown below.
+Only the first two trees in the list are reproduced here.</p>
 <pre>
     $VAR1 = {
           'kb|tree.10094' => {
@@ -136,9 +143,9 @@ trees in the list are reproduced here.</p>
             ...
             };
 </pre>
-<p>Similarly, you can quickly retrieve information about a particular alignment by executing the following code.
+<p>Similarly, you can retrieve meta information about a particular alignment by executing the following code:</p>
 <pre>
-    my $tree_data=$TreeService->get_alignment_data("kb|aln.15024");
+    my $tree_data=$TreeService->get_alignment_data(["kb|aln.15024"]);
 </pre>
 <p>which in this case produces the following result:</p>
 <pre>
@@ -160,43 +167,53 @@ trees in the list are reproduced here.</p>
                               'alignment_construction_parameters' => '--op 1.53 --maxiterate 1000 --linsi'
                             }
         };
-
 </pre>
 
 
-<h2>Extracting basic information from a tree</h2>
-<p>Now that we have found a tree we want to investigate further, let's start using more of the functionality of
-the Tree service.  First, we must retrieve the actual structure of the tree we want to work with.  Remember
-that the labels in the tree are only required to correspond directly to alignment rows.  Therefore, the tree
-service provides a function which retrieves the tree structure, but replaces
-node labels with something more useful, such as the MD5 of the original protein sequences.</p>
-<p>To retrieve the actual tree structure, use the following code:</p>
+
+<h2>Retrieving tree structures with modified labels</h2>
+<p>The node names in a tree correspond to alignment row IDs, but these IDs alone do not always provide useful information.
+Therefore the Tree Service offers a function named 'get_tree' which returns the tree structure with the node
+names replaced by KBase IDs.  The KBase IDs can map to different KBase entities depending on the options you provide.
+Here you will simply replace the names with protein sequence IDs with the following Perl code:</p>
 <pre>
-    my $tree_id = 'kb|tree.15024';
     my $options = {
                newick_label=>"protein_sequence_id",
                newick_bootstrap=>"none",
                newick_distance=>"raw"};
-    my $tree = $TreeService->get_tree($tree_id, $options);
+    my $tree = $TreeService->get_tree('kb|tree.15024', $options);
 </pre>
-<p>This method accepts an options hash which defines how we want the labels of the tree returned to us. ... </p>
+<p>This method accepts an options hash which defines how you want the labels of the tree decorated.  In this case,
+the node labels are set to be protein sequence ids.  Additionaly, the options specify that any bootstrap values are left out, and
+that branch distances are retained in the original, raw format.  For some trees, multiple protein sequences can be mapped to the same
+node, but the 'get_tree' method as shown above uses only the first protein sequence found.  For this particular tree, however, this is
+fine because each alignment row and leaf corresponds to only a single protein sequence.  You can determine this quickly by inspecting
+the 'is_concatenation' attribute of the specified 'Alignment' entitiy as shown above.  If set to zero or false, then the alignment rows
+contain only single contiguous protein or DNA sequences.</p>
 
-<p>Now that we have the structure of the tree in newick format, we can perform a variety of operations to inspect
-the nodes and structure of the Tree.  We can first simply compute the total number of leaves and nodes of the
-tree with two simple function calls:</p>
+<h2>Simple analysis of tree structures</h2>
+<p>Now that you have the structure of the tree in newick format, already with some useful information contained in each node label, you
+can perform a variety of operations to inspect the structure of the Tree.  Here we will demonstrate just a few simple examples, but more
+complex functions offered by the Tree services are used in a similar way. As a simple example, first compute the number of nodes and leaves
+with the following code.</p>
 <pre>
     my $node_count = $TreeService->get_node_count($tree);
     my $leaf_count = $TreeService->get_leaf_count($tree);
     print "Node Count: ".$node_count."\nLeaf Count: ".$leaf_count."\n";
 </pre>
+<p>To invoke either of these methods, you simply pass the tree structure (represented as a newick string) into these methods.  Note that
+the tree structure does not necessarily have to be built from the Tree Services!  Any valid newick string can be stored as a string
+and used as input for these methods.  The code above provides the following output.  As expected, the node and leaf counts match the
+values returned previously for the tree with id 'kb|tree.15024' that was returned from the 'get_tree_data' method.</p>
 <pre>
     Node Count: 2952
     Leaf Count: 1482
 </pre>
-<p>We can also assemble a list of all the leaf labels </p>
+<p>To show another example, you can extract a list of all the leaf names from a specified tree structure with this line of code:</p>
 <pre>
     my $leaf_labels = $TreeService->extract_leaf_node_names($tree);
 </pre>
+<p>As you might expect, the names of the nodes are MD5 hash values of protien sequences that we requested from the call to 'get_tree':</p>
 <pre>
     $VAR1 = [
           '5fbe6b9e15365d9cd153749d555ade93',
@@ -205,51 +222,16 @@ tree with two simple function calls:</p>
 
             ...
             
-            '4ab1cc69cf33b8cd016868dc30f1ac50',
-            '1b86437371f55285b6c29fde1a029071'
+          '4ab1cc69cf33b8cd016868dc30f1ac50',
+          '1b86437371f55285b6c29fde1a029071'
         ];
-
 </pre>
-<p>Given a tree structure, there are a number of methods that the Tree service provides which can operate on
-a tree structure.  Many third party libraries, such as Bio Perl, also provide utility methods for manipulating tree
-structures once they are in newick format.</p>
 
-
-<h2>Manipulating the labels of trees</h2>
-<p>Given the tree structure and a list of the labels of each node in terms of protein sequences, we
-can now query the CDS to identify what these protein sequences are, and potenitally what roles they serve.  One
-way to do this is to simply use the "get_tree" method with different parameters, which will allow you to replace
-the labels of the tree with a growing set of alternative kbase ids or human readable descriptions.  If you want
-more control over the labeling of nodes, however, there are additional functions that we provide to do so.  The
-basic approach is to retrieve the tree structure, extract the names of the leaves, process the names in some way
-(perhaps by looking up additional information), then finally replacing the labels with exactly the information you
-want.  Here is a small example of how to perform these steps.</p>
-
-<p>First we retrieve a tree as before, indicating that we want to replace the labels with a canonical feature
-id (which is typically the original gene from which the protein sequence was retrieved to build the tree).  Note
-that not all trees in KBase are built alike, so this option may not work on all trees.</p>
-<pre>
-    
-</pre>
-<p>Now, as before, extract the names of each node using the the Tree service API.</p>
-<pre></pre>
-<p>At this point, we have a list of feature IDs. Next, we will simply lookup the scientific name of the genome
-from which each feature originated and the functional annotation of each feature.  We can do this using the
-CDMI as follows:</p>
-<pre></pre>
-<p>Now we can assemble a hash that indicates for each feature</p>
-
-<h2>Displaying the tree</h2>
-<p>There are many ways to visualize a phylogenetic tree and decorate it with additional information.  Displaying
-large trees in an intuitive, interactive, and useful way is still an open challenge.  This Tree service API does
-not attempt to solve all such problems, but instead seeks to provide a few simple ways for visualizing trees and
-methods that allow you to take the structure of the Tree and export it into a format that is compatible with
-third party phylogentic software.  You have already learned how to extract the tree into a newick format with
-labels of your choosing.  The Newick format is compatible with many other software libraries.  Here we will simply
-demonstrate a couple alternative ways to quickly view the contents of a tree.</p>
-<p>First, visualize a tree as a simple string with the following command:</p>
-<pre></pre>
-<p>The tree library also provides an HTML-based renderer for tree data.  Call this method with the following code:</p>
+<h2>Visualizing a tree as an HTML webpage</h2>
+<p>Visualizing incredibly large phylogentic trees that are becoming ever more common in an intuitive and useful way is still an
+open computational biology challenge.  The Tree Service does, however, provide a simple HTML-based renderer that is designed for
+generating quick displays which nonetheless can still be quite useful.  To take the tree structure we retrieved previously and
+display it as an html file, run the following Perl code:</p>
 <pre>
     my $display_options = {};
     my $tree_in_html = $TreeService->draw_html_tree($tree,$display_options);
@@ -257,7 +239,130 @@ demonstrate a couple alternative ways to quickly view the contents of a tree.</p
     print TREE_HTML_FILE $tree_in_html;
     close (TREE_HTML_FILE);
 </pre>
-<p>This will render a tree as an html object and return a string containing the display.  The tree will look something
-like this:</p>
+<p>In the first line of code, we setup an options hash that allows us to customize the display.  The code above demonstrates the
+simplist option which uses default settings.  The second line calls the Tree Service to render the HTML page using the tree structure
+as input.  The result is returned as a string named '$tree_in_html'.  The final three lines writes he tree string to a file in the
+current directory named 'tree.html'.  You can then view the tree in any web browser, which will look something like this:</p>
+<img src=""/>
+
+
+
+
+<h2>Relabeling node names to display custom information</h2>
+<p>The last exercise of this tutorial is to combine the Tree Services with calls to the CDMI to perform a slightly
+more advanced operation.  From the steps above, you have retrieved and analyzed a tree that is labeled by protein
+sequence IDs.  That's great, but MD5 values are of course impossible to understand by eye.  What if we wanted to
+display labels that more useful?  Furthermore, what if we want those labels to include something custom that is not
+available from the 'get_tree' command?  In this section, you will retrieve a tree with protein sequence IDs, look up
+feature IDs based on the protein sequences, then lookup a role that the feature ID is assigned to.  Finally, you will
+use this information to label the leaves and display the tree.</p>
+<p>First, combine several of the steps above that you used earlier to retrieve the tree of interest with protein sequence
+IDs, and extract the list of protein sequence IDs.</p>
+<pre>
+    my $options = {
+               newick_label=>"protein_sequence_id",
+               newick_bootstrap=>"none",
+               newick_distance=>"raw"};
+    my $tree = $TreeService->get_tree('kb|tree.15024', $options);
+    my $leaf_labels = $TreeService->extract_leaf_node_names($tree);
+</pre>
+<p>Now that we have a list of protein sequence IDs, use the CDMI to identifiy the set of features that each
+protein sequence maps to with the following code:</p>
+<pre>
+    my $fid_map = $cdmi->proteins_to_fids($leaf_labels);
+</pre>
+<p>You now have a hash object which maps every protein sequence to a set of feature ids.  Again, remember that you will
+get multiple features for each sequence in most cases!  The '$fid_map' object will be populated like this:</p>
+<pre>
+    $VAR1 = {
+        ...
+        'b5c09af56c3f0e0947daf70a67e9df7d' => [
+                                                'kb|g.410.peg.2499',
+                                                'kb|g.8860.peg.2256'
+                                              ],
+        '00b2bea877f5266219768af92bbd31cb' => [
+                                                'kb|g.892.peg.4350'
+                                              ],
+        'db0321691efcb1612881c8958711fc6d' => [
+                                                'kb|g.1285.peg.803',
+                                                'kb|g.21499.CDS.2292',
+                                                'kb|g.4409.peg.1154.rna.20.peg.2292'
+                                              ],
+        ...
+            };
+</pre>
+<p>In this case, it doesn't really matter which feature ID we chose because we just want a simple reference for
+display purposes of the tree.  In other cases, you may want to retrieve features only from specific genomes or
+organisms, in which case additional processing may be required.  Since for this exercise, your choice does not
+matter, just select the first feature from each of the lists so that we have a single feature ID per node using
+the following code:</p>
+<pre>
+    my @list_of_first_features = ();
+    foreach my $leaf ( keys %{$fid_map} ) {
+        push @list_of_first_features, %{$fid_map}->{$leaf}[0];
+    }
+</pre>
+<p>This code takes the first feature (element at position zero) of each set of features that was found and
+adds them to a simple list of all the features.  With this list of features, we can now retrieve a set of
+roles that are assigned to each feature, again using the CDMI.</p>
+<pre>
+    my $fid_to_role_map = $cdmi->fids_to_roles(\@list_of_first_features);
+</pre>
+<p>You are again in a similar situation as before in that each feature can map to multiple roles.  For example,
+here is the partial output of the above call that is stored in the '$fid_to_role_map' object:</p>
+<pre>
+    $VAR1 = {
+        ...
+        'kb|g.8352.peg.3300' => [
+                                  'putative secretion protein (HlyD family)',
+                                  'putative toxin/protease secretion system'
+                                  ],
+        'kb|g.515.peg.1744' => [
+                                 'hypothetical protein'
+                                 ],
+        'kb|g.701.peg.764' => [
+                                'Secretion protein, HlyD family'
+                              ],
+        ...
+            };
+</pre>
+<p>Given your map from protein sequence IDs to feature IDs, and from feature IDs to roles, you will now assemble a
+map that connects protein sequence IDs to a label which includes the feature ID and role. Do this with the
+following code:</p>
+<pre>
+    my $md5_to_new_label_map = {};
+    foreach my $leaf ( keys %{$fid_map} ) {
+        my $fid = %{$fid_map}->{$leaf}[0];
+        my $role = $fid_to_role_map->{$fid}[0];
+        if($role) { $md5_to_new_label_map->{$leaf} = $fid.'---'.$role; }
+        else { $md5_to_new_label_map->{$leaf} = $fid.'---NONE_FOUND'; }
+    }
+</pre>
+<p>This block of code loops through every original leaf label in the protein sequence ID to feature ID map.  For
+each of these IDs, you can then identifiy the first feature ID (in line 3), and then the first role listed (in
+line 4).  If a role was identified, save it in the map.  If a role wasn't defined, save a message indicating the
+missing role.  Running this code will populate the '$md5_to_new_label_map', which we can finally use to
+rename the labels of the tree.  Call the following method of the Tree Service to do so:</p>
+<pre>
+    my $updated_tree = $TreeService->replace_node_names($tree, $md5_to_new_label_map);
+</pre>
+<p>The code above will take the mapping that you just created, and use it to update all of the matching labels of
+the tree.  Instead of MD5 hash values, you now have a tree with your own custom labels.  The very last step is
+to display the final tree as an HTML page as we did before:</p>
+<pre>
+    my $display_options = {};
+    my $tree_in_html = $TreeService->draw_html_tree($updated_tree,$display_options);
+    open (TREE_HTML_FILE, '>updated_tree.html');
+    print TREE_HTML_FILE $tree_in_html;
+    close (TREE_HTML_FILE);
+</pre>
+<p>And that's it.  Putting all these steps together will give you a script that can pull a phylogenetic tree from the CDM,
+determine a set of features and roles that correspond to each leaf node, and finally display the tree with custom labels
+that will look something like this:</p>
+<pre>
+    
+</pre>
+
+
 
 
