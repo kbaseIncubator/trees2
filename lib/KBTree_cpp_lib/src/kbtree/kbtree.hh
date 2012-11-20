@@ -105,13 +105,15 @@ namespace KBTreeLib {
 			bool writeNewickToFile(const std::string &filename,unsigned int style);
 
 			unsigned int getNodeCount() const { return nodeCount; };
-            unsigned int getLeafCount();
+                        unsigned int getLeafCount();
 
 
 			// @todo implement this function
 			bool areAllLabelsUnique(string &infoMssg) {return false;};
 			// @todo implement this function
 			bool validateNewickString(string &infoMssg) {return false;};
+
+                        void stripReservedCharsFromLabels();
 
 
 			/**

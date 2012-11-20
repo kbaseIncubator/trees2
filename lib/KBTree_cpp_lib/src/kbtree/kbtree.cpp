@@ -3,7 +3,7 @@
  * @brief KBase Tree Utility Library Implementation
  *
  * @author Michael Sneddon, mwsneddon@lbl.gov
- * @date created Jun 6, 2012, last edited Jun 12
+ * @date created Jun 6, 2012, last edited Nov 2012
  */
 
 
@@ -870,6 +870,27 @@ void KBTree::getAllNodeNames(vector<string> &names) {
 		if(name.size()>0) { names.push_back(name); }
 	}
 
+}
+
+
+void KBTree::stripReservedCharsFromLabels() {
+	tree<KBNode>::post_order_iterator nodeIter;
+	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+		string name = (*nodeIter).getName();
+		string stripped_name = "";
+		for (size_t i=0; i < name.length(); i++) {
+			if(name.at(i)==' ') { stripped_name += '_'; }
+			else if(name.at(i)==':') { stripped_name += '-'; }
+			else if(name.at(i)==';') { stripped_name += '-'; }
+			else if(name.at(i)==',') { stripped_name += '-'; }
+			else if(name.at(i)=='(') { stripped_name += '{'; }
+			else if(name.at(i)==')') { stripped_name += '}'; }
+			else if(name.at(i)=='[') { stripped_name += '{'; }
+			else if(name.at(i)==']') { stripped_name += '}'; }
+			else { stripped_name += name.at(i); }
+		}
+		(*nodeIter).name = stripped_name;
+	}
 }
 
 

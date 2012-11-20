@@ -315,6 +315,7 @@ sub extract_leaf_node_names
     my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
     my $leaf_names = $kb_tree->getAllLeafNames();
     my @leaf_name_list = split(';', $leaf_names);
+    print "done\n";
     $return = \@leaf_name_list;
     #END extract_leaf_node_names
     my @_bad_returns;
@@ -698,7 +699,7 @@ sub get_tree
 		    foreach (@feature_ids) { #might be a better way to concatenate this list...
 		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
 		    }
-		    print $replacement_str."\n\n";
+		    #print $replacement_str."\n\n";
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "protein_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
@@ -1565,10 +1566,23 @@ sub draw_html_tree
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN draw_html_tree
-    my ($help, $url, $alias_file, $focus_file, $branch, $collapse_by, $show_file,
-    $desc_file, $keep_file, $link_file, $text_link, $popup_file, $id_file, $title,
-    $min_dx, $dy, $ncolor, $color_by, $anno, $gray, $pseed, $ppseed, $raw, $va_files,
-    $scale_bar, $scale_lbl);
+    
+    # remove spaces by cleaning the label (removes spaces, commas, whitespace)
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,0);
+    $kb_tree->setOutputFlagLabel(1);
+    $kb_tree->setOutputFlagDistances(1);
+    $kb_tree->setOutputFlagBootstrapValuesAsLabels(0);
+    
+    $kb_tree->stripReservedCharsFromLabels();
+    
+    $tree = $kb_tree->toNewick();
+    
+    
+    # possible options ...
+    #my ($help, $url, $alias_file, $focus_file, $branch, $collapse_by, $show_file,
+    #$desc_file, $keep_file, $link_file, $text_link, $popup_file, $id_file, $title,
+    #$min_dx, $dy, $ncolor, $color_by, $anno, $gray, $pseed, $ppseed, $raw, $va_files,
+    #$scale_bar, $scale_lbl);
     my $opts = {raw=>1};
     my $tree_structure = ffxtree::read_tree(\$tree);
     $return = ffxtree::tree_to_html($tree_structure,$opts);
@@ -1579,76 +1593,6 @@ sub draw_html_tree
 	my $msg = "Invalid returns passed to draw_html_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'draw_html_tree');
-    }
-    return($return);
-}
-
-
-
-
-=head2 draw_simple_string_tree
-
-  $return = $obj->draw_simple_string_tree($tree)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$tree is a newick_tree
-$return is a string
-newick_tree is a tree
-tree is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$tree is a newick_tree
-$return is a string
-newick_tree is a tree
-tree is a string
-
-
-=end text
-
-
-
-=item Description
-
-Given a tree, simply display a simple text rendering of its structure.
-
-=back
-
-=cut
-
-sub draw_simple_string_tree
-{
-    my $self = shift;
-    my($tree) = @_;
-
-    my @_bad_arguments;
-    (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument \"tree\" (value was \"$tree\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to draw_simple_string_tree:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'draw_simple_string_tree');
-    }
-
-    my $ctx = $Bio::KBase::Tree::Service::CallContext;
-    my($return);
-    #BEGIN draw_simple_string_tree
-    #END draw_simple_string_tree
-    my @_bad_returns;
-    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to draw_simple_string_tree:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'draw_simple_string_tree');
     }
     return($return);
 }
