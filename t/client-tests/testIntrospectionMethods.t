@@ -33,7 +33,7 @@ use lib "$FindBin::Bin/.";
 use Server;
 my ($pid, $url) = Server::start('Tree');
 my $client = Bio::KBase::Tree::Client->new($url);
-print "-> attempting to connect to:'".$url."'\n";
+print "-> attempting to connect to:'".$url."' with PID=$pid\n";
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)
@@ -106,6 +106,7 @@ my $correct_smaller_tree= "(l1,(l3,(l4,yourLeaf)dr. node)n1)root;";
 ok($smaller_tree eq $correct_smaller_tree, "smaller tree should match a correct smaller tree");
 
 
-
-
 done_testing();
+Server::stop($pid);
+
+

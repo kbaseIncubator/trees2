@@ -33,7 +33,7 @@ use_ok("Bio::KBase::Tree::Client");
 use lib "$FindBin::Bin/.";
 use Server;
 my ($pid, $url) = Server::start('Tree');
-print "-> attempting to connect to:'".$url."'\n";
+print "-> attempting to connect to:'".$url."' with PID=$pid\n";
 my $client = Bio::KBase::Tree::Client->new($url);
 
 ok(defined($client),"instantiating tree client");
@@ -84,5 +84,5 @@ $options = {format=>"newick",
 $tree=$client->get_tree($tree_id, $options);
 #print Dumper($tree);
 
-done_testing();
 Server::stop($pid);
+done_testing();

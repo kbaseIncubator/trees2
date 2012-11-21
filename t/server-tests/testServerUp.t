@@ -57,4 +57,6 @@ $res = $client->call($url, $callobj);
 ok($client->status_line =~ m/^500/,"test invalid rpc call");
 ok(!$res,"test invalid rpc call returned nothing");
 
+Server::stop($pid);
+
 done_testing();
