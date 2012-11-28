@@ -1,5 +1,5 @@
 /*
-KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
+KBase Phylogenetic Tree and Multiple Sequence Alignment API (v0.02)
 
 This service provides a set of methods for querying, manipulating, and analyzing multiple
 sequence alignments and phylogenetic trees.
