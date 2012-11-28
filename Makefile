@@ -59,11 +59,11 @@ cpp-lib:
 
 
 ##################################################################################
-# here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-server)
+# here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-service)
 test: test-client test-scripts
 	echo "running client and script tests"
 
-test-all: test-server test-client test-scripts
+test-all: test-service test-client test-scripts
 
 test-client:
 	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testBasicResponses.t
@@ -73,7 +73,7 @@ test-client:
 test-scripts:
 	echo "no scripts to test yet.  Run test-client instead."
 
-test-server:
+test-service:
 	$(DEPLOY_RUNTIME)/bin/perl t/server-tests/testServerUp.t
 
 
@@ -81,13 +81,13 @@ test-server:
 
 
 ##################################################################################
-# here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-server)
+# here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-service)
 deploy: deploy-all
 
-deploy-all: deploy-client deploy-scripts deploy-server deploy-docs
-	echo "OK... Done deploying ALL artifacts (includes clients, scripts and server) of $(SERVICE)."
+deploy-all: deploy-client deploy-service
+	echo "OK... Done deploying ALL artifacts (includes clients, docs, scripts and service) of $(SERVICE)."
 	
-deploy-client:
+deploy-client: deploy-scripts deploy-docs
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/biokbase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/javascript/$(SERVICE_NAME)
@@ -105,10 +105,10 @@ deploy-docs:
 	
 	
 
-# deploys all libraries and scripts needed to start the server
-deploy-server: deploy-server-libs deploy-server-start_scripts
+# deploys all libraries and scripts needed to start the service
+deploy-service: deploy-service-libs deploy-service-start_scripts
 
-deploy-server-libs:
+deploy-service-libs:
 	# copy over the general purpose libs
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Service.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
@@ -119,20 +119,20 @@ deploy-server-libs:
 	cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
 	cp lib/forester_1005.jar $(TARGET)/lib/.
-	echo "deployed server for $(SERVICE)."
+	echo "deployed service for $(SERVICE)."
 
 # creates start/stop/reboot scripts and copies them to the deployment target
-deploy-server-start_scripts:
+deploy-service-start_scripts:
 	# First create the start script (should be a better way to do this...)
 	echo '#!/bin/sh' > ./start_service
-	echo "echo starting $(SERVICE) server." >> ./start_service
+	echo "echo starting $(SERVICE) service." >> ./start_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_service
 	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
 	echo "  $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./start_service
-	echo "echo $(SERVICE_NAME) server is listening on port $(SERVICE_PORT).\n" >> ./start_service
+	echo "echo $(SERVICE_NAME) service is listening on port $(SERVICE_PORT).\n" >> ./start_service
 	# Second, create a debug start script that is not daemonized
 	echo '#!/bin/sh' > ./debug_start_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_service
@@ -142,15 +142,15 @@ deploy-server-start_scripts:
 	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_service
 	# Third create the stop script
 	echo '#!/bin/sh' > ./stop_service
-	echo "echo trying to stop $(SERVICE) server." >> ./stop_service
+	echo "echo trying to stop $(SERVICE) service." >> ./stop_service
 	echo "pid_file=$(PID_FILE)" >> ./stop_service
 	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_service
-	echo "\techo \"No pid file: \$$pid_file found for server $(SERVICE_NAME).\"\n\texit 1\nfi" >> ./stop_service
+	echo "\techo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"\n\texit 1\nfi" >> ./stop_service
 	echo "pid=\$$(cat \$$pid_file)\nkill \$$pid\n" >> ./stop_service
 	# Finally create a script to reboot the service by stopping, redeploying the service, and starting again
 	echo '#!/bin/sh' > ./reboot_service
-	echo '# auto-generated script to stop the service, redeploy server implementation, and start the servce' >> ./reboot_service
-	echo "./stop_service\ncd $(ROOT_DEV_MODULE_DIR)\nmake deploy-server-libs\ncd -\n./start_service" >> ./reboot_service
+	echo '# auto-generated script to stop the service, redeploy service implementation, and start the servce' >> ./reboot_service
+	echo "./stop_service\ncd $(ROOT_DEV_MODULE_DIR)\nmake deploy-service-libs\ncd -\n./start_service" >> ./reboot_service
 	# Actually run the deployment of these scripts
 	chmod +x start_service stop_service reboot_service debug_start_service
 	mkdir -p $(SERVICE_DIR)
