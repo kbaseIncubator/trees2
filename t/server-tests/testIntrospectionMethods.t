@@ -7,6 +7,7 @@
 #  author:  msneddon
 #  created: 8/9/2012
 #  last updated: 10/27/2012, msneddon
+#  last updated: 11/29/2012, landml
 use strict;
 use warnings;
 
@@ -14,23 +15,24 @@ use Test::More tests => 27;
 use Data::Dumper;
 
 use lib "lib";
-use lib "t/client-tests";
-#use TreeTestConfig qw(getHost getPort);
+use lib "t/server-tests";
+use TreeTestConfig qw(getHost getPort);
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS INSTALLED
 use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-#my $host=getHost(); my $port=getPort();
-#print "-> attempting to connect to:'".$host.":".$port."'\n";
-#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 
 #NEW VERSION WITH AUTO START / STOP SERVICE
-use Server;
-my ($pid, $url) = Server::start('Tree');
-my $client = Bio::KBase::Tree::Client->new($url);
-print "-> attempting to connect to:'".$url."' with PID=$pid\n";
+#use Server;
+#my ($pid, $url) = Server::start('Tree');
+#my $client = Bio::KBase::Tree::Client->new($url);
+#print "-> attempting to connect to:'".$url."' with PID=$pid\n";
+
 ok(defined($client),"instantiating tree client");
 
 # CREATE A SIMPLE NEWICK TREE STRING TO USE WITH 5 LEAVES (l1...l5)
@@ -104,6 +106,6 @@ ok($smaller_tree eq $correct_smaller_tree, "smaller tree should match a correct 
 
 
 done_testing();
-Server::stop($pid);
+#Server::stop($pid);
 
 

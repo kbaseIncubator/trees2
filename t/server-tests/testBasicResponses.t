@@ -9,7 +9,7 @@
 #
 #  author:  msneddon
 #  created: 5/21/2012
-#  updated: 11/29/2012 landml
+#  updated: 11/29/2012  landml
 
 use strict;
 use warnings;
@@ -17,8 +17,8 @@ use warnings;
 use Data::Dumper;
 use Test::More tests=>15;
 use lib "lib";
-use lib "t/client-tests";
-#use TreeTestConfig qw(getHost getPort);
+use lib "t/server-tests";
+use TreeTestConfig qw(getHost getPort);
 
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
@@ -40,7 +40,6 @@ my $func_calls = {
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
 
-
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS
 #  NOTE: for initial testing, you may have to modify TreesClient.pm to also
 #        point to the legacy interface
@@ -48,17 +47,20 @@ use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-#my $host=getHost(); my $port=getPort();
-#print "-> attempting to connect to:'".$host.":".$port."'\n";
-#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 
 #NEW VERSION WITH AUTO START / STOP SERVICE
-use Server;
-my ($pid, $url) = Server::start('Tree');
-print "-> attempting to connect to:'".$url."' with PID=$pid\n";
-my $client = Bio::KBase::Tree::Client->new($url);
+#use Server;
+#my ($pid, $url) = Server::start('Tree');
+#print "-> attempting to connect to:'".$url."' with PID=$pid\n";
+#my $client = Bio::KBase::Tree::Client->new($url);
 
 ok(defined($client),"instantiating tree client");
+
+
+
 
 # LOOP THROUGH ALL THE REMOTE CALLS AND MAKE SURE WE GOT SOMETHING
 my $method_name;
@@ -74,6 +76,6 @@ for $method_name (keys %$func_calls) {
         ok($result,"looking for a response from \"$method_name\"");
 }
 
-Server::stop($pid);
+#Server::stop($pid);
 
 done_testing($n_tests);

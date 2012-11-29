@@ -8,6 +8,8 @@
 #  author:  msneddon
 #  created: 10/25/2012
 #  last updated: 10/28/2012
+#  last updated: 11/29/2012  landml
+
 use strict;
 use warnings;
 
@@ -15,23 +17,23 @@ use Test::More tests => 3;
 use Data::Dumper;
 
 use lib "lib";
-use lib "t/client-tests";
-#use TreeTestConfig qw(getHost getPort);
+use lib "t/server-tests";
+use TreeTestConfig qw(getHost getPort);
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS INSTALLED
 use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-#my $host=getHost(); my $port=getPort();
-#print "-> attempting to connect to:'".$host.":".$port."'\n";
-#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 
 #NEW VERSION WITH AUTO START / STOP SERVICE
-use Server;
-my ($pid, $url) = Server::start('Tree');
-print "-> attempting to connect to:'".$url."' with PID=$pid\n";
-my $client = Bio::KBase::Tree::Client->new($url);
+#use Server;
+#my ($pid, $url) = Server::start('Tree');
+#print "-> attempting to connect to:'".$url."' with PID=$pid\n";
+#my $client = Bio::KBase::Tree::Client->new($url);
 
 ok(defined($client),"instantiating tree client");
 
@@ -81,5 +83,5 @@ $options = {format=>"newick",
 $tree=$client->get_tree($tree_id, $options);
 #print Dumper($tree);
 
-Server::stop($pid);
+#Server::stop($pid);
 done_testing();
