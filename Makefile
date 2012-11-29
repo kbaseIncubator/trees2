@@ -57,6 +57,10 @@ cpp-lib:
 
 
 
+# You can change these if you are putting your tests somewhere
+# else or if you are not using the standard .t suffix
+CLIENT_TESTS = $(wildcard t/client-tests/*.t)
+
 
 ##################################################################################
 # here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-service)
@@ -66,9 +70,28 @@ test: test-client test-scripts
 test-all: test-service test-client test-scripts
 
 test-client:
-	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testBasicResponses.t
-	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testIntrospectionMethods.t
-	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testQueryMethods.t
+#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testBasicResponses.t
+#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testIntrospectionMethods.t
+#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testQueryMethods.t
+	echo "running client and script tests"
+
+# What does it mean to test a client. This is a test of a client
+# library. If it is a client-server module, then it should be
+# run against a running server. You can say that this also tests
+# the server, and I agree. You can add a test-server dependancy
+# to the test-client target if it makes sense to you. This test
+# example assumes there is already a tested running server.
+test-client:
+	# run each test
+	for t in $(CLIENT_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
+
 
 test-scripts:
 	echo "no scripts to test yet.  Run test-client instead."
