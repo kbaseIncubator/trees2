@@ -16,11 +16,12 @@ use warnings;
 
 use Data::Dumper;
 use Test::More;
-use lib "../lib/";
+use lib "lib";
+use lib "t/client-tests";
 
-use FindBin;
-use lib "$FindBin::Bin/..";
-use TreeTestConfig qw(getHost getPort);
+#use FindBin;
+#use lib "$FindBin::Bin/..";
+#use TreeTestConfig qw(getHost getPort);
 
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
@@ -55,7 +56,7 @@ use_ok("Bio::KBase::Tree::Client");
 #my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 
 #NEW VERSION WITH AUTO START / STOP SERVICE
-use lib "$FindBin::Bin/.";
+#use lib "$FindBin::Bin/.";
 use Server;
 my ($pid, $url) = Server::start('Tree');
 print "-> attempting to connect to:'".$url."' with PID=$pid\n";
