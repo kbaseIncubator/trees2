@@ -73,15 +73,7 @@ test-client:
 #	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testBasicResponses.t
 #	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testIntrospectionMethods.t
 #	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testQueryMethods.t
-	echo "running client and script tests"
-
-# What does it mean to test a client. This is a test of a client
-# library. If it is a client-server module, then it should be
-# run against a running server. You can say that this also tests
-# the server, and I agree. You can add a test-server dependancy
-# to the test-client target if it makes sense to you. This test
-# example assumes there is already a tested running server.
-test-client:
+	echo "running client tests"
 	# run each test
 	for t in $(CLIENT_TESTS) ; do \
 		if [ -f $$t ] ; then \
