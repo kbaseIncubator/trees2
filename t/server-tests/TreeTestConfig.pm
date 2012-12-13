@@ -9,16 +9,16 @@ use strict;
 use warnings;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getHost getPort);
+our @EXPORT_OK = qw(getHost getPort getURL);
 
 
 # CHANGE THE HOST AND PORT CONFIGURATION HERE
 my $host = "http://localhost";
 my $port = "7047";
-
+my $URL  = "http://kbase.us/services/trees";
 
 sub getHost  { return $host; }
 sub getPort  { return $port; }
-
+sub getURL   { return $URL; }
 
 1;
