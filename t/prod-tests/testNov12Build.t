@@ -17,8 +17,8 @@ use warnings;
 use Data::Dumper;
 use Test::More tests=>7;
 use lib "lib";
-use lib "t/server-tests";
-use TreeTestConfig qw(getHost getPort);
+use lib "t/prod-tests";
+use TreeTestConfig qw(getHost getPort getURL);
 
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
@@ -33,9 +33,11 @@ use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-my $host=getHost(); my $port=getPort();
-print "-> attempting to connect to:'".$host.":".$port."'\n";
-my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+my $host=getHost(); my $port=getPort();  my $url = getURL();
+#print "-> attempting to connect to:'".$host.":".$port."'\n";
+#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
+print "-> attempting to connect to:'".$url."'\n";
+my $client = Bio::KBase::Tree::Client->new($url);
 
 #NEW VERSION WITH AUTO START / STOP SERVICE
 #use Server;
