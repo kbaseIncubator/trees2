@@ -1,17 +1,6 @@
 import java.sql.*;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.io.*;
+import java.util.*;
 
 import KBTreeUtil.KBTree;
 
@@ -66,6 +55,7 @@ public class MOTreeInMemoryExchanger {
 		timestampInSecondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
 		try {
 			// Read in all the data we need for each locus id
+			System.out.println(" -> loading locus data...");
 			locusData = new HashMap<String,LocusData>(10000);
 			DataInputStream in = new DataInputStream(new FileInputStream(pathToLociFile));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -238,13 +228,19 @@ public class MOTreeInMemoryExchanger {
 				
 				
 				// get the tree file and remove any private rows
-				String treeFileName = pathToTreeDir+"/"+name+".tree.rooted";
-				System.out.println("     | processing tree file: "+treeFileName);
-				DataInputStream inTREE = new DataInputStream(new FileInputStream(treeFileName));
-				BufferedReader brTREE = new BufferedReader(new InputStreamReader(inTREE));
-				String newick=""; String treeFileLine="";
-				while ((treeFileLine=brTREE.readLine()) != null) { newick+=treeFileLine.trim(); };
-				processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
+				if(ai.n_private==0) {
+					String treeFileName = pathToTreeDir+"/"+name+".tree.rooted";
+					System.out.println("     | copying tree file: "+treeFileName);
+					copy(treeFileName, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
+				} else {
+					// we shouldn't have to parse the tree, since there are no private genes anymore!  awesome!
+					System.out.println("     | processing tree file: "+treeFileName);
+					DataInputStream inTREE = new DataInputStream(new FileInputStream(treeFileName));
+					BufferedReader brTREE = new BufferedReader(new InputStreamReader(inTREE));
+					String newick=""; String treeFileLine="";
+					while ((treeFileLine=brTREE.readLine()) != null) { newick+=treeFileLine.trim(); };
+					processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
+				}
 				
 				
 				// (5) WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
@@ -738,6 +734,39 @@ public class MOTreeInMemoryExchanger {
 			System.err.println("IOException: "+ex.getMessage());
 		}
 		return bw;
+	}
+	
+	
+	/* can't believe I have to define this code!  but java.nio does not seem to exist on my java install */
+	public static void copy(String f1, String f2) throws IOException {
+		File fromFile = new File(f1);
+		File toFile = new File(f2);
+
+		if (!fromFile.exists()) throw new IOException("FileCopy: " + "no such source file: "+ f1);
+		if (!fromFile.isFile()) throw new IOException("FileCopy: " + "can't copy directory: "+ f2);
+		if (!fromFile.canRead()) throw new IOException("FileCopy: " + "source file is unreadable: "+ f1);
+		if (toFile.isDirectory()) toFile = new File(toFile, fromFile.getName());
+		
+		// i don't care if the file exists.
+		//if (toFile.exists()) {
+		//} else {
+		      String parent = toFile.getParent();
+		      if (parent == null) parent = System.getProperty("user.dir");
+		      File dir = new File(parent);
+		      if (!dir.exists()) throw new IOException("FileCopy: "+ "destination directory doesn't exist: " + parent);
+		      if (dir.isFile()) throw new IOException("FileCopy: " + "destination is not a directory: " + parent);
+		      if (!dir.canWrite()) throw new IOException("FileCopy: " + "destination directory is unwriteable: " + parent);
+		//}
+
+		FileInputStream from = new FileInputStream(fromFile);
+		FileOutputStream to = new FileOutputStream(toFile);
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		while ((bytesRead = from.read(buffer)) != -1) {
+			to.write(buffer, 0, bytesRead);
+		}
+		from.close();
+	        to.close();
 	}
 
 }
