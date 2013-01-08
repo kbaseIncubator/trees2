@@ -9,9 +9,9 @@
 use strict;
 use warnings;
 use Data::Dumper;
+use lib "lib";
+use lib "t/server-tests";
 
-use FindBin;
-use lib "$FindBin::Bin/..";
 use TreeTestConfig qw(getHost getPort);
 
 use Test::More tests => 6;
@@ -21,14 +21,13 @@ use_ok("JSON::RPC::Client");
 my $client = new JSON::RPC::Client;
 
 # DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE
-#my $host=getHost(); my $port=getPort();
-#print "-> attempting to connect to:'".$host.":".$port."'\n";
-#my $url = $host.":".$port;
+my $host=getHost(); my $port=getPort();
+print "-> attempting to connect to:'".$host.":".$port."'\n";
+my $url = $host.":".$port;
 
 # DETERMINE URL AUTOMATICALLY
-use lib "$FindBin::Bin/.";
-use Server;
-my ($pid, $url) = Server::start('Tree');
+#use Server;
+#my ($pid, $url) = Server::start('Tree');
 print "-> attempting to connect to:'".$url."'\n";
 
 
@@ -57,6 +56,6 @@ $res = $client->call($url, $callobj);
 ok($client->status_line =~ m/^500/,"test invalid rpc call");
 ok(!$res,"test invalid rpc call returned nothing");
 
-Server::stop($pid);
+#Server::stop($pid);
 
 done_testing();
