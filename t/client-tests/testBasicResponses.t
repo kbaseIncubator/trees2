@@ -15,7 +15,7 @@ use strict;
 use warnings;
 
 use Data::Dumper;
-use Test::More tests=>15;
+use Test::More;
 use lib "lib";
 use lib "t/client-tests";
 #use TreeTestConfig qw(getHost getPort);
@@ -36,6 +36,8 @@ my $func_calls = {
                 get_alignment_ids_by_feature => [ ["kb|g.fake"]],
                 get_alignment_ids_by_protein_sequence => [ ["madeUpMD5"] ],
                 draw_html_tree => ["((a,b)c);",{option=>"value"}],
+                get_tree_data => [ ["kb|tree.0","kb|tree.1"] ],
+                get_alignment_data => [ ["kb|aln.0","kb|aln.1"] ],
                  };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
