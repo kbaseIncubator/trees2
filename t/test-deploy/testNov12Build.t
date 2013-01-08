@@ -9,37 +9,22 @@
 #
 #  author:  msneddon
 #  created: 5/21/2012
-#  updated: 11/29/2012  landml
-#  updated: 1/8/13  landml
+#  updated: 11/29/2012 landml
 
 use strict;
 use warnings;
 
 use Data::Dumper;
-use Test::More tests=>15;
+use Test::More tests=>7;
 use lib "lib";
-use lib "t/prod-tests";
+use lib "t/test-deploy";
 use TreeTestConfig qw(getHost getPort getURL);
 
 #############################################################################
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
 # NOTE THAT THE PARAMETERS ARE JUST MADE UP AT THE MOMENT
-my $func_calls = {
-                replace_node_names => ["((a,b)c);",{"b"=>"x"}],
-                remove_node_names_and_simplify => ["((a,b)c);",["b"]],
-                extract_leaf_node_names => ["((a,b)c);"],
-                extract_node_names => ["((a,b)c);"],
-                get_node_count => ["((a,b)c);"],
-                get_leaf_count => ["((a,b)c);"],
-                get_tree => ["kb|tree.123", {format=>'newick'}],
-                get_tree_ids_by_feature => [ ["kb|g.fake"] ],
-                get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
-                get_alignment_ids_by_feature => [ ["kb|g.fake"]],
-                get_alignment_ids_by_protein_sequence => [ ["madeUpMD5"] ],
-                draw_html_tree => ["((a,b)c);",{option=>"value"}],
-                 };
+my @tree_methods = qw (extract_leaf_node_names extract_node_names get_node_count get_leaf_count );
 #############################################################################
-my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS
 #  NOTE: for initial testing, you may have to modify TreesClient.pm to also
@@ -48,7 +33,9 @@ use_ok("JSON::RPC::Client");
 use_ok("Bio::KBase::Tree::Client");
 
 # MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-my $host=getHost(); my $port=getPort();  my $url=getURL();
+my $host=getHost(); my $port=getPort();  my $url = getURL();
+#print "-> attempting to connect to:'".$host.":".$port."'\n";
+#my $client = Bio::KBase::Tree::Client->new($host.":".$port);
 print "-> attempting to connect to:'".$url."'\n";
 my $client = Bio::KBase::Tree::Client->new($url);
 
@@ -60,23 +47,28 @@ my $client = Bio::KBase::Tree::Client->new($url);
 
 ok(defined($client),"instantiating tree client");
 
+my $tree = "(Bovine:0.69395,(Hylobates:0.36079,(Pongo:0.33636,(G._Gorilla:0.17147, (P._paniscus:0.19268,H._sapiens:0.11927):0.08386):0.06124):0.15057):0.54939, Rodent:1.21460);";
 
+my $result;
 
+$result = $client->get_leaf_count($tree);
+is($result,7,'Verify the leaf count');
 
-# LOOP THROUGH ALL THE REMOTE CALLS AND MAKE SURE WE GOT SOMETHING
-my $method_name;
-for $method_name (keys %$func_calls) {
-        #print "==========\n$method_name => @{ $func_calls->{$method_name}}\n";
-        #my $n_args = scalar @{ $func_calls->{$method_name}};
-        my $result;
-        print "calling function: \"$method_name\"\n";
-        {
-            no strict "refs";
-            $result = $client->$method_name(@{ $func_calls->{$method_name}});
-        }
-        ok($result,"looking for a response from \"$method_name\"");
-}
+$result = $client->get_node_count($tree);
+is($result,12,'Verify the node count');
+
+my $replace = {'Rodent' => 'Rat'};
+$result = $client->replace_node_names($tree,$replace);
+$tree = "(Bovine:0.69395,(Hylobates:0.36079,(Pongo:0.33636,(G._Gorilla:0.17147,(P._paniscus:0.19268,H._sapiens:0.11927):0.08386):0.06124):0.15057):0.54939,Rat:1.2146);";
+
+is($result,$tree,"Did replacement take place");
+
+my $remove = ['Rat'];
+$result = $client->remove_node_names_and_simplify($tree,$remove);
+$tree = "(Bovine:0.69395,(Hylobates:0.36079,(Pongo:0.33636,(G._Gorilla:0.17147,(P._paniscus:0.19268,H._sapiens:0.11927):0.08386):0.06124):0.15057):0.54939);";
+is($result,$tree,"Did removal take place");
+
 
 #Server::stop($pid);
 
-done_testing($n_tests);
+done_testing();

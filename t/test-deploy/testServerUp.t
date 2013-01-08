@@ -9,9 +9,11 @@
 use strict;
 use warnings;
 use Data::Dumper;
-use lib "lib";
-use lib "t/prod-tests";
+use lib;
+use lib "t/test-deploy";
 
+use FindBin;
+use lib "$FindBin::Bin/..";
 use TreeTestConfig qw(getHost getPort getURL);
 
 use Test::More tests => 6;

@@ -18,7 +18,7 @@ use warnings;
 use Data::Dumper;
 use Test::More tests=>15;
 use lib "lib";
-use lib "t/prod-tests";
+use lib "t/test-deploy";
 use TreeTestConfig qw(getHost getPort getURL);
 
 #############################################################################

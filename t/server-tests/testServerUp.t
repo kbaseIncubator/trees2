@@ -12,7 +12,7 @@ use Data::Dumper;
 use lib "lib";
 use lib "t/server-tests";
 
-use TreeTestConfig qw(getHost getPort);
+use TreeTestConfig qw(getHost getPort getURL);
 
 use Test::More tests => 6;
 
@@ -21,7 +21,7 @@ use_ok("JSON::RPC::Client");
 my $client = new JSON::RPC::Client;
 
 # DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE
-my $host=getHost(); my $port=getPort();
+my $host=getHost(); my $port=getPort(); my $url=getURL();
 print "-> attempting to connect to:'".$host.":".$port."'\n";
 my $url = $host.":".$port;
 
