@@ -29,7 +29,7 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 # default target is all, which compiles the typespec and builds documentation
 default: all
 
-all: compile-typespec build-docs cpp-lib
+all: compile-typespec build-docs
 
 compile-typespec:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
@@ -121,7 +121,7 @@ deploy-docs:
 	
 
 # deploys all libraries and scripts needed to start the service
-deploy-service: deploy-service-libs deploy-service-start_scripts
+deploy-service: cpp-lib deploy-service-libs deploy-service-start_scripts
 
 deploy-service-libs:
 	# copy over the general purpose libs
