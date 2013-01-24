@@ -28,11 +28,13 @@ public class MOTreeInMemoryExchanger {
         public static String pathToDumpDir =   "some_made_up_path"; //"../../../dump/"+GROUP;
         public static String pathToAlnDir =    "blah";//"../../../input/alignments/"+GROUP;
         public static String pathToTreeDir =    "yada";//"../../../input/trees/"+GROUP;
+        public static String pathToIdFile =    "yadayada"; //"../../../input/ids/assigned_kbase_tree_id_list.txt";
+
+        // only ever one master file for all trees, so this path is hardcoded
 	public static String pathToLociFile =  "../../../input/locus_data_VERIFIED_WITH_ORPHANS.txt";  // expects a tab-delimited file: with locusID MD5 length kbaseFeatureID
-	public static String pathToIdFile =    "../../../input/ids/assigned_kbase_tree_id_list.txt";
-	
+    
 	public static long timestampInSecondsSinceEpoch;
-	
+
 	public static HashMap<String,LocusData> locusData; // maps a locus id to data associated with that locus, see LocusData
 	static class LocusData {
 		public String protein_md5;
@@ -44,6 +46,13 @@ public class MOTreeInMemoryExchanger {
 	};
 	public static String ALN_METHOD="";
 	public static String ALN_PARAM="";
+
+        public static HashMap<String,TreeIdData> kbIdMap;
+        static class TreeIdData {
+	    public String alnId;
+            public String treeId;
+            public TreeIdData() { alnId=""; treeId=""; };
+	};
 	
 	// load the KBTree C++ Library for newick parsing and tree manipulations
 	// and figure out what timestamp to use
@@ -106,10 +115,10 @@ public class MOTreeInMemoryExchanger {
 			return;
 		} 
 		GROUP = args[0];		
-		pathToDumpDir =   "../../../dump/"+GROUP;
-		pathToAlnDir =    "../../../input/alignments/"+GROUP;
+		pathToDumpDir =    "../../../dump/"+GROUP;
+		pathToAlnDir  =    "../../../input/alignments/"+GROUP;
 		pathToTreeDir =    "../../../input/trees/"+GROUP;
-	
+		pathToIdFile  =    "../../../input/kbIdMaps/"+GROUP+"_kb_id_map.txt";
 
 		if(GROUP.compareTo("COG")==0) { 		ALN_METHOD="RPS-BLAST"; ALN_PARAM="-e 1e-5"; }
 		else if(GROUP.compareTo("GENE3D")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2219 -E 0.001"; }
@@ -124,6 +133,35 @@ public class MOTreeInMemoryExchanger {
 		}
 		System.out.println(" -> dumping gene family group named: \""+GROUP+"\"");
 		
+
+		try {
+	        // Read in all the data we need for each locus id
+		System.out.println(" -> loading kbase id mapping data...");
+		kbIdMap = new HashMap<String,TreeIdData>(1000000); // yes, 1 million possible trees (for fastblast).  better get one of those huge memory machines.
+	        DataInputStream in = new DataInputStream(new FileInputStream(pathToIdFile));
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		String line=""; int row_count=0;
+		while ((line=br.readLine()) != null)   {
+		        row_count++;
+			line=line.trim();
+			String [] tokens = line.split("\\s+");
+			String domainId = tokens[0];
+			TreeIdData d = new TreeIdData();
+			d.treeId = tokens[1];
+			d.alnId  = tokens[2];
+			kbIdMap.put(domainId,d);
+			if(row_count%100000==0) { System.out.print("."); }
+			if(row_count%1000000==0) { System.out.println(" " + (row_count/1000000) + " million");  }
+		} System.out.println();
+		br.close();	
+             	long estimatedTime = System.currentTimeMillis() - startTime;
+	      	System.out.println(" -> elapsedtime="+estimatedTime*0.001+"s");
+		} catch (IOException e) {
+		    System.err.println("Cannot open kb id mapping file.  cannot continue");
+		    System.err.println(e.getMessage());
+		    e.printStackTrace();
+		    System.exit(1);
+		}
 		
 		// open buffers to all the primary output files we need
 		BufferedWriter BW_trees, BW_treeAttribute, BW_treeNodeAttribute, BW_aln, BW_aln_row, BW_alnAttribute, BW_containsProtein, BW_containsNucleotide;
@@ -230,8 +268,16 @@ public class MOTreeInMemoryExchanger {
 				
 				// if we get here, then the alignment and tree is going into kbase, so let's register it with the ID server (or retrieve an
 				// available kbase ID)
-				String KBaseAlnID = "kb|aln.xxx";
-				String KBaseTreeID = "kb|tree.xxx";
+				
+				String KBaseAlnID = "";
+				String KBaseTreeID = "";
+				if(kbIdMap.containsKey(name)) {
+				    KBaseAlnID = kbIdMap.get(name).alnId;
+				    KBaseTreeID = kbIdMap.get(name).treeId;
+				} else { 
+				    System.err.println("Could not find registered id for "+name+", so I cannot continue.");
+				    System.exit(2);
+				}
 				
 				// rename the alignment file that was generated accordingly
 				File aln_file = new File(pathToDumpDir+"/Raw_Alignment_Files/temp.fasta");
