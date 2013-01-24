@@ -7,8 +7,8 @@ import KBTreeUtil.KBTree;
 
 public class MOTreeInMemoryExchanger {
 
-	// this is all a hack where we use global variables...
-	public static String GROUP = "COG";
+	// this is all a hack where we use global variables... note that at least now GROUP is passed in as a parameter
+	public static String GROUP = "no_group_selected";
 	// Possible Groups (** indicates alignment files are ready)
 	// 16S
 	// 23S
@@ -24,12 +24,11 @@ public class MOTreeInMemoryExchanger {
 	// SSF       **
 	// TIGRFAMs  **
 	
-	public static String pathToTreeList =   "../../../input/"+GROUP+"_TreeList.txt";
-	
-	public static String pathToDumpDir =   "../../../dump/"+GROUP;
-	public static String pathToAlnDir =    "../../../input/alignments/"+GROUP;
-	public static String pathToTreeDir =    "../../../input/trees/"+GROUP;
-	public static String pathToLociFile =  "../../../input/locus_data.txt";  // expects a tab-delimited file: with locusID MD5 length kbaseFeatureID
+	// can't just change these paths here!!! must also change the code in the first lines of main         
+        public static String pathToDumpDir =   "some_made_up_path"; //"../../../dump/"+GROUP;
+        public static String pathToAlnDir =    "blah";//"../../../input/alignments/"+GROUP;
+        public static String pathToTreeDir =    "yada";//"../../../input/trees/"+GROUP;
+	public static String pathToLociFile =  "../../../input/locus_data_VERIFIED_WITH_ORPHANS.txt";  // expects a tab-delimited file: with locusID MD5 length kbaseFeatureID
 	public static String pathToIdFile =    "../../../input/ids/assigned_kbase_tree_id_list.txt";
 	
 	public static long timestampInSecondsSinceEpoch;
@@ -54,26 +53,40 @@ public class MOTreeInMemoryExchanger {
 		//we can set to a particular timestamp if we want: calendar.clear(); calendar.set(2013, Calendar.JANUARY, 2);
 		timestampInSecondsSinceEpoch = calendar.getTimeInMillis() / 1000L;
 		try {
+		        long start = System.currentTimeMillis();
 			// Read in all the data we need for each locus id
 			System.out.println(" -> loading locus data...");
-			locusData = new HashMap<String,LocusData>(10000);
+			locusData = new HashMap<String,LocusData>(19000000); // yes, 19 million.  better get one of those huge memory machines.
 			DataInputStream in = new DataInputStream(new FileInputStream(pathToLociFile));
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String line="";
+			String line=""; int row_count=0;
 			while ((line=br.readLine()) != null)   {
+			        row_count++;
 				line=line.trim();
 				String [] tokens = line.split("\\s+");
 				String locusId = tokens[0];
 				LocusData d = new LocusData();
 				d.protein_md5 = tokens[1];
 				d.protein_length = Integer.parseInt(tokens[2]);
-				d.kbase_feature_id = tokens[3];
+				if(tokens.length==4) {
+				    // save the mapped kbase ID
+				    d.kbase_feature_id = tokens[3];
+				} else if (tokens.length==3) {
+				    // or empty if we don't have a match
+				    d.kbase_feature_id = "";
+				} else {
+				    System.out.println("Error with reading the locus_data file: bad number of tokens on line "+row_count);
+				    System.exit(1);
+				}
 				locusData.put(locusId,d);
+				if(row_count%100000==0) { System.out.print("."); }
+                                if(row_count%1000000==0) { System.out.println(" " + (row_count/1000000) + " million");  }
 			}
 			br.close();
 			
-			//publicLoci = new LocusLookup(pathToLociFile);
-			//kbaseIdMapping = new IdLookup(pathToIdFile);
+             		long estimatedTime = System.currentTimeMillis() - start;
+	         	System.out.println(" -> elapsedtime="+estimatedTime*0.001+"s");
+
 		} catch (IOException e) {
 			System.err.println("Cannot open public locus data file, or error while reading file.  Cannot continue.");
 			System.err.println(e.getMessage());
@@ -92,7 +105,12 @@ public class MOTreeInMemoryExchanger {
 			System.out.println("incorrect usage.  you must pass in the name of the gene family type to dump (e.g. 'COG').");
 			return;
 		} 
-		GROUP = args[0];
+		GROUP = args[0];		
+		pathToDumpDir =   "../../../dump/"+GROUP;
+		pathToAlnDir =    "../../../input/alignments/"+GROUP;
+		pathToTreeDir =    "../../../input/trees/"+GROUP;
+	
+
 		if(GROUP.compareTo("COG")==0) { 		ALN_METHOD="RPS-BLAST"; ALN_PARAM="-e 1e-5"; }
 		else if(GROUP.compareTo("GENE3D")==0) { 	ALN_METHOD="HMMER3"; ALN_PARAM="-Z 2219 -E 0.001"; }
 		else if(GROUP.compareTo("PFAM")==0) { 		ALN_METHOD="HMMER3"; ALN_PARAM="--cut_ga"; }
@@ -228,9 +246,9 @@ public class MOTreeInMemoryExchanger {
 				
 				
 				// get the tree file and remove any private rows
+				String treeFileName = pathToTreeDir+"/"+name+".tree.rooted";
 				if(ai.n_private==0) {
-					String treeFileName = pathToTreeDir+"/"+name+".tree.rooted";
-					System.out.println("     | copying tree file: "+treeFileName);
+				       	System.out.println("     | copying tree file: "+treeFileName);
 					copy(treeFileName, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
 				} else {
 					// we shouldn't have to parse the tree, since there are no private genes anymore!  awesome!
@@ -294,103 +312,6 @@ public class MOTreeInMemoryExchanger {
 				long estimatedTime = System.currentTimeMillis() - startTime;
 				long iterationTime = System.currentTimeMillis() - iterationStartTime;
 				System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
-				System.gc();
-			}
-			
-			if(false) {
-				// read in the file list of alignments/trees to process
-				DataInputStream in = new DataInputStream(new FileInputStream(pathToTreeList));
-				BufferedReader br = new BufferedReader(new InputStreamReader(in));
-				String line=""; //int row_count = 1; int written_count=0;
-				while ((line=br.readLine()) != null)   {
-					long iterationStartTime = System.currentTimeMillis();
-				
-					line=line.trim();
-					String [] tokens = line.split("\\s+");
-					String treeId = tokens[0];
-					String name = tokens[1];
-					String type = GROUP;
-					System.out.println(" -> ["+row_count+"]: processing "+treeId+", named: "+name);
-					row_count++;
-						
-					// for each ID, grab the associated KBase ID
-					String ids[] = null; //kbaseIdMapping.find(Long.parseLong(treeId));
-					String KBaseTreeID = ids[0];
-					String KBaseAlnID = ids[1];
-					System.out.println("     | tree is mapped to kbase aln id: "+KBaseAlnID+" and kbase tree id: "+KBaseTreeID);
-					
-					// FIND, LOAD THE ALIGNMENT FILE, IDENTIFY THE PRIVATE GENES, AND WRITE THE NEW ALIGNMENT FILE (WITHOUT EVER STORING ALL THE SEQUENCES)
-					String alignmentFileName = pathToAlnDir+"/"+name+".trim.fasta";
-					System.out.println("     | processing alignment file: "+alignmentFileName);
-					SingleGeneAlignmentInformation ai = processSingleGeneAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/"+KBaseAlnID+".fasta");
-					System.out.println("     | alignment contains "+ai.n_rows+" total rows and "+ai.n_private+" private rows");
-					if((ai.n_rows-ai.n_private)==0) {
-						System.out.println("     | no public rows to publish to kbase!  skipping this alignment/tree pair.");
-						continue;
-					}
-					System.out.println("     | final alignment with removed private genes was written containing "+(ai.n_rows-ai.n_private) +" rows.");
-					written_count++;
-		
-					// PARSE THE NEWICK TREE, REMOVE PRIVATE GENES, WRITE THE FILE
-					String treeFileName = pathToTreeDir+"/"+name+".newick";
-					
-					System.out.println("     | processing tree file: "+treeFileName);
-					DataInputStream inTREE = new DataInputStream(new FileInputStream(treeFileName));
-					BufferedReader brTREE = new BufferedReader(new InputStreamReader(inTREE));
-					String newick=""; String treeFileLine="";
-					while ((treeFileLine=brTREE.readLine()) != null) { newick+=treeFileLine.trim(); };
-					processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+KBaseTreeID+".newick");
-						
-					// (5) WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
-					BW_aln.write(KBaseAlnID+"\t"); // kb_aln_id	 M	 unique kbase id reserved for the alignment from ID server: 'kb|aln.XXXXX'
-					BW_aln.write((ai.n_rows-ai.n_private)+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
-					BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
-					BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
-					BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
-					BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
-					BW_aln.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-					BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
-					BW_aln.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
-					BW_aln.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_aln.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database
-					BW_aln.write("\n");
-					BW_aln.flush();
-						
-					// (6) WRITE THE TREE RECORD IN TREE.TAB FILE
-					BW_trees.write(KBaseTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
-					BW_trees.write(KBaseAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
-					BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
-					BW_trees.write("sequence_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
-					BW_trees.write(timestampInSecondsSinceEpoch+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-					BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-					BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
-					BW_trees.write("MO_Pipeline("+name+")\t"); // protocol	 O	 human readable description of the alignment, if needed
-					BW_trees.write("MOL:Tree\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
-					BW_trees.write(treeId);      // source_db_aln_id	 M	 the id of this alignment in the original database   
-					BW_trees.write("\n");
-					BW_trees.flush();
-	
-					// (7) ADD TO THE ALIGNMENT ROW TABLE
-					writeAlignmentRowDataForProtAln(KBaseAlnID, BW_aln_row, BW_containsProtein, ai);
-					
-					// (8) WRITE ANY OTHER ATTRIBUTES WE NEED TO THE APPROPRIATE FILES
-					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
-					BW_alnAttribute.write(KBaseAlnID+"\t"+"seeded_by_id\t"+name+"\n");
-						
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_src\tMOL:"+type+"\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"seeded_by_id\t"+name+"\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"style\t"+"phylogram\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"bootstrap_type\t"+"Shimodaira-Hasegawa Test\n");
-					BW_treeAttribute.write(KBaseTreeID+"\t"+"rooted\t"+"midpoint\n");
-	
-					// dump some stats to see how we are progressing
-					
-					long estimatedTime = System.currentTimeMillis() - startTime;
-					long iterationTime = System.currentTimeMillis() - iterationStartTime;
-					System.out.println("     | elapsedtime="+estimatedTime*0.001+"s, iterationTime="+iterationTime*0.001+"s, elapsedtime per row="+(((double)iterationTime)/(double)ai.n_rows)+"ms");
-					System.gc();
-				}
 			}
 		}
 		catch (IOException ex)            {System.err.println("IOException: "+ex.getMessage());}
@@ -602,6 +523,7 @@ public class MOTreeInMemoryExchanger {
 			ai.parent_seq_length.add(data.protein_length);
 			ai.feature_reference.add(data.kbase_feature_id);
 		} else {
+		    System.err.println(ai.MO_locusId.get(currentPos));
 			ai.isPrivate.add(true);
 			ai.parent_MD5.add("");
 			ai.parent_seq_length.add(0);
@@ -731,7 +653,9 @@ public class MOTreeInMemoryExchanger {
 			bw = new BufferedWriter(new FileWriter(file.getAbsolutePath()));
 			System.out.println(" -> created file \""+absolute_path+"\"");
 		} catch (IOException ex) {
+		    System.err.println("could not create file: "+absolute_path);
 			System.err.println("IOException: "+ex.getMessage());
+		        ex.printStackTrace();
 		}
 		return bw;
 	}
