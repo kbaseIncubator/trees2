@@ -16,6 +16,7 @@ package Bio::KBase::Tree::Util;
 
 use strict;
 use warnings;
+use Data::Dumper;
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(getTreeURL get_tree_client);
