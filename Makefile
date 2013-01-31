@@ -42,7 +42,6 @@ compile-typespec:
 		--client Bio::KBase::$(SERVICE_NAME)::Client \
 		--py biokbase/$(SERVICE_NAME)/Client \
 		--js javascript/$(SERVICE_NAME)/Client \
-		--scripts scripts \
 		$(SERVICE_NAME).spec lib
 	rm -r Bio # For some strange reason, compile_typespec always creates this directory in the root dir!
 
@@ -99,7 +98,7 @@ test-service:
 # here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-service)
 deploy: deploy-all
 
-deploy-all: deploy-client deploy-service
+deploy-all: deploy-client deploy-scripts deploy-service
 	echo "OK... Done deploying ALL artifacts (includes clients, docs, scripts and service) of $(SERVICE)."
 	
 deploy-client: deploy-scripts deploy-docs
@@ -107,12 +106,22 @@ deploy-client: deploy-scripts deploy-docs
 	mkdir -p $(TARGET)/lib/biokbase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/javascript/$(SERVICE_NAME)
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Client.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
+	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/biokbase/$(SERVICE_NAME)/* $(TARGET)/lib/biokbase/$(SERVICE_NAME)/.
 	cp lib/javascript/$(SERVICE_NAME)/* $(TARGET)/lib/javascript/$(SERVICE_NAME)/.
 	echo "deployed clients of $(SERVICE)."
 	
-deploy-scripts:
-	echo "No scripts yet to deploy."
+deploy-scripts: deploy-client deploy-docs
+	export KB_TOP=$(TARGET); \
+	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
+	export KB_PERL_PATH=$(TARGET)/lib bash ; \
+	for src in $(SRC_PERL) ; do \
+		basefile=`basename $$src`; \
+		base=`basename $$src .pl`; \
+		echo install $$src $$base ; \
+		cp $$src $(TARGET)/plbin ; \
+		$(WRAP_PERL_SCRIPT) "$(TARGET)/plbin/$$basefile" $(TARGET)/bin/$$base ; \
+	done
 
 deploy-docs:
 	mkdir -p $(SERVICE_DIR)/webroot
@@ -128,6 +137,7 @@ deploy-service-libs:
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Service.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/$(SERVICE_NAME)Impl.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
+	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/$(SERVICE_PSGI_FILE) $(TARGET)/lib/.
 	# copy over tree specific libs
 	cp lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/$(SERVICE_NAME)/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
