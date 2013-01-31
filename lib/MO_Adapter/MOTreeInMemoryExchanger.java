@@ -240,7 +240,10 @@ public class MOTreeInMemoryExchanger {
 			ArrayList <String> treeNames = new ArrayList<String>();
 			for (int k=0; k<listOfTreeFiles.length; k++) {
 				if(listOfTreeFiles[k].isFile()) {
-					treeNames.add(listOfTreeFiles[k].getName().split("\\.")[0]);
+				    // split based on '.' does not work because pfam ids have dots in thier name    
+				    //treeNames.add(listOfTreeFiles[k].getName().split("\\.")[0]);
+				    String t_name = listOfTreeFiles[k].getName().replace(".tree.rooted","");
+				    treeNames.add(t_name);
 				}
 			}
 			
@@ -255,7 +258,7 @@ public class MOTreeInMemoryExchanger {
 				row_count++;
 				
 				// process the alignment file, and use the ids to mark the private genes
-				String alignmentFileName = pathToAlnDir+"/"+name+".fasta";
+				String alignmentFileName = pathToAlnDir+"/"+name+".align.fasta"; // note that for cog right now, remove the 'align' in the name
 				System.out.println("     | processing alignment file: "+alignmentFileName);
 				SingleGeneAlignmentInformation ai = processSingleGeneAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/temp.fasta");
 				System.out.println("     | alignment contains "+ai.n_rows+" total rows and "+ai.n_private+" private rows");
