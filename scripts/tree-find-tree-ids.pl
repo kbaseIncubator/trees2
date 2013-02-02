@@ -14,15 +14,18 @@ NAME
       tree-find-tree-ids -- 
 
 SYNOPSIS
-      tree-find-tree-ids [-f [FEATURE_IDS] | -p [PROTEIN_SEQUENCE_IDS]]
+      tree-find-tree-ids [-f=FEATURE_IDS | -p=PROTEIN_SEQUENCE_IDS]
 
 DESCRIPTION
-
                         
       -f, --feature
                         get alignments based on a list of feature_ids
       -s, --sequence
                         get alignments based on a list of protein_sequence_ids                        
+      -i, --input
+                        specify input file to read from
+      -o, --output
+                        specify output file to write to
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -49,8 +52,10 @@ my $help = '';
 my $featureString = "";
 my $sequenceString = "";
 
-my $inputFile;
-my $outputFile;
+my $inputFile = "";
+my $outputFile = "";
+
+my $stdinString = "";
 
 my $opt = GetOptions (
         "help" => \$help,
@@ -66,11 +71,17 @@ if ($help) {
 }
 
 
-print $n_args;
-
 if ($n_args == 0) {
-    print "FAILURE - no feature or sequence specified.  Run with --help for usage.\n";
-    exit 1;
+
+    while (my $line = <STDIN>) {
+        $n_args = 1;
+        $stdinString = $stdinString.$line;
+    }
+
+    if ($n_args == 0) {
+        print "FAILURE - no feature or sequence specified.  Run with --help for usage.\n";
+        exit 1;
+    }
 } 
 
 
@@ -163,7 +174,7 @@ if ($n_args == 1) {
         }
 
         my $tree_alignment;
-        my $inputString = "";
+        my $inputString = $stdinString;
 
         eval {
             while (my $line = <$inputFileHandle>) {
