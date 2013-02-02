@@ -208,6 +208,5 @@ clean:
 	rm -rf lib/biokbase
 	rm -rf lib/javascript
 	rm -rf docs
-	rm -rf scripts
 	rm -f start_service stop_service reboot_service debug_start_service
 

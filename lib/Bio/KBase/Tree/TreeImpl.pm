@@ -11,13 +11,16 @@ Tree
 
 =head1 DESCRIPTION
 
-KBase Phylogenetic Tree and Multiple Sequence Alignment(MSA) API
+Phylogenetic Tree and Multiple Sequence Alignment Services (v0.03)
 
 This service provides a set of methods for querying, manipulating, and analyzing multiple
 sequence alignments and phylogenetic trees.
 
-created 5/21/2012 - msneddon
-last updated nov 2012
+Authors
+---------
+Michael Sneddon, LBL (mwsneddon@lbl.gov)
+Fangfang Xia, ANL (fangfang.xia@gmail.com)
+Matt Henderson, LBL (mhenderson@lbl.gov)
 
 =cut
 
@@ -1822,6 +1825,38 @@ a tree
 =begin text
 
 a tree
+
+=end text
+
+=back
+
+
+
+=head2 alignment
+
+=over 4
+
+
+
+=item Description
+
+String representation of a sequence alignment, the format of which may be different depending on
+input options for retrieving the alignment.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
 
 =end text
 
