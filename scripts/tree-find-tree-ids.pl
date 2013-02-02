@@ -118,7 +118,7 @@ if ($n_args == 1) {
         my $i;
         for($i = 0; $i < @{$tree_alignment}; $i++) {
             print $$tree_alignment[$i];
-            print '\t';
+            print "\t";
         }
         exit 0;
     } 
@@ -149,7 +149,7 @@ if ($n_args == 1) {
         my $i;
         for($i = 0; $i < @{$tree_alignment}; $i++) {
             print $$tree_alignment[$i];
-            print '\t';
+            print "\t";
         }
         exit 0;
     }
@@ -198,7 +198,7 @@ if ($n_args == 1) {
         my $i;
         for($i = 0; $i < @{$tree_alignment}; $i++) {
             print $$tree_alignment[$i];
-            print '\t';
+            print "\t";
         }
         exit 0;
     }        
@@ -250,7 +250,7 @@ elsif ($n_args == 2) {
     my $i;
     for($i = 0; $i < @{$tree_alignment}; $i++) {
         print $outputFileHandle $$tree_alignment[$i];
-        print $outputFileHandle '\t';
+        print $outputFileHandle "\t";
     }
 
     close($outputFileHandle);
