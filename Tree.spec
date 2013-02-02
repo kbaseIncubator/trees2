@@ -1,11 +1,15 @@
 /*
-KBase Phylogenetic Tree and Multiple Sequence Alignment API (v0.02)
+Phylogenetic Tree and Multiple Sequence Alignment Services (v0.03)
 
 This service provides a set of methods for querying, manipulating, and analyzing multiple
 sequence alignments and phylogenetic trees.
 
-created 5/21/2012 - msneddon
-last updated nov 2012
+Authors
+---------
+Michael Sneddon, LBL (mwsneddon@lbl.gov)
+Fangfang Xia, ANL (fangfang.xia@gmail.com)
+Matt Henderson, LBL (mhenderson@lbl.gov)
+
 */
 module Tree
 {
@@ -56,6 +60,12 @@ module Tree
     the JSON object.  This is useful when interacting with the tree in JavaScript, for instance. 
     */
     typedef tree json_tree;
+    
+    /* String representation of a sequence alignment, the format of which may be different depending on
+    input options for retrieving the alignment.
+    */
+    typedef string alignment;
+    
     
     /* String representation of a sequence or set of sequences in FASTA format.  The precise alphabet used is
     not yet specified, but will be similar to sequences stored in KBase.
@@ -246,6 +256,30 @@ module Tree
     when loaded into kbase.
     */
     funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (tree);
+    
+    /* Returns the specified alignment in the specified format, or an empty string if the alignment does not exist.
+    The options hash provides a way to return the alignment with different labels replaced or with different attached meta
+    information.  Currently, the available flags and understood options are listed below. 
+    
+        options = [
+            format => 'fasta',
+            sequence_label => 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+        ];
+ 
+    The 'format' key indicates what string format the tree should be returned in.  Currently, there is only
+    support for 'fasta'. The default value if not specified is 'asta'.
+    
+    The 'sequence_label' key only affects trees returned as fasta format, and specifies what should be
+    placed as the label for each sequence. 'raw' indicates that the raw label mapping the leaf to an
+    alignement row is used. 'feature_id' indicates that the label will have an examplar feature_id in
+    each label (typically the feature that was originally used to define the sequence). Note that exemplar
+    feature_ids are not defined for all alignments, so this may result in unlabeled sequences.
+    'protein_sequence_id' indicates that the kbase id of the protein sequence used in the alignment is used.
+    'contig_sequence_id' indicates that the contig sequence id is added.  Note that alignments are typically
+    built with protein sequences OR contig sequences. If you select one type of sequence, but the tree was
+    built with the other type, then no labels will be added.  The default value if none is specified is 'raw'.
+    
+    funcdef get_alignment(kbase_id alignment_id, mapping<string,string> options) returns (alignment);*/
     
     /* Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
     data may not be available for trees which are not built from alignments.  Also note that this method
