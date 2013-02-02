@@ -47,6 +47,8 @@ my $treeString = '';
 my $inputFile = '';
 my $outputFile = '';
 
+my $stdinString = "";
+
 my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
                      "output=s" => \$outputFile,
@@ -58,8 +60,15 @@ if($help) {
 }
 
 if($n_args == 0) {
-    print "FAILURE - no feature or sequence specified.  Run with --help for usage.\n";
-    exit 1;
+    while(my $line = <STDIN>) {
+        $n_args = 1;
+        $stdinString = $stdinString.$line;
+    }
+
+    if ($n_args == 0) {
+        print "FAILURE - no feature or sequence specified.  Run with --help for usage.\n";
+        exit 1;
+    }
 } 
 
 
@@ -109,7 +118,7 @@ if($n_args == 1) {
         foreach my $node (@tree_leafnodes) {
             foreach my $obj (@$node) {
                 print $obj;
-                print '\t';
+                print "\t";
             }
         }
         exit 0;
@@ -123,7 +132,7 @@ if($n_args == 1) {
             $inputFileHandle = \*STDIN;
         }
 
-        my $treeString = "";
+        my $treeString = $stdinString;
 
         eval {
             while (my $line = <$inputFileHandle>) {
@@ -151,7 +160,7 @@ if($n_args == 1) {
         foreach my $node (@tree_leafnodes) {
             foreach my $obj (@$node) {
                 print $obj;
-                print '\t';
+                print "\t";
             }
         }
         exit 0;
@@ -219,7 +228,7 @@ elsif ($n_args == 2) {
     foreach my $node (@tree_leafnodes) {
         foreach my $obj (@$node) {
             print $outputFileHandle $obj;
-            print $outputFileHandle '\t';
+            print $outputFileHandle "\t";
         }
     }
     close($outputFileHandle);
