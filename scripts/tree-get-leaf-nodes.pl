@@ -11,12 +11,13 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-get-leaf-nodes -- 
+      tree-get-leaf-nodes -- get a list of the names of leaf nodes
 
 SYNOPSIS
       tree-get-leaf-nodes newick_tree [--input=inputFileName --output=outputFileName]
 
 DESCRIPTION
+      Given a tree in newick format, produce a list of the names of the leaf nodes.
 
       -t, --tree
                         a string in newick format
@@ -31,11 +32,10 @@ DESCRIPTION
 EXAMPLES
       Retrieve all the leaf nodes of a given newick tree
       > tree-get-leaf-nodes -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
-
-SEE ALSO
-      tree-
       
 AUTHORS
+      Matt Henderson (mhenderson@lbl.gov)
+      Michael Sneddon (mwsneddon@lbl.gov)
 
       
 ";
@@ -118,7 +118,7 @@ if($n_args == 1) {
         foreach my $node (@tree_leafnodes) {
             foreach my $obj (@$node) {
                 print $obj;
-                print "\t";
+                print "\n";
             }
         }
         exit 0;
@@ -160,7 +160,7 @@ if($n_args == 1) {
         foreach my $node (@tree_leafnodes) {
             foreach my $obj (@$node) {
                 print $obj;
-                print "\t";
+                print "\n";
             }
         }
         exit 0;
@@ -228,7 +228,7 @@ elsif ($n_args == 2) {
     foreach my $node (@tree_leafnodes) {
         foreach my $obj (@$node) {
             print $outputFileHandle $obj;
-            print $outputFileHandle "\t";
+            print $outputFileHandle "\n";
         }
     }
     close($outputFileHandle);

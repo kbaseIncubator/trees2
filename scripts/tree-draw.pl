@@ -11,12 +11,14 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-draw -- 
+      tree-draw -- simple visualization of a tree in html format
 
 SYNOPSIS
       tree-draw [OPTIONS] -t TREE
 
 DESCRIPTION
+      This method prints an html representation of the input tree to standard out.
+
 
       -t, --tree        
                         a tree structure in newick format
@@ -28,12 +30,11 @@ EXAMPLES
 
       Draw a simple tree
       > tree-draw -t '(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
-
-SEE ALSO
-      tree-
       
 AUTHORS
-
+      Matt Henderson (mhenderson@lbl.gov)
+      Fangfang Xia (fangfang.xia@gmail.com)
+      Michael Sneddon (mwsneddon@lbl.gov)
       
 ";
 

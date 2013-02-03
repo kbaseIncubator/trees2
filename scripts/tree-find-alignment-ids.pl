@@ -11,13 +11,14 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-get-alignment -- 
+      tree-find-alignment-ids -- returns alignment IDs that align the given sequence/feature
 
 SYNOPSIS
-      tree-get-alignment [-f=FEATURE_IDS | -p=PROTEIN_SEQUENCE_IDS] [-i=inputFileName -o=outputFileName]
+      tree-find-alignment [-f=FEATURE_IDS | -p=PROTEIN_SEQUENCE_IDS] [-i=inputFileName -o=outputFileName]
 
 DESCRIPTION
-
+      Given a KBase feature or sequence ID, retrieve the set of alignments that align the
+      given feature/sequence.
                         
       -f, --feature
                         get alignments based on a list of feature_ids
@@ -33,15 +34,14 @@ DESCRIPTION
                         
 EXAMPLES
       Retrieve alignments based on a set of feature_ids
-      > tree-get-alignment -f='kb|g.9988.peg.1744\tkb|g.9988.peg.1741'
+      > tree-find-alignment-ids -f='kb|g.9988.peg.1744\tkb|g.9988.peg.1741'
       
       Retrieve alignments based on a set of protein_sequence_ids
-      > tree-get-alignment -s='b3421022c78785ebfd349762870e9fef\t2845879451b5c84036e9284018669922'
-
-SEE ALSO
-      tree-
+      > tree-find-alignment-ids -s='b3421022c78785ebfd349762870e9fef\t2845879451b5c84036e9284018669922'
       
 AUTHORS
+      Matt Henderson (mhenderson@lbl.gov)
+      Michael Sneddon (mwsneddon@lbl.gov)
 
       
 ";

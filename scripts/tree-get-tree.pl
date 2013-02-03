@@ -19,7 +19,20 @@ SYNOPSIS
 DESCRIPTION
       Retrieve the specified tree or meta information associated with the tree.  The
       raw tree is returned in newick format by default with leaf node labels in an
-      arbitrary internal id that is unique only within the given tree.
+      arbitrary internal id that is unique only within the given tree.  By default, the
+      raw tree stored in KBase is returned.  To return the tree with node labels replaced
+      with KBase protein sequence IDs or cannonical feature IDs, use the options below.
+      
+      -p, --protein-sequence
+                        set this flag to return the tree with node labels replaced with
+                        protein sequence IDs.
+      -f, --feature
+                        set this flag to return the tree with node labels replaced with KBase
+                        feature IDs.  Note that some trees may not have assigned cannonical
+                        feature IDs for each node, in which case blank labels will be returned.
+                        
+      -n, --no-bootstrap
+                        set this flag to return the tree without bootstrap values
                         
       -m, --meta
                         set this flag to return meta data instead of the tree itself
@@ -46,9 +59,15 @@ AUTHORS
 
 my $help = '';
 my $metaFlag = '';
+my $replaceFeature='';
+my $replaceSequence='';
+my $noBootstrap='';
 my $opt = GetOptions (
         "help" => \$help,
         "meta" => \$metaFlag,
+        "feature" => \$replaceFeature,
+        "protein-sequence" => \$replaceSequence,
+        'no-bootstrap' => \$noBootstrap
         );
 
 if($help) {
@@ -87,6 +106,9 @@ if($n_args==0) {
         my $tree;
         # eval {   #add eval block so errors don't crash execution, should really handle exceptions here.
             my $options = {};
+            if($replaceFeature) {$options->{newick_label}='feature_id';}
+            if($replaceSequence) {$options->{newick_label}='protein_sequence_id';}
+            if($noBootstrap) {$options->{newick_bootstrap}='none';}
             ($tree) = $treeClient->get_tree($treeId,$options);
         # };
         if($tree) { print $tree."\n"; }

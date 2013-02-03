@@ -11,12 +11,14 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-find-tree-ids -- 
+      tree-find-tree-ids -- returns the tree IDs that include the given sequence/feature
 
 SYNOPSIS
       tree-find-tree-ids [-f=FEATURE_IDS | -p=PROTEIN_SEQUENCE_IDS]
 
 DESCRIPTION
+      Given a KBase feature or sequence ID, retrieve the set of trees that include the
+      given feature/sequence.
                         
       -f, --feature
                         get alignments based on a list of feature_ids
@@ -37,11 +39,9 @@ EXAMPLES
       Retrieve tree ids based on a set of protein_sequence_ids
       > tree-find-tree-ids -s='b3421022c78785ebfd349762870e9fef\t2845879451b5c84036e9284018669922'
 
-SEE ALSO
-      tree-
-      
 AUTHORS
-
+      Matt Henderson (mhenderson@lbl.gov)
+      Michael Sneddon (mwsneddon@lbl.gov)
       
 ";
 

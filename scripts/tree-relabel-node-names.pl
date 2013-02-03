@@ -11,17 +11,23 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-replace-node-names -- 
+      tree-relabel-node-names -- allows you to relabel node names in a newick tree
 
 SYNOPSIS
-      tree-replace-node-names -t=newick_tree -r=replacement_names [--input=inputFileName --output=outputFileName]
+      tree-relabel-node-names -t newick_tree -r=replacement_names [--input=inputFileName --output=outputFileName]
 
 DESCRIPTION
+     Given a tree in newick format, relabel the specified nodes with replacement names.
+
 
       -t, --tree
                         a string in newick format
+      
+      -r, --replacement
+                        specify the names to relabel and thier replacements
+                        
       -i, --input
-                        specify an input file to read from
+                        specify an input file to read the tree from
       -o, --output
                         specify an output file to write the results to
       -h, --help
@@ -30,12 +36,11 @@ DESCRIPTION
                         
 EXAMPLES
       Retrieve all the leaf nodes of a given newick tree
-      > tree-replace-node-names -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;\tl1\tl55'
-
-SEE ALSO
-      tree-
+      > tree-replace-node-names -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;\tl1\tl55' -r='l1\tnode'
       
 AUTHORS
+      Matt Henderson (mhenderson@lbl.gov)
+      Michael Sneddon (mwsneddon@lbl.gov)
 
       
 ";
