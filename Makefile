@@ -122,7 +122,7 @@ deploy-scripts: deploy-client deploy-docs
 		$(WRAP_PERL_SCRIPT) "$(TARGET)/plbin/$$basefile" $(TARGET)/bin/$$base ; \
 	done
 
-deploy-docs:
+deploy-docs: build-docs
 	mkdir -p $(SERVICE_DIR)/webroot
 	cp docs/*.html $(SERVICE_DIR)/webroot/.
 	
