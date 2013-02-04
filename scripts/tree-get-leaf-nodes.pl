@@ -30,8 +30,13 @@ DESCRIPTION
                         
 EXAMPLES
       Retrieve all the leaf nodes of a given newick tree
-      > tree-get-leaf-nodes -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
-      
+      > tree-get-leaf-nodes '(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
+      l1
+      l2
+      l3
+      l4
+      l5
+
 AUTHORS
       Matt Henderson (mhenderson\@lbl.gov)
       Michael Sneddon (mwsneddon\@lbl.gov)

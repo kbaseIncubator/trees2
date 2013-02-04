@@ -35,11 +35,11 @@ DESCRIPTION
                         diplay this help message, ignore all arguments
                         
 EXAMPLES
-      Retrieve tree ids based on a set of feature_ids
-      > tree-find-tree-ids -f='kb|g.9988.peg.1744\tkb|g.9988.peg.1741'
+      Retrieve alignment ids based on a feature id
+      > tree-find-alignment-ids -f 'kb|g.0.peg.2173'
       
-      Retrieve tree ids based on a set of protein_sequence_ids
-      > echo cf9e9e74e06748fb161d07c8420e1097 | tree-find-tree-ids -p
+      Retrieve alignment ids based on a set of protein_sequence_ids piped through standard in
+      > echo cf9e9e74e06748fb161d07c8420e1097 | tree-find-alignment-ids -p
 
 AUTHORS
       Matt Henderson (mhenderson\@lbl.gov)
@@ -92,7 +92,6 @@ elsif($n_args==1) {
      my $id = $ARGV[0];
      chomp($id);
      push @$id_list,$id;
-     print "reading $id\n";
 }
 
 # if we have no arguments, then read the tree from standard-in
