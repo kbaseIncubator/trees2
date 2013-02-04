@@ -59,7 +59,7 @@ my $n_args = $#ARGV + 1;
 if($inputFile) {
      my $inputFileHandle;
      open($inputFileHandle, "<", $inputFile);
-     if($inputFileHandle) {
+     if(!$inputFileHandle) {
           print "FAILURE - cannot open '$inputFile' \n$!\n";
           exit 1;
      }
@@ -118,12 +118,12 @@ if ($treeString ne '') {
      foreach my $l (@$leaf_names) {
           print $l."\n";
      }
-     return 0;
+     exit 0;
      
 } else {
      print "FAILURE - no tree specified.  Run with --help for usage.\n";
      exit 1;
 }
 
-return 0;
+exit 0;
 

@@ -74,7 +74,7 @@ my $id_list=[];
 if($inputFile) {
      my $inputFileHandle;
      open($inputFileHandle, "<", $inputFile);
-     if($inputFileHandle) {
+     if(!$inputFileHandle) {
           print "FAILURE - cannot open '$inputFile' \n$!\n";
           exit 1;
      }
