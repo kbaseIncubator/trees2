@@ -11,268 +11,141 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-find-alignment-ids -- returns alignment IDs that align the given sequence/feature
+      tree-find-alignment-ids -- returns the alignment IDs that align the specified sequence or feature
 
 SYNOPSIS
-      tree-find-alignment [-f=FEATURE_IDS | -p=PROTEIN_SEQUENCE_IDS] [-i=inputFileName -o=outputFileName]
+      tree-find-alignment-ids [OPTIONS] [ID]
 
 DESCRIPTION
       Given a KBase feature or sequence ID, retrieve the set of alignments that align the
-      given feature/sequence.
+      given feature/sequence.  By default, if the type of ID is not specified with one of the
+      options below, then this method assumes that IDs are feature IDs.  If an ID is to be
+      passed in as an argument, then only a single ID can be used.  If you wish to call this
+      method on multiple feature/sequence IDs, then you must pass in the list through standard-in
+      or a text file, with one ID per line.
                         
       -f, --feature
-                        get alignments based on a list of feature_ids
-      -s, --sequence
-                        get alignments based on a list of protein_sequence_ids                        
+                        indicate that the IDs provided are feature IDs
+      -p, --protein-sequence
+                        indicate that the IDs provided are protein_sequence_ids (MD5s)                        
       -i, --input
-                        specify an input file to read from
-      -o, --output      
-                        specify an output file to write to
+                        specify input file to read from;  each feature/sequence id must
+                        be on a separate line in this file
       -h, --help
                         diplay this help message, ignore all arguments
                         
-                        
 EXAMPLES
-      Retrieve alignments based on a set of feature_ids
-      > tree-find-alignment-ids -f='kb|g.9988.peg.1744\tkb|g.9988.peg.1741'
+      Retrieve tree ids based on a set of feature_ids
+      > tree-find-tree-ids -f='kb|g.9988.peg.1744\tkb|g.9988.peg.1741'
       
-      Retrieve alignments based on a set of protein_sequence_ids
-      > tree-find-alignment-ids -s='b3421022c78785ebfd349762870e9fef\t2845879451b5c84036e9284018669922'
-      
+      Retrieve tree ids based on a set of protein_sequence_ids
+      > echo cf9e9e74e06748fb161d07c8420e1097 | tree-find-tree-ids -p
+
 AUTHORS
       Matt Henderson (mhenderson\@lbl.gov)
       Michael Sneddon (mwsneddon\@lbl.gov)
-
       
 ";
 
-my $n_args = $#ARGV + 1;
 
+
+# declare variables that come from user input
 my $help = '';
-my $featureString = "";
-my $sequenceString = "";
+my $usingFeature = "";
+my $usingSequence = "";
 my $inputFile = "";
-my $outputFile = "";
 
-my $stdinString = "";
-
+# first parse command line options
 my $opt = GetOptions (
         "help" => \$help,
-        "feature=s" => \$featureString,
-        "sequence=s" => \$sequenceString,
+        "feature" => \$usingFeature,
+        "protein-sequence" => \$usingSequence,
         "input=s" => \$inputFile,
-        "output=s" => \$outputFile
         );
-
-
-if($help) {
+if ($help) {
      print $DESCRIPTION;
      exit 0;
 }
 
-if ($n_args == 0) {
-    while (my $line = <STDIN>) {
-        $n_args = 1;
-        $stdinString = $stdinString.$line;
-    }
+my $n_args = $#ARGV + 1;
 
-    if ($n_args == 0) {
-        print "FAILURE - no feature or sequence specified.  Run with --help for usage.\n";
-        exit 1;
-    }
-} 
+my $id_list=[];
+# if we have specified an input file, then read the file
+if($inputFile) {
+     my $inputFileHandle;
+     open($inputFileHandle, "<", $inputFile);
+     if($inputFileHandle) {
+          print "FAILURE - cannot open '$inputFile' \n$!\n";
+          exit 1;
+     }
+     eval {
+          while (my $line = <$inputFileHandle>) {
+               chomp($line);
+               push @$id_list,$line;
+          }
+          close $inputFileHandle;
+     };
+}
+
+# if we have a single argument, then accept it as the treeString
+elsif($n_args==1) {
+     my $id = $ARGV[0];
+     chomp($id);
+     push @$id_list,$id;
+     print "reading $id\n";
+}
+
+# if we have no arguments, then read the tree from standard-in
+elsif($n_args == 0) {
+     while(my $line = <STDIN>) {
+          chomp($line);
+          push @$id_list,$line;
+     }
+}
 
 #create client
 my $treeClient;
-
 eval{ $treeClient = get_tree_client(); };
-
 my $client_error = $@;
-if ($client_error) { print Dumper($client_error);  exit 1;}
-
-if(!$treeClient) {
-    print "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
-    exit 1;
+if ($client_error) {
+     print Dumper($client_error);
+     print "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
+     exit 1;
 }
 
-
-
-if ($n_args == 1) {
-        
-    if($featureString) {
-        my @featureList;
-
-        eval {
-            @featureList = split(',', $featureString);
-	};
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-
-        my $tree_alignment;
-        eval {
-            ($tree_alignment) = $treeClient->get_alignment_ids_by_feature(\@featureList);
-        };
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-
-        my $i;
-        for($i = 0; $i < @$tree_alignment; $i++) {
-            print $$tree_alignment[$i];
-            print "\t";
-        }
-        exit 0;
-    } 
-    elsif($sequenceString) {
-        my @sequenceList;
-        
-        eval {
-            @sequenceList = split(',', $sequenceString);
-	};
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-
-        my $tree_alignment;
-        eval {
-            ($tree_alignment) = $treeClient->get_alignment_ids_by_protein_sequence(\@sequenceList);
-        };
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-
-        my $i;
-        for($i = 0; $i < @$tree_alignment; $i++) {
-            print $$tree_alignment[$i];
-            print "\t";
-        }
-        exit 0;
-    }
-    else {
-        my $inputFileHandle;
-        if ($inputFile) {
-            open($inputFileHandle, "<", $inputFile) or die "Cannot open $inputFile: $!";
-        }
-        else {
-            $inputFileHandle = \*STDIN;
-        }
-
-        my $tree_alignment;
-        my $inputString = $stdinString;
-
-        eval {
-            while (my $line = <$inputFileHandle>) {
-                $inputString = $inputString.$line;
-            }
-            close $inputFileHandle;
-        };
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-
-        eval {
-            my @inputList = split('\t', $inputString);
-
-            if (index($inputString, "kb|g.") != -1) {
-                ($tree_alignment) = $treeClient->get_alignment_ids_by_feature(\@inputList);
-            }
-            else {
-                ($tree_alignment) = $treeClient->get_alignment_ids_by_protein_sequence(\@inputList);
-            }
-        };
-
-        $client_error = $@;
-        if ($client_error) {
-            print Dumper($client_error);
-            exit 1;
-        }
-        
-        my $i;
-        for($i = 0; $i < @$tree_alignment; $i++) {
-            print $$tree_alignment[$i];
-            print "\t";
-        }
-        exit 0;
-    }
-        
+# if we have some ids, we can continue;
+if(scalar(@$id_list)>0) {
+     if($usingSequence) {
+          my $alignment_ids;
+          eval {
+               $alignment_ids = $treeClient->get_alignment_ids_by_protein_sequence($id_list);
+          };
+          $client_error = $@;
+          if ($client_error) {
+               print Dumper($client_error);
+               print "FAILURE - error calling Tree service.\n";
+               exit 1;
+          }
+          foreach my $t (@$alignment_ids) {
+               print $t."\n";
+          }
+     } else {
+          my $alignment_ids;
+          eval {
+               $alignment_ids = $treeClient->get_alignment_ids_by_feature($id_list);
+          };
+          $client_error = $@;
+          if ($client_error) {
+               print Dumper($client_error);
+               print "FAILURE - error calling Tree service.\n";
+               exit 1;
+          }
+          foreach my $t (@$alignment_ids) {
+               print $t."\n";
+          }
+     }
+     exit 0;
+} else {
+     print "FAILURE - no ids provided.  Run with --help for usage.\n";
+     exit 1;
 }
-elsif ($n_args == 2) {
-    my $inputFileHandle;
-    if ($inputFile) {
-        open($inputFileHandle, "<", $inputFile) or die "Cannot open $inputFile: $!";
-    }
-    else {
-        $inputFileHandle = \*STDIN;
-    }
-
-    my $tree_alignment;
-    my $inputString = "";
-
-    eval {
-        while (my $line = <$inputFileHandle>) {
-            $inputString = $inputString.$line;
-        }
-        close $inputFileHandle;
-    };
-
-    $client_error = $@;
-    if ($client_error) {
-        print Dumper($client_error);
-        exit 1;
-    }
-
-    eval {
-        my @inputList = split('\t', $inputString);
-
-        if (index($inputString, "kb|g.") != -1) {
-            ($tree_alignment) = $treeClient->get_alignment_ids_by_feature(\@inputList);
-        }
-        else {
-            ($tree_alignment) = $treeClient->get_alignment_ids_by_protein_sequence(\@inputList);
-        }
-    };
-
-    $client_error = $@;
-    if ($client_error) {
-        print Dumper($client_error);
-        exit 1;
-    }
-
-    my $outputFileHandle;
-    if ($outputFile) {
-        open($outputFileHandle, ">", $outputFile) or die "Cannot open $outputFile: $!";
-    } 
-    else {
-        $outputFileHandle = \*STDOUT;
-    }
-
-
-    my $i;
-    for($i = 0; $i < @$tree_alignment; $i++) {
-        print $outputFileHandle $$tree_alignment[$i];
-        print $outputFileHandle "\t";
-    }
-    close($outputFileHandle);
-    exit 0;
-}
-else {
-    print "Bad options / Invalid number of arguments.  Run with --help for usage.\n";
-    exit 1;
-}
-
