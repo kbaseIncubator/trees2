@@ -41,17 +41,18 @@ AUTHORS
       
 ";
 
+# first parse options; only one here is help
 my $help = '';
 my $default = '';
 my $opt = GetOptions (
         "help" => \$help,
         );
-
 if($help) {
      print $DESCRIPTION;
      exit 0;
 }
 
+#retrieve or update the URL
 my $n_args = $#ARGV+1;
 if($n_args==0) {
      print getTreeURL()."\n";
