@@ -39,7 +39,6 @@ AUTHORS
       
 ";
 
-my $n_args = $#ARGV + 1;
 
 my $help = '';
 my $treeString='';
@@ -53,6 +52,8 @@ if($help) {
      print $DESCRIPTION;
      exit 0;
 }
+
+my $n_args = $#ARGV + 1;
 
 # if we have specified an input file, then read the file
 if($inputFile) {
@@ -117,10 +118,12 @@ if ($treeString ne '') {
      foreach my $l (@$leaf_names) {
           print $l."\n";
      }
-     
+     return 0;
      
 } else {
      print "FAILURE - no tree specified.  Run with --help for usage.\n";
      exit 1;
 }
+
+return 0;
 
