@@ -25,14 +25,18 @@ DESCRIPTION
       
       -p, --protein-sequence
                         set this flag to return the tree with node labels replaced with
-                        protein sequence IDs.
+                        protein sequence IDs
+                        
       -f, --feature
                         set this flag to return the tree with node labels replaced with KBase
                         feature IDs.  Note that some trees may not have assigned cannonical
                         feature IDs for each node, in which case blank labels will be returned.
                         
-      -n, --no-bootstrap
-                        set this flag to return the tree without bootstrap values
+      -b, --bootstrap-remove
+                        set this flag to return the tree with bootstrap values removed
+                        
+      -d, --distance-remove
+                        set this flag to return the tree without distance values removed
                         
       -m, --meta
                         set this flag to return meta data instead of the tree itself
@@ -62,12 +66,14 @@ my $metaFlag = '';
 my $replaceFeature='';
 my $replaceSequence='';
 my $noBootstrap='';
+my $noDist='';
 my $opt = GetOptions (
         "help" => \$help,
         "meta" => \$metaFlag,
         "feature" => \$replaceFeature,
         "protein-sequence" => \$replaceSequence,
-        'no-bootstrap' => \$noBootstrap
+        "bootstrap-remove" => \$noBootstrap,
+        "distance-remove" => \$noDist
         );
 
 if($help) {
@@ -106,9 +112,11 @@ if($n_args==0) {
         my $tree;
         # eval {   #add eval block so errors don't crash execution, should really handle exceptions here.
             my $options = {};
+            if($replaceFeature && $replaceSequence) { print "FAILURE - cannot use -p option with -f; choose one or the other.\n"; exit 1; }
             if($replaceFeature) {$options->{newick_label}='feature_id';}
             if($replaceSequence) {$options->{newick_label}='protein_sequence_id';}
             if($noBootstrap) {$options->{newick_bootstrap}='none';}
+            if($noDist) {$options->{newick_distance}='none';}
             ($tree) = $treeClient->get_tree($treeId,$options);
         # };
         if($tree) { print $tree."\n"; }
