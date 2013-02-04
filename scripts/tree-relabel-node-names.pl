@@ -39,8 +39,8 @@ EXAMPLES
       > tree-replace-node-names -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;\tl1\tl55' -r='l1\tnode'
       
 AUTHORS
-      Matt Henderson (mhenderson@lbl.gov)
-      Michael Sneddon (mwsneddon@lbl.gov)
+      Matt Henderson (mhenderson\@lbl.gov)
+      Michael Sneddon (mwsneddon\@lbl.gov)
 
       
 ";

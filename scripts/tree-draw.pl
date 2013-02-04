@@ -32,9 +32,9 @@ EXAMPLES
       > tree-draw -t '(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
       
 AUTHORS
-      Matt Henderson (mhenderson@lbl.gov)
-      Fangfang Xia (fangfang.xia@gmail.com)
-      Michael Sneddon (mwsneddon@lbl.gov)
+      Matt Henderson (mhenderson\@lbl.gov)
+      Fangfang Xia (fangfang.xia\@gmail.com)
+      Michael Sneddon (mwsneddon\@lbl.gov)
       
 ";
 

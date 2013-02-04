@@ -34,8 +34,8 @@ EXAMPLES
       > tree-get-leaf-nodes -t='(l1,((l2,l3)n2,(l4,l5)n3)n1)root;'
       
 AUTHORS
-      Matt Henderson (mhenderson@lbl.gov)
-      Michael Sneddon (mwsneddon@lbl.gov)
+      Matt Henderson (mhenderson\@lbl.gov)
+      Michael Sneddon (mwsneddon\@lbl.gov)
 
       
 ";

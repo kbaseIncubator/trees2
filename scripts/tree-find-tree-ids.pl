@@ -40,8 +40,8 @@ EXAMPLES
       > tree-find-tree-ids -s='b3421022c78785ebfd349762870e9fef\t2845879451b5c84036e9284018669922'
 
 AUTHORS
-      Matt Henderson (mhenderson@lbl.gov)
-      Michael Sneddon (mwsneddon@lbl.gov)
+      Matt Henderson (mhenderson\@lbl.gov)
+      Michael Sneddon (mwsneddon\@lbl.gov)
       
 ";
 
