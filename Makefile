@@ -75,6 +75,8 @@ test-client:
 #	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testQueryMethods.t
 	echo "running client tests"
 	# run each test
+	export TREE_DEPLOYMENT_CONFIG=$(ROOT_DEV_MODULE_DIR)/deploy.cfg; \
+	export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE); \
 	for t in $(CLIENT_TESTS) ; do \
 		if [ -f $$t ] ; then \
 			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
@@ -88,6 +90,8 @@ test-client:
 test-scripts:
 	echo "running script tests"
 	# run each test
+	export TREE_DEPLOYMENT_CONFIG=$(ROOT_DEV_MODULE_DIR)/deploy.cfg; \
+	export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE); \
 	for t in $(SCRIPT_TESTS) ; do \
 		if [ -f $$t ] ; then \
 			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
