@@ -1,6 +1,7 @@
 ##################################################################################
 # configurable variables which can be updated
 SERVICE = trees
+SERV_SERVICE = trees
 SERVICE_NAME = Tree
 SERVICE_PSGI_FILE = Tree.psgi
 SERVICE_PORT = 7047
@@ -58,6 +59,7 @@ cpp-lib:
 # You can change these if you are putting your tests somewhere
 # else or if you are not using the standard .t suffix
 CLIENT_TESTS = $(wildcard t/client-tests/*.t)
+SCRIPT_TESTS = $(wildcard t/script-tests/*.t)
 
 
 ##################################################################################
@@ -84,7 +86,16 @@ test-client:
 
 
 test-scripts:
-	echo "no scripts to test yet.  Run test-client instead."
+	echo "running script tests"
+	# run each test
+	for t in $(SCRIPT_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
 
 test-service:
 	$(DEPLOY_RUNTIME)/bin/perl t/server-tests/testServerUp.t
@@ -134,15 +145,18 @@ deploy-service: cpp-lib deploy-service-libs deploy-service-start_scripts
 deploy-service-libs:
 	# copy over the general purpose libs
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
+	mkdir -p $(SERVICE_DIR)
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Service.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/$(SERVICE_NAME)Impl.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/$(SERVICE_PSGI_FILE) $(TARGET)/lib/.
+	cp deploy.cfg $(SERVICE_DIR)/.
 	# copy over tree specific libs
 	cp lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/$(SERVICE_NAME)/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
+	-cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
 	cp lib/forester_1005.jar $(TARGET)/lib/.
+	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
+	cp lib/Bio/KBase/$(SERVICE_NAME)/Community.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	echo "deployed service for $(SERVICE)."
 
 # creates start/stop/reboot scripts and copies them to the deployment target
@@ -152,6 +166,8 @@ deploy-service-start_scripts:
 	echo "echo starting $(SERVICE) service." >> ./start_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_service
 	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_service
+	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./start_service
+	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./start_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
@@ -161,7 +177,8 @@ deploy-service-start_scripts:
 	echo '#!/bin/sh' > ./debug_start_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_service
 	echo 'export STARMAN_DEBUG=1' >> ./debug_start_service
-	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./debug_start_service
+	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./debug_start_service
+	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./debug_start_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --workers 1 \\" >> ./debug_start_service
 	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_service
 	# Third create the stop script

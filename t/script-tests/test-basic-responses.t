@@ -9,10 +9,16 @@ use warnings;
 use Test::More;
 use Data::Dumper;
 
-my $test_url = "http://localhost:7047";
+use lib "lib";
+use lib "t/script-tests";
 
+#my $url = "http://localhost:7047";
+use Server;
+my ($pid, $test_url) = Server::start('Tree');
+print "-> attempting to use :'".$test_url."' with PID=$pid\n";
+
+# declare some variables we use over and over 
 my ($out,$exit_code);
-
 
 #######################################################
 # [tree-url] script tests
@@ -20,6 +26,7 @@ $out = `tree-url`;
 $exit_code = ($? >> 8);
 ok($exit_code==0,'tree-url with no parameters returns exit code 0');
 ok($out,'tree-url with no parameters returns a url');
+my $original_url = $out;
 
 $out = `tree-url --help`;
 $exit_code = ($? >> 8);
@@ -55,7 +62,7 @@ ok($out=~m/\[leaf_count\]/g,'tree-get-tree with real treeId and -m flag returns 
 
 
 #######################################################
-# [tree-get-tree] script tests
+# [tree-get-leaf-nodes] script tests
 $out = `echo '' | tree-get-leaf-nodes`;
 $exit_code = ($? >> 8);
 ok($exit_code!=0,'tree-get-leaf-nodes with no parameters returns error exit code that is not 0');
@@ -67,6 +74,45 @@ ok($exit_code==0,'tree-get-leaf-nodes with a tree returned with error code 0');
 ok($out eq "a\nb\nc\nd\ne\nf\ng\n",'tree-get-leaf-nodes with a tree returns proper output');
 
 
+#######################################################
+# [tree-find-tree-ids] script tests
+$out = `tree-find-tree-ids --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-find-tree-ids with long help flag returns exit code 0');
+ok($out,'tree-find-tree-ids with long help flag returns some text');
+
+
+#######################################################
+# [tree-find-alignment-ids] script tests
+$out = `tree-find-alignment-ids --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-find-alignment-ids with long help flag returns exit code 0');
+ok($out,'tree-find-alignment-ids with long help flag returns some text');
+
+
+#######################################################
+# [tree-relabel-node-names] script tests
+$out = `tree-relabel-node-names --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-relabel-node-names with long help flag returns exit code 0');
+ok($out,'tree-relabel-node-names with long help flag returns some text');
+
+
+#######################################################
+# [tree-compute-abundance-profile] script tests
+$out = `tree-compute-abundance-profile --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-compute_abundance-profile with long help flag returns exit code 0');
+ok($out,'tree-compute_abundance-profile with long help flag returns some text');
+
+
+
+#######################################################
+# be nice and reset the url
+$out = `tree-url $original_url`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-url trying to reset to original returns exit code 0');
+ok($out,'tree-url trying to reset to original returns a url');
 #print $out."\n";
 #print $exit_code."\n";
 
@@ -76,5 +122,5 @@ ok($out eq "a\nb\nc\nd\ne\nf\ng\n",'tree-get-leaf-nodes with a tree returns prop
 
 
 
-
+Server::stop($pid);
 done_testing();

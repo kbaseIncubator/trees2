@@ -30,6 +30,7 @@ use Config::Simple;
 use List::MoreUtils qw(uniq);
 use Bio::KBase::CDMI::CDMI;
 use Bio::KBase::Tree::TreeCppUtil;
+use Bio::KBase::Tree::Community;
 use ffxtree;
 #use Bio::KBase::Tree::ForesterParserWrapper;
 #END_HEADER
@@ -75,6 +76,56 @@ sub new
         $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
     }
     $self->{db} = $cdmi;
+    
+    
+     #load a configuration file to determine where all the services live
+    my %params;
+    #if ((my $e = $ENV{KB_DEPLOYMENT_CONFIG}) && -e $ENV{KB_DEPLOYMENT_CONFIG})
+    # I have to do this because the KBase deployment process is broken!!!
+    if ((my $e = $ENV{TREE_DEPLOYMENT_CONFIG}) && -e $ENV{TREE_DEPLOYMENT_CONFIG}) {
+	my $service = $ENV{TREE_DEPLOYMENT_SERVICE_NAME};
+	my $c = Config::Simple->new();
+	print "looking at config file: ".$e."\n";
+	print "service name: ".$service."\n";
+	$c->read($e);
+	my @params = qw(erdb communities scratch);
+	for my $p (@params) {
+	    my $v = $c->param("$service.$p");
+	    if ($v) { $params{$p} = $v; }
+	}
+    }
+
+    my $erdb_url = "http://kbase.us/services/erdb_service";
+    my $mg_url = "http://api.metagenomics.anl.gov/sequences/";
+    my $scratch = "/mnt/";
+    if (defined $params{"erdb"}) {
+	$erdb_url = $params{"erdb"};
+	print STDERR "Connecting ERDB Service client to server: $erdb_url\n";
+    }
+    else {
+	print STDERR "ERDB Service configuration not found, defaulting to: $erdb_url\n";
+    }
+    if (defined $params{"communities"}) {
+	$mg_url = $params{"communities"};
+	print STDERR "Connecting to communities server: $mg_url\n";
+    }
+    else {
+	print STDERR "Communities server configuration not found, defaulting to: $mg_url\n";
+    }	
+    if (defined $params{"scratch"}) {
+	$scratch = $params{"scratch"};
+	print STDERR "Scratch space set to : $scratch\n";
+    }
+    else {
+	print STDERR "Scratch space configuration not found, defaulting to: $scratch\n";
+    }
+    
+    
+    $self->{comm} = Bio::KBase::Tree::Community->new($erdb_url,$mg_url,$scratch);
+    
+    
+    
+    
     #END_CONSTRUCTOR
 
     if ($self->can('_init_instance'))
@@ -1435,6 +1486,142 @@ sub get_alignment_ids_by_protein_sequence
 
 
 
+=head2 compute_abundance_profile
+
+  $abundance_result = $obj->compute_abundance_profile($abundance_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$abundance_params is an abundance_params
+$abundance_result is an abundance_result
+abundance_params is a reference to a hash where the following keys are defined:
+	tree_id has a value which is a kbase_id
+	protein_family_name has a value which is a string
+	protein_family_source has a value which is a string
+	metagenomic_sample_id has a value which is a string
+	percent_identity_threshold has a value which is an int
+	match_length_threshold has a value which is an int
+kbase_id is a string
+abundance_result is a reference to a hash where the following keys are defined:
+	abundances has a value which is a reference to a hash where the key is a string and the value is an int
+	n_hits has a value which is an int
+	n_reads has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+$abundance_params is an abundance_params
+$abundance_result is an abundance_result
+abundance_params is a reference to a hash where the following keys are defined:
+	tree_id has a value which is a kbase_id
+	protein_family_name has a value which is a string
+	protein_family_source has a value which is a string
+	metagenomic_sample_id has a value which is a string
+	percent_identity_threshold has a value which is an int
+	match_length_threshold has a value which is an int
+kbase_id is a string
+abundance_result is a reference to a hash where the following keys are defined:
+	abundances has a value which is a reference to a hash where the key is a string and the value is an int
+	n_hits has a value which is an int
+	n_reads has a value which is an int
+
+
+=end text
+
+
+
+=item Description
+
+Given an input KBase tree built from a sequence alignment, a metagenomic sample, and a protein family, this method
+will tabulate the number of reads that match to every leaf of the input tree.  First, a set of assembled reads from
+a metagenomic sample are pulled from the KBase communities service which have been determined to be a likely hit
+to the specified protein family.  Second, the sequences aligned to generate the tree are retrieved.  Third, UCLUST [1]
+is used to map reads to target sequences of the tree.  Finally, for each leaf in the tree, the number of hits matching
+the input search criteria is tabulated and returned.  See the defined objects 'abundance_params' and 'abundance_result'
+for additional details on specifying the input parameters and handling the results.
+
+[1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
+
+=back
+
+=cut
+
+sub compute_abundance_profile
+{
+    my $self = shift;
+    my($abundance_params) = @_;
+
+    my @_bad_arguments;
+    (ref($abundance_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"abundance_params\" (value was \"$abundance_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to compute_abundance_profile:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'compute_abundance_profile');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($abundance_result);
+    #BEGIN compute_abundance_profile
+    
+    # validate inputs!!!
+    if(!exists($abundance_params->{tree_id})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'tree_id' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{protein_family_name})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'protein_family_name' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{protein_family_source})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'protein_family_source' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{metagenomic_sample_id})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'metagenomic_sample_id' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{percent_identity_threshold})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'percent_identity_threshold' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{match_length_threshold})) {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+		error => "'match_length_threshold' input field not set, but required" ,
+		method_name => 'compute_abundance_profile');
+    }
+    
+    # pass on the call to someone who will actually do the work
+    my ($abundance_counts,$n_hits,$n_reads) = $self->{comm}->runQiimeUclust($abundance_params);
+    my $abundance_result = {abundances => $abundance_counts, n_hits=>$n_hits, n_reads=>$n_reads};
+    
+    print Dumper($abundance_result)."\n";
+    #END compute_abundance_profile
+    my @_bad_returns;
+    (ref($abundance_result) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"abundance_result\" (value was \"$abundance_result\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to compute_abundance_profile:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'compute_abundance_profile');
+    }
+    return($abundance_result);
+}
+
+
+
+
 =head2 draw_html_tree
 
   $return = $obj->draw_html_tree($tree, $display_options)
@@ -2122,6 +2309,112 @@ alignment_construction_parameters has a value which is a string
 alignment_protocol has a value which is a string
 source_db has a value which is a string
 source_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 abundance_params
+
+=over 4
+
+
+
+=item Description
+
+Structure to group input parameters to the compute_abundance_profile method.
+
+    kbase_id tree_id                - the KBase ID of the tree to compute abundances for; the tree is
+                                      used to identify the set of sequences that were aligned to build
+                                      the tree; each leaf node of a tree built from an alignment will
+                                      be mapped to a sequence; the compute_abundance_profile method
+                                      assumes that trees are built from protein sequences
+    string protein_family_name      - the name of the protein family used to pull a small set of reads
+                                      from a metagenomic sample; currently only COG families are supported
+    string protein_family_source    - the name of the source of the protein family; currently supported
+                                      protein families are: 'COG'
+    string metagenomic_sample_id    - the ID of the metagenomic sample to lookup; see the KBase communities
+                                      service to identifiy metagenomic samples
+    int percent_identity_threshold  - the minimum acceptable percent identity for hits, provided as a percentage
+                                      and not a fraction (i.e. set to 87.5 for 87.5%)
+    int match_length_threshold      - the minimum acceptable length of a match to consider a hit
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+tree_id has a value which is a kbase_id
+protein_family_name has a value which is a string
+protein_family_source has a value which is a string
+metagenomic_sample_id has a value which is a string
+percent_identity_threshold has a value which is an int
+match_length_threshold has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+tree_id has a value which is a kbase_id
+protein_family_name has a value which is a string
+protein_family_source has a value which is a string
+metagenomic_sample_id has a value which is a string
+percent_identity_threshold has a value which is an int
+match_length_threshold has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 abundance_result
+
+=over 4
+
+
+
+=item Description
+
+Structure to group output of the compute_abundance_profile method.
+
+    mapping <string,int> abundances - maps the raw row ID of each leaf node in the input tree to the number
+                                      of hits that map to the given leaf; only row IDs with 1 or more hits
+                                      are added to this map, thus missing leaf nodes imply 0 hits
+    int n_hits                      - the total number of hits in this sample to any leaf
+    int n_reads                     - the total number of reads that were identified for the input protein
+                                      family; if the protein family could not be found this will be zero.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+abundances has a value which is a reference to a hash where the key is a string and the value is an int
+n_hits has a value which is an int
+n_reads has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+abundances has a value which is a reference to a hash where the key is a string and the value is an int
+n_hits has a value which is an int
+n_reads has a value which is an int
 
 
 =end text

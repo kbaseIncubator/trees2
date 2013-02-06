@@ -339,6 +339,66 @@ module Tree
     */
     
 
+
+    /* *********************************************************************************************** */
+    /* METHODS FOR TREE-BASED METAGENOMIC ANALYSIS */
+    /* *********************************************************************************************** */
+
+    /* Structure to group input parameters to the compute_abundance_profile method.
+    
+        kbase_id tree_id                - the KBase ID of the tree to compute abundances for; the tree is
+                                          used to identify the set of sequences that were aligned to build
+                                          the tree; each leaf node of a tree built from an alignment will
+                                          be mapped to a sequence; the compute_abundance_profile method
+                                          assumes that trees are built from protein sequences
+        string protein_family_name      - the name of the protein family used to pull a small set of reads
+                                          from a metagenomic sample; currently only COG families are supported
+        string protein_family_source    - the name of the source of the protein family; currently supported
+                                          protein families are: 'COG'
+        string metagenomic_sample_id    - the ID of the metagenomic sample to lookup; see the KBase communities
+                                          service to identifiy metagenomic samples
+        int percent_identity_threshold  - the minimum acceptable percent identity for hits, provided as a percentage
+                                          and not a fraction (i.e. set to 87.5 for 87.5%)
+        int match_length_threshold      - the minimum acceptable length of a match to consider a hit
+    */
+    typedef structure {
+        kbase_id tree_id;
+        string protein_family_name;
+        string protein_family_source;
+        string metagenomic_sample_id;
+        int percent_identity_threshold;
+        int match_length_threshold;
+    } abundance_params;
+    
+    /* Structure to group output of the compute_abundance_profile method.
+    
+        mapping <string,int> abundances - maps the raw row ID of each leaf node in the input tree to the number
+                                          of hits that map to the given leaf; only row IDs with 1 or more hits
+                                          are added to this map, thus missing leaf nodes imply 0 hits
+        int n_hits                      - the total number of hits in this sample to any leaf
+        int n_reads                     - the total number of reads that were identified for the input protein
+                                          family; if the protein family could not be found this will be zero.
+    */
+    typedef structure {
+        mapping <string,int> abundances;
+        int n_hits;
+        int n_reads;
+    } abundance_result;
+    
+    /*
+    Given an input KBase tree built from a sequence alignment, a metagenomic sample, and a protein family, this method
+    will tabulate the number of reads that match to every leaf of the input tree.  First, a set of assembled reads from
+    a metagenomic sample are pulled from the KBase communities service which have been determined to be a likely hit
+    to the specified protein family.  Second, the sequences aligned to generate the tree are retrieved.  Third, UCLUST [1]
+    is used to map reads to target sequences of the tree.  Finally, for each leaf in the tree, the number of hits matching
+    the input search criteria is tabulated and returned.  See the defined objects 'abundance_params' and 'abundance_result'
+    for additional details on specifying the input parameters and handling the results.
+    
+    [1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
+    */
+    funcdef compute_abundance_profile(abundance_params abundance_params) returns (abundance_result abundance_result);
+
+
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE-BASED FEATURE/SEQUENCE LOOKUPS */

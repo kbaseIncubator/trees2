@@ -38,6 +38,12 @@ my $func_calls = {
                 draw_html_tree => ["((a,b)c);",{option=>"value"}],
                 get_tree_data => [ ["kb|tree.0","kb|tree.1"] ],
                 get_alignment_data => [ ["kb|aln.0","kb|aln.1"] ],
+                compute_abundance_profile => [ {protein_family_name => "COG0593",
+                                                protein_family_source=>"COG",
+                                                metagenomic_sample_id=> "4447970.3",
+                                                tree_id=>"kb|tree.18428",
+                                                percent_identity_threshold=> 50,
+                                                match_length_threshold=>35} ]
                  };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
