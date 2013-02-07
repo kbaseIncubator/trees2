@@ -40,11 +40,11 @@ sub new
     
     my $n_args=scalar(@args);
     if($n_args==0) {
-	#$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
-	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://localhost:7099");
+	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
+	#$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://localhost:7099");
 	$self->{mg_base_url} = "http://api.metagenomics.anl.gov/sequences/";
-	#$self->{scratch} = "/mnt/";
-	$self->{scratch} = "/home/msneddon/Desktop/scratch";
+	$self->{scratch} = "/mnt/";
+	#$self->{scratch} = "/home/msneddon/Desktop/scratch";
     } else {
 	if($n_args!=3) {
 	    die "Incorrect number of arguments passed to Bio::KBase::Tree::Community!\n";
