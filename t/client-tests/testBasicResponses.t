@@ -78,7 +78,13 @@ for $method_name (keys %$func_calls) {
         print "calling function: \"$method_name\"\n";
         {
             no strict "refs";
-            $result = $client->$method_name(@{ $func_calls->{$method_name}});
+            eval {
+                $result = $client->$method_name(@{ $func_calls->{$method_name}});
+            };
+            my $client_error = $@;
+            if ($client_error) {
+                print $client_error->message."\n";
+            }
         }
         ok($result,"looking for a response from \"$method_name\"");
 }
