@@ -40,10 +40,10 @@ ok($out=~m/$test_url/g,'tree-url with update URL includes expected return string
 
 #######################################################
 # [tree-get-tree] script tests
-$out = `tree-get-tree`;
+$out = `tree-get-tree -h`;
 $exit_code = ($? >> 8);
-ok($exit_code!=0,'tree-get-tree with no parameters returns error exit code that is not 0');
-ok($out,'tree-get-tree with no parameters returns a message');
+ok($exit_code==0,'tree-get-tree with help returns error exit code 0');
+ok($out,'tree-get-tree with help returns a message');
 
 $out = `tree-get-tree madeUpID`;
 $exit_code = ($? >> 8);

@@ -43,7 +43,8 @@ my $func_calls = {
                                                 metagenomic_sample_id=> "4447970.3",
                                                 tree_id=>"kb|tree.18428",
                                                 percent_identity_threshold=> 50,
-                                                match_length_threshold=>35}
+                                                match_length_threshold=>35} ],
+                get_tree_ids_by_source_id_pattern => [ "COG.1" ]
                  };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
