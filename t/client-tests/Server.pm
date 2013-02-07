@@ -36,7 +36,7 @@ sub start {
   }
 
   # Wait for server to start.
-  sleep 5;
+  sleep 15;
   return ($child_pid, "http://localhost:$port");
 }
 
