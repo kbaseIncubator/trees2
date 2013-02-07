@@ -125,7 +125,7 @@ deploy-client: deploy-scripts deploy-docs
 	cp lib/javascript/$(SERVICE_NAME)/* $(TARGET)/lib/javascript/$(SERVICE_NAME)/.
 	echo "deployed clients of $(SERVICE)."
 	
-deploy-scripts: deploy-client deploy-docs
+deploy-scripts:
 	export KB_TOP=$(TARGET); \
 	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
 	export KB_PERL_PATH=$(TARGET)/lib bash ; \
