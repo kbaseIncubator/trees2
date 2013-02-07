@@ -313,6 +313,15 @@ module Tree
     were built based on these sequences. */
     funcdef get_alignment_ids_by_protein_sequence(list <kbase_id> protein_sequence_ids) returns (list<kbase_id>);
   
+    /* This method searches for a tree having a source ID that matches the input pattern.  This method accepts
+    one argument, which is the pattern.  The pattern is very simple and includes only two special characters,
+    wildcard character, '*', and a match-once character, '.'  The wildcard character matches any number (including
+    0) of any character, the '.' matches exactly one of any character.  These special characters can be escaped
+    with a backslash.  To match a blackslash literally, you must also escape it.  Note that source IDs are
+    generally defined by the gene family model which was used to identifiy the sequences to be included in
+    the tree.  Therefore, matching a source ID is a convenient way to find trees for a specific set of gene
+    families. */
+    funcdef get_tree_ids_by_source_id_pattern(string pattern) returns (list<list<kbase_id>>);
     
     /* Returns all tree IDs in which the entire portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the tree.

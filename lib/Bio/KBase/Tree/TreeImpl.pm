@@ -1486,6 +1486,87 @@ sub get_alignment_ids_by_protein_sequence
 
 
 
+=head2 get_tree_ids_by_source_id_pattern
+
+  $return = $obj->get_tree_ids_by_source_id_pattern($pattern)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$pattern is a string
+$return is a reference to a list where each element is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$pattern is a string
+$return is a reference to a list where each element is a reference to a list where each element is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+This method searches for a tree having a source ID that matches the input pattern.  This method accepts
+one argument, which is the pattern.  The pattern is very simple and includes only two special characters,
+wildcard character, '*', and a match-once character, '.'  The wildcard character matches any number (including
+0) of any character, the '.' matches exactly one of any character.  These special characters can be escaped
+with a backslash.  To match a blackslash literally, you must also escape it.  Note that source IDs are
+generally defined by the gene family model which was used to identifiy the sequences to be included in
+the tree.  Therefore, matching a source ID is a convenient way to find trees for a specific set of gene
+families.
+
+=back
+
+=cut
+
+sub get_tree_ids_by_source_id_pattern
+{
+    my $self = shift;
+    my($pattern) = @_;
+
+    my @_bad_arguments;
+    (!ref($pattern)) or push(@_bad_arguments, "Invalid type for argument \"pattern\" (value was \"$pattern\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_tree_ids_by_source_id_pattern:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_tree_ids_by_source_id_pattern');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_tree_ids_by_source_id_pattern
+    
+    $return = [];
+    if($pattern ne '') { 
+	$return = $self->{comm}->findKBaseTreeByProteinFamilyName($pattern);
+    }
+
+    #END get_tree_ids_by_source_id_pattern
+    my @_bad_returns;
+    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_tree_ids_by_source_id_pattern:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_tree_ids_by_source_id_pattern');
+    }
+    return($return);
+}
+
+
+
+
 =head2 compute_abundance_profile
 
   $abundance_result = $obj->compute_abundance_profile($abundance_params)
@@ -1607,7 +1688,7 @@ sub compute_abundance_profile
     my ($abundance_counts,$n_hits,$n_reads) = $self->{comm}->runQiimeUclust($abundance_params);
     my $abundance_result = {abundances => $abundance_counts, n_hits=>$n_hits, n_reads=>$n_reads};
     
-    print Dumper($abundance_result)."\n";
+    #print Dumper($abundance_result)."\n";
     #END compute_abundance_profile
     my @_bad_returns;
     (ref($abundance_result) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"abundance_result\" (value was \"$abundance_result\")");

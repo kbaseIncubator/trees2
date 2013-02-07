@@ -40,9 +40,11 @@ sub new
     
     my $n_args=scalar(@args);
     if($n_args==0) {
-	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
+	#$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
+	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://localhost:7099");
 	$self->{mg_base_url} = "http://api.metagenomics.anl.gov/sequences/";
-	$self->{scratch} = "/mnt/";
+	#$self->{scratch} = "/mnt/";
+	$self->{scratch} = "/home/msneddon/Desktop/scratch";
     } else {
 	if($n_args!=3) {
 	    die "Incorrect number of arguments passed to Bio::KBase::Tree::Community!\n";
@@ -122,23 +124,55 @@ sub runQiimeUclust {
 
 
 
-
-#  search kbase for a tree built from a protein family that is specified
-#    this method accepts a single argument, a ref to a hash with the following keys defined:
-#       protFamName => the ID of the protein family
-#       protFamSource => the type of protein family, only COG is supported currently
+#  search kbase for a tree built from a protein family (that is the source ID) that matches the input pattern
+#    this method accepts one argument, which is the pattern.  The pattern is very simple and includes only
+#    two special characters, wildcard character, '*', and a match-once character, '.'  The wildcard character
+#    matches any number (including 0) of any character, the '.' matches exactly one of any character.  These
+#    special characters can be escaped with a backslash.  To match a blackslash literally, you must also escape it.
+#
+#    this method returns a ref to a list of lists with the format below.  If there are
+#    no matches, a ref to an empty list is returned.
+#
+#      [
+#        [ treeID_1, sourceID_1],
+#        [ treeID_2, sourceID_2],
+#        ...
+#        [ treeID_n, sourceID_n]
+#      ];
+#
 sub findKBaseTreeByProteinFamilyName {
     my $self=shift;
-    my $params=shift;
+    my $pattern=shift;
+    #chomp($pattern);
+    #if ($pattern eq '') { return []; }
     
-    # perform some kind of erdb query here
-    my $protFamName=$params->{'protein_family_name'};
-    my $protFamSource=$params->{'protein_family_source'};
+    # escape the mysql built in match single character
+    $pattern =~ s/_/\\_/g;
+    # escape the mysql built in match anything character
+    $pattern =~ s/%/\\%/g;
+    # match * characters that are not escaped, and replace with mysql wildcard character
+    $pattern =~ s/(?<!\\)\*/%/g;
+    # match * characters that are escaped and replace them with exactly that character
+    $pattern =~ s/\\\*/*/g;
+    # match * characters that are not escaped, and replace with mysql wildcard character
+    $pattern =~ s/(?<!\\)\./_/g;
+    # match * characters that are escaped and replace them with exactly that character
+    $pattern =~ s/\\\././g;
     
-    # return the tree
-    #return "kb|tree.0";
-    #return "kb|tree.2173";
-    return "kb|tree.18428";
+    #print $pattern."\n";
+    
+    # grab the erdb service, which we need for queries
+    my $erdb = $self->{'erdb'};
+
+    # search the db
+    my $objectNames = 'Tree';
+    my $fields = 'Tree(id) Tree(source-id)';
+    my $filterClause = 'Tree(source-id) LIKE ?';
+    my $parameters = [$pattern];
+    my $count = 0; #as per ERDB doc, setting to zero returns all results
+    my @matching_tree_list = @{$erdb->GetAll($objectNames, $filterClause, $parameters, $fields, $count)};
+   
+    return \@matching_tree_list;
 }
 
 
