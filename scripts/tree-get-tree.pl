@@ -21,7 +21,10 @@ DESCRIPTION
       raw tree is returned in newick format by default with leaf node labels in an
       arbitrary internal id that is unique only within the given tree.  By default, the
       raw tree stored in KBase is returned.  To return the tree with node labels replaced
-      with KBase protein sequence IDs or cannonical feature IDs, use the options below.
+      with KBase protein sequence IDs or cannonical feature IDs, use the options below.  To
+      provide a list of tree IDs, pipe in the list through standard-in or specify an input
+      file to read.  In either case, each tree id should appear on a separate line.  In the
+      case of a list, results are returned in the same order they were provided as input.
       
       -p, --protein-sequence
                         set this flag to return the tree with node labels replaced with
@@ -41,6 +44,9 @@ DESCRIPTION
       -m, --meta
                         set this flag to return meta data instead of the tree itself
                         
+      -i, --input [FILENAME]
+                        set this flag to specify the input file to read
+                        
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -51,7 +57,9 @@ EXAMPLES
       > tree-get-tree 'kb|tree.25'
       
       Retrieve meta data about a tree
-      > tree-get-tree 'kb|tree.25'
+      > tree-get-tree -m 'kb|tree.25'
+      
+      
 
 SEE ALSO
       tree-find-tree-ids
@@ -67,13 +75,15 @@ my $replaceFeature='';
 my $replaceSequence='';
 my $noBootstrap='';
 my $noDist='';
+my $inputFile='';
 my $opt = GetOptions (
         "help" => \$help,
         "meta" => \$metaFlag,
         "feature" => \$replaceFeature,
         "protein-sequence" => \$replaceSequence,
         "bootstrap-remove" => \$noBootstrap,
-        "distance-remove" => \$noDist
+        "distance-remove" => \$noDist,
+        "input" => \$inputFile
         );
 
 if($help) {
@@ -82,11 +92,44 @@ if($help) {
 }
 
 my $n_args = $#ARGV+1;
-if($n_args==0) {
-    print "FAILURE - no tree ID specified.  Run with --help for usage.\n";
-    exit 1;
-} elsif($n_args==1) {
-    my $treeId = $ARGV[0];
+
+my $id_list=[];
+# if we have specified an input file, then read the file
+if($inputFile) {
+     my $inputFileHandle;
+     open($inputFileHandle, "<", $inputFile);
+     if(!$inputFileHandle) {
+          print "FAILURE - cannot open '$inputFile' \n$!\n";
+          exit 1;
+     }
+     eval {
+          while (my $line = <$inputFileHandle>) {
+               chomp($line);
+               push @$id_list,$line;
+          }
+          close $inputFileHandle;
+     };
+}
+
+# if we have a single argument, then accept it as the treeString
+elsif($n_args==1) {
+     my $id = $ARGV[0];
+     chomp($id);
+     push @$id_list,$id;
+}
+
+# if we have no arguments, then read the tree from standard-in
+elsif($n_args == 0) {
+     while(my $line = <STDIN>) {
+          chomp($line);
+          push @$id_list,$line;
+     }
+} else {
+     print "Invalid number of arguments.  Run with --help for usage.\n";
+     exit 1;
+}
+
+foreach my $treeId (@$id_list) {
     #create client
     my $treeClient;
     eval{ $treeClient = get_tree_client(); };
@@ -102,11 +145,11 @@ if($n_args==0) {
         # };
         if(exists $tree_data->{$treeId}) {
             my $metaData = $tree_data->{$treeId};
+            print "[tree_id]: ".$treeId."\n";
             foreach my $label (keys %$metaData) {
                 print "[".$label."]: ".$metaData->{$label}."\n";
             }
         }
-        exit 0;
     } else {
         #get actual tree
         my $tree;
@@ -120,11 +163,9 @@ if($n_args==0) {
             ($tree) = $treeClient->get_tree($treeId,$options);
         # };
         if($tree) { print $tree."\n"; }
-        exit 0;
     }
         
 }
 
-print "Bad options / Invalid number of arguments.  Run with --help for usage.\n";
-exit 1;
+exit 0;
 

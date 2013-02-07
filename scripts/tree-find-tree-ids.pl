@@ -27,30 +27,33 @@ DESCRIPTION
       families.
       
       By default, if the type of argument is not specified with one of the options below, then
-      this method assumes that the input is feature IDs.  If an ID is to be passed in as an argument,
-      then only a single ID or pattern can be used.  If you wish to call this method on multiple
-      feature/sequence IDs, then you must pass in the list through standard-in or a text file, with
-      one ID per line.
+      this method assumes that the input is feature IDs.  If an ID is to be passed in as an
+      argument, then only a single ID or pattern can be used.  If you wish to call this method
+      on multiple feature/sequence IDs, then you must pass in the list through standard-in or
+      a text file, with one ID per line.
                         
       -f, --feature
-                        indicate that the IDs provided are feature IDs; matches of feature IDs are exact
+                        indicate that the IDs provided are feature IDs; matches of feature
+                        IDs are exact
                         
       -p, --protein-sequence
-                        indicate that the IDs provided are protein_sequence_ids (MD5s); matches of
-                        protein sequence IDs are exact
+                        indicate that the IDs provided are protein_sequence_ids (MD5s); matches
+                        of protein sequence IDs are exact
                         
       -s, --source-id-pattern
-                        Indicate that the input is a pattern used to match the source-id field of the
-                        Tree entity.  The pattern is very simple and includes only two special characters,
-                        wildcard character, '*', and a match-once character, '.'  The wildcard character
-                        matches any number (including 0) of any character, the '.' matches exactly one of
-                        any character.  These special characters can be escaped with a backslash.  To
-                        match a blackslash literally, you must also escape it.  When the source-id-pattern
-                        option is provided, then this method returns a two column list, where the first
-                        column is the tree ID, and the second column is the source-id that was matched.
-                        Note that source IDs are generally defined by the gene family model which was used
-                        to identifiy the sequences to be included in the tree.  Therefore, matching a
-                        source ID is a convenient way to find trees for a specific set of gene families.
+                        Indicate that the input is a pattern used to match the source-id field
+                        of the Tree entity.  The pattern is very simple and includes only two
+                        special characters, wildcard character, '*', and a match-once character,
+                        '.'  The wildcard character matches any number (including 0) of any
+                        character, the '.' matches exactly one of any character.  These special
+                        characters can be escaped with a backslash.  To match a blackslash
+                        literally, you must also escape it.  When the source-id-pattern option
+                        is provided, then this method returns a two column list, where the first
+                        column is the tree ID, and the second column is the source-id that was
+                        matched. Note that source IDs are generally defined by the gene family
+                        model which was used to identifiy the sequences to be included in the
+                        tree.  Therefore, matching a source ID is a convenient way to find trees
+                        for a specific set of gene families.
 
       -i, --input
                         specify input file to read from;  each id or pattern must
@@ -59,7 +62,7 @@ DESCRIPTION
                         diplay this help message, ignore all arguments
                         
 EXAMPLES
-     Retrieve tree ids based on a feature id
+      Retrieve tree ids based on a feature id
       > tree-find-tree-ids -f 'kb|g.0.peg.2173'
       
       Retrieve tree ids based on a set of protein_sequence_ids piped through standard in
@@ -67,6 +70,13 @@ EXAMPLES
       
       Retrieve tree ids based on a pattern used to match the source-id field
       > tree-find-tree-ids -s '*COG.11'
+      
+      Get the number of leaf nodes for trees with a source id field in the range COG10-COG11.
+      First, we find tree ids, extract out only the tree IDs using 'cut', then pipe the results
+      to 'tree-get-tree' to get meta information about each tree, and grep to extract the
+      results we want.
+      >  tree-find-tree-ids -s 'COG1.' | cut -f 1 | \
+             tree-get-tree -m | grep 'tree_id\|source_id\|leaf_count'
 
 AUTHORS
       Michael Sneddon (mwsneddon\@lbl.gov)
@@ -130,6 +140,10 @@ elsif($n_args == 0) {
           chomp($line);
           push @$id_list,$line;
      }
+}
+else {
+     print "Invalid number of arguments.  Run with --help for usage.\n";
+     exit 1;
 }
 
 #create client
