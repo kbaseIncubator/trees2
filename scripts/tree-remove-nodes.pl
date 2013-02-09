@@ -11,21 +11,25 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-relabel-node-names -- allows you to relabel node names in a newick tree
+      tree-remove-nodes -- remove nodes by label in a tree and simplify the tree
 
 SYNOPSIS
-      tree-relabel-node-names [OPTIONS] [NEWICK_TREE]
+      tree-remove-nodes [OPTIONS] [NEWICK_TREE]
 
 DESCRIPTION
-     Given a tree in newick format, relabel the specified nodes with replacement names found in
-     a mappingfile.  If the tree is not provided as an argument and no input file is specified,
+     Given a tree in newick format, remove the nodes with the given names indicated
+     in the list, and simplify the tree.  Simplifying a tree involves removing unnamed
+     internal nodes that have only one child, and removing unnamed leaf nodes.  During
+     the removal process, edge lengths (if they exist) are conserved so that the summed
+     end to end distance between any two nodes left in the tree will remain the same.
+     If the tree is not provided as an argument and no input file is specified,
      the tree is read in from standard-in.
       
-      -r, --replacement-file
-                        specify the file name of the replacement mappings; this file should
-                        be a two column file, with columns delimited by tabs, where the first
-                        column indicates names to search for in the tree, and the second column
-                        indicates the replacement string; the replacement string can be blank;
+      -r, --removal-list
+                        specify the file name of the list of nodes to remove; this file should
+                        be a one column file where each line contains the name of the node to
+                        remove; if multiple nodes have a identical labels, they are all
+                        removed
                         
       -i, --input
                         specify an input file to read the tree from
@@ -36,12 +40,10 @@ DESCRIPTION
                         
 EXAMPLES
       Replace node names based on the file mapping.txt
-      > cat mapping.txt
-      l1	r1
-      l2	mr_tree
-      l3	
-      > tree-relabel-node-names -r mapping.txt '(l1,l2,l3,l4)root;'
-      (r1,mr_tree,,l4)root;
+      > cat removal_list.txt
+      mr_tree
+      > tree-remove-nodes -r removal_list.txt '(l1,mr_tree,l3,l4)root;'
+      (l1,l3,l4)root;
 
 AUTHORS
       Michael Sneddon (mwsneddon\@lbl.gov)
@@ -53,20 +55,20 @@ AUTHORS
 my $help = '';
 my $treeString='';
 my $inputFile = '';
-my $replacementFile = '';
+my $removalFile = '';
 
 # parse arguments and output file
 my $stdinString = "";
 my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
-                     "replacement-file=s" => \$replacementFile
+                     "removal-list=s" => \$removalFile
                      );
 if($help) {
      print $DESCRIPTION;
      exit 0;
 }
-if(!$replacementFile) {
-     print "FAILURE - no replacement mapping provided.  Run with -h for usage.\n";
+if(!$removalFile) {
+     print "FAILURE - no removal list specified.  Run with -h for usage.\n";
      exit 1;
 }
 
@@ -122,11 +124,11 @@ if ($client_error) {
 # make sure we got something out of all of that
 if ($treeString ne '') {
      
-     my $replacementMapping = {};
+     my $removalList = [];
      my $inputFileHandle;
-     open($inputFileHandle, "<", $replacementFile);
+     open($inputFileHandle, "<", $removalFile);
      if(!$inputFileHandle) {
-          print "FAILURE - cannot open replacement file '$replacementFile' \n$!\n";
+          print "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
           exit 1;
      }
      eval {
@@ -135,22 +137,13 @@ if ($treeString ne '') {
                $line_number++;
                chomp($line);
                if($line eq '') { next; }
-               my @tokens = split("\t",$line);
-               if(scalar (@tokens) > 2) {
-                    print "FAILURE - malformed replacement file input on line $line_number.  Only two tab delimited columns permitted.\n";
-                    exit 1;
-               }
-               if(scalar (@tokens) == 2) {
-                    $replacementMapping->{$tokens[0]}=$tokens[1];
-               } elsif(scalar (@tokens) == 1) {
-                    $replacementMapping->{$tokens[0]}='';
-               }
+               push @$removalList, $line;
           }
           close $inputFileHandle;
      };
      my $new_tree;
      eval {
-          $new_tree = $treeClient->replace_node_names($treeString, $replacementMapping);
+          $new_tree = $treeClient->remove_node_names_and_simplify($treeString, $removalList);
      };
 
      $client_error = $@;
