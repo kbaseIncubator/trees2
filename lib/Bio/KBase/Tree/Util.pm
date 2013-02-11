@@ -22,7 +22,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(getTreeURL get_tree_client);
 
 our $defaultTreeURL = "http://kbase.us/services/trees";
-
+#our $defaultTreeURL = "http://140.221.84.170:7047";
 
 # simply returns a new copy of the PROM client based on the currently set URL
 sub get_tree_client {
@@ -43,7 +43,7 @@ sub getTreeURL {
 	    open(my $fh, ">", $filename) || return;
 	    print $fh $CurrentURL;
 	    close($fh);
-    	} elsif ($ENV{KB_TREEURL}) {
+    	} else {
     	    $ENV{KB_TREEURL} = $CurrentURL;
     	}
     } elsif (!defined($CurrentURL)) {
