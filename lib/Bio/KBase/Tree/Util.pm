@@ -38,7 +38,7 @@ sub getTreeURL {
             $set = $defaultTreeURL;
         }
     	$CurrentURL = $set;
-    	if (!defined($ENV{KB_NO_FILE_ENVIRONMENT})) {
+    	if (!defined($ENV{KB_RUNNING_IN_IRIS})) {
 	    my $filename = "$ENV{HOME}/.kbase_treeURL";
 	    open(my $fh, ">", $filename) || return;
 	    print $fh $CurrentURL;
@@ -47,7 +47,7 @@ sub getTreeURL {
     	    $ENV{KB_TREEURL} = $CurrentURL;
     	}
     } elsif (!defined($CurrentURL)) {
-    	if (!defined($ENV{KB_NO_FILE_ENVIRONMENT})) {
+    	if (!defined($ENV{KB_RUNNING_IN_IRIS})) {
 	    my $filename = "$ENV{HOME}/.kbase_treeURL";
 	    if( -e $filename ) {
 		open(my $fh, "<", $filename) || return;
