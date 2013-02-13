@@ -239,6 +239,7 @@ EXAMPLES
       Render a tree with species name labels and links to KBase labs feature pages:
       > tree-get-tree 'kb|tree.1000000' -f > my.tree
       > tree-get-leaf-nodes -i my.tree > feature.list
+      > cat features.list | get_relationship_IsOwnedBy -a > feature.data
       > cat feature.data | cut -f 1,13 > species.name.map
       > cat features.list | tree-create-url-map -u 'http://140.221.92.12/feature_info/feature.html?id=' > feature.links
       > cat my.tree | tree-to-html -a species.name.map -l feature.links > out.html
