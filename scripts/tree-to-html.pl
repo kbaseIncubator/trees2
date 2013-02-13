@@ -190,12 +190,15 @@ use gjoalignment;
 use gjonewicklib;
 use gjoseqlib;
 
-my $description = "
+
+
+my $usage = <<"End_of_Usage";
+
 NAME
       tree-to-html -- render a tree as in a static HTML file
 
 SYNOPSIS
-      tree-remove-nodes [OPTIONS] [NEWICK_TREE]
+      tree-to-html [OPTIONS] [NEWICK_TREE]
 
 DESCRIPTION
      Given a tree in newick format, render the tree as a static HTML file with
@@ -244,42 +247,7 @@ AUTHORS
       Fangfang Xia, ANL (fangfang.xia\@gmail.com)
       Michael Sneddon (mwsneddon\@lbl.gov)
       Matt Henderson (mhenderson\@lbl.gov)
-";
-
-
-
-my $usage = <<"End_of_Usage";
-
-usage: tree_to_html [options] < tree.newick > tree.html
-
-       -a   alias_file    - relabel tips using aliases        # file: [id alias]
-       -b                 - show bootstrap/branch support values
-       -bar               - show scale bar
-       -c   tax|role|file - color tips by taxonomy, roles,
-                            or groups specified in a file     # file: [id group]
-       -d   desc_file     - add description to each tip       # file: [id description]
-       -f   focus_list    - highlight a list of tips          # file: [id]
-       -k   keep_list     - keep only the taxa listed         # table: [id]
-       -l   link_file     - add URL to each tip               # file: [id URL]
-       -lt  link_w_text   - add additional linked text        # file: [id text URL]
-       -m   popup_file    - add simple mouseover to each tip  # file: [id popup]
-       -nc  n_colors      - number of colors to use (D = 10)
-       -p   g|s|file      - collapse trees by genus, species,
-                            or groups specified in a file     # file: [id group]
-       -s   show_list     - preferred tips to show when collapsing subtrees
-                            (D = Woese' list of 69 common organisms)
-       -t   title         - title for html page               
-       -units label       - units label for scale bar; implies -bar
-       -va  fa1[,fa2,..]  - vector annotation files    
-       -x   min_dx        - minimum horizontal space between consecutive nodes (D = 1)
-       -y   dy            - vertical separation of consecutive tips (D = 1)
-       -anno              - use the annotator's SEED for URLs
-       -gray n            - gray out name from the n-th word  # default: 2
-       -pseed             - use PSEED
-       -ppseed            - use PUBSEED
-       -raw               - do not color or collapse the tree,
-                            may be superseded by -c and -p
-
+      
 End_of_Usage
 
 my ($help, $url, $alias_file, $focus_file, $branch, $collapse_by, $show_file,
