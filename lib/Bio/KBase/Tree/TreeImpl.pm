@@ -867,6 +867,144 @@ sub get_tree
 
 
 
+=head2 get_alignment
+
+  $return = $obj->get_alignment($alignment_id, $options)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$alignment_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is an alignment
+kbase_id is a string
+alignment is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$alignment_id is a kbase_id
+$options is a reference to a hash where the key is a string and the value is a string
+$return is an alignment
+kbase_id is a string
+alignment is a string
+
+
+=end text
+
+
+
+=item Description
+
+Returns the specified alignment in the specified format, or an empty string if the alignment does not exist.
+The options hash provides a way to return the alignment with different labels replaced or with different attached meta
+information.  Currently, the available flags and understood options are listed below. 
+
+    options = [
+        format => 'fasta',
+        sequence_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+    ];
+ 
+The 'format' key indicates what string format the alignment should be returned in.  Currently, there is only
+support for 'fasta'. The default value if not specified is 'fasta'.
+
+The 'sequence_label' specifies what should be placed in the label of each sequence.  'none' indicates that
+no label is added, so you get the sequence only.  'raw' indicates that the raw label of the alignement row
+is used. 'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
+feature that was originally used to define the sequence). Note that exemplar feature_ids are not
+defined for all alignments, so this may result in an unlabeled alignment.  'protein_sequence_id' indicates
+that the kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
+the contig sequence id is used.  Note that trees are typically built with protein sequences OR
+contig sequences. If you select one type of sequence, but the alignment was built with the other type, then
+no labels will be added.  The default value if none is specified is 'raw'.
+
+=back
+
+=cut
+
+sub get_alignment
+{
+    my $self = shift;
+    my($alignment_id, $options) = @_;
+
+    my @_bad_arguments;
+    (!ref($alignment_id)) or push(@_bad_arguments, "Invalid type for argument \"alignment_id\" (value was \"$alignment_id\")");
+    (ref($options) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"options\" (value was \"$options\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_alignment:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_alignment
+    
+    my $fasta = "";
+    
+    # first get the alignment sequences and row IDs
+    # second parse the parameters and set the defaults
+    if (!exists $options->{format})           { $options->{format}="fasta"; }
+    if (!exists $options->{sequence_label})     { $options->{sequence_label}="raw"; }
+    
+    if($options->{format} eq "fasta") {
+	my $kb = $self->{db};
+	#figure out how to label the seqeunces
+	if($options->{sequence_label} eq "none") {
+	    my @rows = $kb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ?', $alignment_id,[qw(AlignmentRow(sequence))]);
+	    foreach my $row (@rows) {
+		$fasta .= ">\n";
+		$fasta .= $row->[0]."\n";
+	    }
+	} else {
+	    my @rows;
+	    if ($options->{sequence_label} eq "raw") {
+		@rows = $kb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(AlignmentRow(row-id) AlignmentRow(sequence))]);
+	    } elsif ($options->{sequence_label} eq "feature_id") {
+		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedProtein(kb-feature-id) AlignmentRow(sequence))]);
+	    } elsif ($options->{sequence_label} eq "protein_sequence_id") {
+		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedProtein(to-link) AlignmentRow(sequence))]);
+	    } elsif ($options->{sequence_label} eq "contig_sequence_id") {
+		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedDNA','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedDNA(to-link) AlignmentRow(sequence))]);
+	    } else {
+		my $msg = "Invalid option passed to get_alignment. Unrecognized value for option key: 'sequence_label'\n";
+		$msg = $msg."You set 'sequence_label' to be: '".$options->{sequence_label}."'";
+		Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_alignment');
+	    }
+	    foreach my $row (@rows) {
+		$fasta .= ">$row->[0]\n";
+		$fasta .= $row->[1]."\n";
+	    }
+	} 
+    
+    } else {
+	my $msg = "Invalid option passed to get_alignment. Only 'format=>fasta' is currently supported.\n";
+	$msg = $msg."You specified the output format to be: '".$options->{format}."'";
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_alignment');
+    }
+    $return = $fasta;
+    
+    #END get_alignment
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_alignment:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_alignment');
+    }
+    return($return);
+}
+
+
+
+
 =head2 get_tree_data
 
   $return = $obj->get_tree_data($tree_ids)
