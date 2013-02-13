@@ -263,6 +263,32 @@ module Tree
     
         options = [
             format => 'fasta',
+            sequence_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+        ];
+ 
+    The 'format' key indicates what string format the alignment should be returned in.  Currently, there is only
+    support for 'fasta'. The default value if not specified is 'fasta'.
+    
+    The 'sequence_label' specifies what should be placed in the label of each sequence.  'none' indicates that
+    no label is added, so you get the sequence only.  'raw' indicates that the raw label of the alignement row
+    is used. 'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
+    feature that was originally used to define the sequence). Note that exemplar feature_ids are not
+    defined for all alignments, so this may result in an unlabeled alignment.  'protein_sequence_id' indicates
+    that the kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
+    the contig sequence id is used.  Note that trees are typically built with protein sequences OR
+    contig sequences. If you select one type of sequence, but the alignment was built with the other type, then
+    no labels will be added.  The default value if none is specified is 'raw'.
+    */
+    funcdef get_alignment(kbase_id alignment_id, mapping<string,string> options) returns (alignment);
+    
+    
+    
+    /* Returns the specified alignment in the specified format, or an empty string if the alignment does not exist.
+    The options hash provides a way to return the alignment with different labels replaced or with different attached meta
+    information.  Currently, the available flags and understood options are listed below. 
+    
+        options = [
+            format => 'fasta',
             sequence_label => 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
         ];
  
