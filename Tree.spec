@@ -403,6 +403,7 @@ module Tree
         string metagenomic_sample_id;
         int percent_identity_threshold;
         int match_length_threshold;
+        string mg_auth_key;
     } abundance_params;
     
     /* Structure to group output of the compute_abundance_profile method.

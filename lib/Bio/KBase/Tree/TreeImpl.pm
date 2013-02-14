@@ -1725,6 +1725,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	metagenomic_sample_id has a value which is a string
 	percent_identity_threshold has a value which is an int
 	match_length_threshold has a value which is an int
+	mg_auth_key has a value which is a string
 kbase_id is a string
 abundance_result is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
@@ -1746,6 +1747,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	metagenomic_sample_id has a value which is a string
 	percent_identity_threshold has a value which is an int
 	match_length_threshold has a value which is an int
+	mg_auth_key has a value which is a string
 kbase_id is a string
 abundance_result is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
@@ -1820,6 +1822,9 @@ sub compute_abundance_profile
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(
 		error => "'match_length_threshold' input field not set, but required" ,
 		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{mg_auth_key})) {
+	$abundance_params->{mg_auth_key}='';
     }
     
     # pass on the call to someone who will actually do the work
@@ -2574,6 +2579,7 @@ protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
 percent_identity_threshold has a value which is an int
 match_length_threshold has a value which is an int
+mg_auth_key has a value which is a string
 
 </pre>
 
@@ -2588,6 +2594,7 @@ protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
 percent_identity_threshold has a value which is an int
 match_length_threshold has a value which is an int
+mg_auth_key has a value which is a string
 
 
 =end text
