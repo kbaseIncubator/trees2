@@ -202,7 +202,7 @@ sub replace_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN replace_node_names
-    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
     my $replacement_str="";
     foreach my $key ( keys %$replacements ) {
         $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
@@ -287,7 +287,7 @@ sub remove_node_names_and_simplify
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN remove_node_names_and_simplify
-    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
     my $nodes_to_remove="";
     foreach my $val (@$removal_list) {
         $nodes_to_remove=$nodes_to_remove.$val.";";

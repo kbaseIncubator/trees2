@@ -67,11 +67,6 @@ if($help) {
      print $DESCRIPTION;
      exit 0;
 }
-if(!$removalFile) {
-     print "FAILURE - no removal list specified.  Run with -h for usage.\n";
-     exit 1;
-}
-
 
 my $n_args = $#ARGV + 1;
 # if we have specified an input file, then read the file
@@ -125,22 +120,24 @@ if ($client_error) {
 if ($treeString ne '') {
      
      my $removalList = [];
-     my $inputFileHandle;
-     open($inputFileHandle, "<", $removalFile);
-     if(!$inputFileHandle) {
-          print "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
-          exit 1;
-     }
-     eval {
-          my $line_number =0;
-          while (my $line = <$inputFileHandle>) {
-               $line_number++;
-               chomp($line);
-               if($line eq '') { next; }
-               push @$removalList, $line;
+     if($removalFile) {
+          my $inputFileHandle;
+          open($inputFileHandle, "<", $removalFile);
+          if(!$inputFileHandle) {
+               print "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
+               exit 1;
           }
-          close $inputFileHandle;
-     };
+          #eval {
+               my $line_number =0;
+               while (my $line = <$inputFileHandle>) {
+                    $line_number++;
+                    chomp($line);
+                    if($line eq '') { next; }
+                    push @$removalList, $line;
+               }
+               close $inputFileHandle;
+          #};
+     }
      my $new_tree;
      eval {
           $new_tree = $treeClient->remove_node_names_and_simplify($treeString, $removalList);

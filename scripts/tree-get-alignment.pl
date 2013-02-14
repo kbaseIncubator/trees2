@@ -133,16 +133,16 @@ foreach my $alnId (@$id_list) {
         # };
         if(exists $aln_data->{$alnId}) {
             my $metaData = $aln_data->{$alnId};
-            print "[alignment_id]: ".$alnId."\n";
+            print "[alignment_id]:\t".$alnId."\n";
             foreach my $label (keys %$metaData) {
                if($label eq 'tree_ids') {
-                    print "[".$label."]: ";
+                    print "[".$label."]:\t";
                     foreach my $t (@{$metaData->{$label}}) {
                          print $t."; ";
                     }
                     print "\n";
                } else {
-                    print "[".$label."]: ".$metaData->{$label}."\n";
+                    print "[".$label."]:\t".$metaData->{$label}."\n";
                }
             }
         }

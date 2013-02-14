@@ -145,9 +145,9 @@ foreach my $treeId (@$id_list) {
         # };
         if(exists $tree_data->{$treeId}) {
             my $metaData = $tree_data->{$treeId};
-            print "[tree_id]: ".$treeId."\n";
+            print "[tree_id]:\t".$treeId."\n";
             foreach my $label (keys %$metaData) {
-                print "[".$label."]: ".$metaData->{$label}."\n";
+                print "[".$label."]:\t".$metaData->{$label}."\n";
             }
         }
     } else {
