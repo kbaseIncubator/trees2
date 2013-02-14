@@ -43,6 +43,7 @@ compile-typespec:
 		--client Bio::KBase::$(SERVICE_NAME)::Client \
 		--py biokbase/$(SERVICE_NAME)/Client \
 		--js javascript/$(SERVICE_NAME)/Client \
+		--url http://kbase.us/services/tree \
 		$(SERVICE_NAME).spec lib
 
 build-docs: compile-typespec

@@ -21,7 +21,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(getTreeURL get_tree_client);
 
-our $defaultTreeURL = "http://kbase.us/services/trees";
+our $defaultTreeURL = "http://kbase.us/services/tree";
 
 
 # simply returns a new copy of the PROM client based on the currently set URL
