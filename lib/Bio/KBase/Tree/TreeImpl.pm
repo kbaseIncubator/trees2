@@ -202,7 +202,9 @@ sub replace_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN replace_node_names
-    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
+    my $kb_tree;
+    eval { $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1); };
+    if(!$kb_tree) { $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,0); };
     my $replacement_str="";
     foreach my $key ( keys %$replacements ) {
         $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
@@ -1698,6 +1700,164 @@ sub get_tree_ids_by_source_id_pattern
 	my $msg = "Invalid returns passed to get_tree_ids_by_source_id_pattern:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'get_tree_ids_by_source_id_pattern');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_leaf_to_protein_map
+
+  $return = $obj->get_leaf_to_protein_map($tree_id)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree_id is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree_id is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a tree id, this method returns a mapping from a tree's unique internal ID to
+a protein sequence ID on only the FIRST protein sequence if the alignment is a concatenation.
+
+=back
+
+=cut
+
+sub get_leaf_to_protein_map
+{
+    my $self = shift;
+    my($tree_id) = @_;
+
+    my @_bad_arguments;
+    (!ref($tree_id)) or push(@_bad_arguments, "Invalid type for argument \"tree_id\" (value was \"$tree_id\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_leaf_to_protein_map:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_leaf_to_protein_map');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_leaf_to_protein_map
+    
+    $return = {};
+    my $kb = $self->{db};
+    my @pids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', $tree_id,
+			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
+    foreach my $p (@pids) {
+	$return->{${$p}[0]} = ${$p}[1];
+    }
+    
+    #END get_leaf_to_protein_map
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_leaf_to_protein_map:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_leaf_to_protein_map');
+    }
+    return($return);
+}
+
+
+
+
+=head2 get_leaf_to_feature_map
+
+  $return = $obj->get_leaf_to_feature_map($tree_id)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree_id is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+kbase_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree_id is a kbase_id
+$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+kbase_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Given a tree id, this method returns a mapping from a tree's unique internal ID to
+a KBase feature ID if and only if a cannonical feature id exists.
+
+=back
+
+=cut
+
+sub get_leaf_to_feature_map
+{
+    my $self = shift;
+    my($tree_id) = @_;
+
+    my @_bad_arguments;
+    (!ref($tree_id)) or push(@_bad_arguments, "Invalid type for argument \"tree_id\" (value was \"$tree_id\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to get_leaf_to_feature_map:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_leaf_to_feature_map');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN get_leaf_to_feature_map
+    
+    $return = {};
+    my $kb = $self->{db};
+    my @fids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ?', $tree_id,
+			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
+    foreach my $f (@fids) {
+	$return->{${$f}[0]} = ${$f}[1];
+    }
+    
+    #END get_leaf_to_feature_map
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to get_leaf_to_feature_map:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'get_leaf_to_feature_map');
     }
     return($return);
 }

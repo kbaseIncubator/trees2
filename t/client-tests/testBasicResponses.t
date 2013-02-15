@@ -24,13 +24,14 @@ use lib "t/client-tests";
 # HERE IS A LIST OF METHODS AND PARAMETERS THAT WE WANT TO TEST
 # NOTE THAT THE PARAMETERS ARE JUST MADE UP AT THE MOMENT
 my $func_calls = {
-                replace_node_names => ["((a,b)c);",{"b"=>"x"}],
-                remove_node_names_and_simplify => ["((a,b)c);",["b"]],
-                extract_leaf_node_names => ["((a,b)c);"],
-                extract_node_names => ["((a,b)c);"],
-                get_node_count => ["((a,b)c);"],
-                get_leaf_count => ["((a,b)c);"],
+                replace_node_names => ["((a,b));",{"b"=>"x"}],
+                remove_node_names_and_simplify => ["((a,b));",["b"]],
+                extract_leaf_node_names => ["((a,b));"],
+                extract_node_names => ["((a,b));"],
+                get_node_count => ["((a,b));"],
+                get_leaf_count => ["((a,b));"],
                 get_tree => ["kb|tree.123", {format=>'newick'}],
+                get_alignment => ["kb|aln.1000000", {format=>'fasta'}],
                 get_tree_ids_by_feature => [ ["kb|g.fake"] ],
                 get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
                 get_alignment_ids_by_feature => [ ["kb|g.fake"]],
@@ -44,8 +45,10 @@ my $func_calls = {
                                                 tree_id=>"kb|tree.18428",
                                                 percent_identity_threshold=> 50,
                                                 match_length_threshold=>35} ],
-                get_tree_ids_by_source_id_pattern => [ "COG.1" ]
-                 };
+                get_tree_ids_by_source_id_pattern => [ "COG.1" ],
+                get_leaf_to_protein_map => ["kb|tree.1000000"],
+                get_leaf_to_feature_map => ["kb|tree.1000000"]
+                };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
 

@@ -59,7 +59,8 @@ double KBTreeLib::convertToDouble(const std::string& s)
 	std::istringstream i(s);
 	double x; char c;
 	if (!(i >> x) || (failIfLeftoverChars && i.get(c))) {
-		cerr<<"Cannot convert string '"+s+"' to double value."<<endl; exit(1); //,"Util::convertToDouble(\"" + s + "\")");
+		cerr<<"Cannot convert string '"+s+"' to double value."<<endl; //,"Util::convertToDouble(\"" + s + "\")");
+		throw "error in convertToDouble";
 	}
 	return x;
 }
@@ -68,7 +69,8 @@ std::string KBTreeLib::toString(double x)
 {
 	std::ostringstream o;
 	if (!(o << x)) {
-		cerr<<"Cannot convert double to string value."<<endl; exit(1);
+		cerr<<"Cannot convert double to string value."<<endl;
+		throw "error in toString";
 	}
 	return o.str();
 }
@@ -269,8 +271,13 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 	// if it is an internal node and has a name and we are assuming that internal node names are bootstrap values,
 	// then update the parsing. (note that this is the case for most MO trees)
 	if(this->assumeBootstrapNames && currentNode.number_of_children()>0 && (*currentNode).getName().size()>0) {
-		(*currentNode).bootstrapValue = convertToDouble((*currentNode).name);
-		(*currentNode).name="";
+		try {
+			(*currentNode).bootstrapValue = convertToDouble((*currentNode).name);
+			(*currentNode).name="";
+		} catch (...) {
+			this->assumeBootstrapNames = false;
+			cerr<<"assuming that internal nodes are NOT bootstrap values"<<endl;
+		}
 	}
 
 	// if we get to a close parenthesis, then go on to the next position in the string

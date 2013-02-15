@@ -106,6 +106,14 @@ ok($exit_code==0,'tree-compute_abundance-profile with long help flag returns exi
 ok($out,'tree-compute_abundance-profile with long help flag returns some text');
 
 
+#######################################################
+# [tree-compute-abundance-profile] script tests
+$out = `tree-remove-nodes --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-remove-nodes with long help flag returns exit code 0');
+ok($out,'tree-remove-nodes with long help flag returns some text');
+
+
 
 #######################################################
 # be nice and reset the url

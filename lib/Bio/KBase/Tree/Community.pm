@@ -42,7 +42,8 @@ sub new
     if($n_args==0) {
 	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
 	#$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://localhost:7099");
-	$self->{mg_base_url} = "http://api.metagenomics.anl.gov/sequences/";
+	#OLD URL: $self->{mg_base_url} = "http://api.metagenomics.anl.gov/sequences/";
+	$self->{mg_base_url} = 'http://api.metagenomics.anl.gov/api2.cgi/sequences/';
 	$self->{scratch} = "/mnt/";
 	#$self->{scratch} = "/home/msneddon/Desktop/scratch";
     } else {
@@ -81,6 +82,7 @@ sub runQiimeUclust {
     my $sequenceLengthThreshold=$params->{'match_length_threshold'};
     
     # step 1 - get the isolate sequences used to build the tree, and save it to a fasta file
+    print "\n1) getting isolate sequences\n";
     my $isolate_seq_list = $self->getTreeProtSeqList($treeId);
     my $isolate_seq_fasta = $self->convertSeqListToFasta($isolate_seq_list);
     my $isolate_seq_file_name_template = $self->{scratch}.$protFamName.'.XXXXXX';
@@ -91,6 +93,7 @@ sub runQiimeUclust {
     # step 2 - query the communities service to get metagenomic reads for the specified mgId, save the reads to a fasta file
     # note: here we make sure we only save a single copy of each unique read sequence, and count the total number of each
     # unique read, then encode that in the ID of the read
+    print "2) getting mg sequences\n";
     my $mg_seq_list = $self->getMgSeqsByProtFam($params);
     my $unique_mg_seq_list = $self->getUniqueSequenceList($mg_seq_list);
     my $mg_seq_fasta = $self->convertSeqListToFasta($unique_mg_seq_list);
@@ -101,6 +104,7 @@ sub runQiimeUclust {
     
     
     # step 3 - prep the output file, make the system call, handle errors if the run failed
+    print "3) running uclust\n";
     my $uclust_out_file_name_template = $self->{scratch}.$protFamName."-".$mgId.'.XXXXXX';
     my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>1);
     close $uclustFh;
@@ -112,6 +116,7 @@ sub runQiimeUclust {
     
     
     # step 4 - parse and return the results
+    print "4) parsing results\n";
     my ($abundance_counts,$n_hits,$n_query_seqs) = $self->computeAbundancesFromUclustOut($uclustFh,$percentIdentityThreshold,$sequenceLengthThreshold);
     
     #print "could map ".$n_hits." of ".$n_query_seqs."\n";
@@ -287,20 +292,20 @@ sub getMgSeqsByProtFam {
     my $authkey=$params->{'mg_auth_key'};
     
     my $base_url = $self->{mg_base_url};
-    my $full_url=$base_url.$mgId."/?type=ontology&seq=protein&function=".$protFamName."&source=".$protFamSource;
+    my $full_url=$base_url.$mgId.'/?data_type=ontology&sequence_type=protein&annotation='.$protFamName.'&source='.$protFamSource;
     if($authkey ne '') {
 	$full_url .= "&auth=".$authkey;
     }
-    print 'getMgSeqsByProtFam: fetching from URL: '.$full_url."\n";
+    print "\ngetMgSeqsByProtFam: fetching from URL: ".$full_url."\n";
     
     my $ua = LWP::UserAgent->new;
-    $ua->timeout(10);
+    $ua->timeout(600);
     
     my $response=$ua->get($full_url);
     if ($response->is_success) {
 	my $json = new JSON;
 	my $mgSeqs=$json->decode($response->content);
-	return $mgSeqs->{$protFamName};
+	return $mgSeqs->{data}->{$protFamName};
     }
     return [];
 }
