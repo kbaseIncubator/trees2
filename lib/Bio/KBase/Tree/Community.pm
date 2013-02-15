@@ -74,6 +74,7 @@ sub runQiimeUclust {
     my $protFamSource=$params->{'protein_family_source'};
     my $mgId=$params->{'metagenomic_sample_id'};
     my $treeId=$params->{'tree_id'};
+    my $authkey=$params->{'mg_auth_key'};
     # may be possible to lookup tree based on protein family name and type, but this is not yet implemented
     #my $treeId = $self->findKBaseTreeByProteinFamilyName($params);
     my $percentIdentityThreshold=$params->{'percent_identity_threshold'};
@@ -283,9 +284,14 @@ sub getMgSeqsByProtFam {
     my $protFamName=$params->{'protein_family_name'};
     my $protFamSource=$params->{'protein_family_source'};
     my $mgId=$params->{'metagenomic_sample_id'};
+    my $authkey=$params->{'mg_auth_key'};
     
     my $base_url = $self->{mg_base_url};
     my $full_url=$base_url.$mgId."/?type=ontology&seq=protein&function=".$protFamName."&source=".$protFamSource;
+    if($authkey ne '') {
+	$full_url .= "&auth=".$authkey;
+    }
+    print 'getMgSeqsByProtFam: fetching from URL: '.$full_url."\n";
     
     my $ua = LWP::UserAgent->new;
     $ua->timeout(10);

@@ -33,6 +33,11 @@ DESCRIPTION
                         set this flag to specify the ID of the metagenomic sample to lookup;
                         see the KBase communities service to identifiy metagenomic samples
                         
+      -a [KEY], --auth [KEY]
+                        set this flag to specify the authentication key that you generated with
+                        MG Rast to access private datasets; public data sets do not require
+                        this flag
+                        
       -s [SOURCE], --source-family [SOURCE]
                         set this flag to specify the name of the source of the protein family;
                         currently supported protein families are: 'COG';
@@ -75,6 +80,7 @@ my $protFamSrc='COG';
 my $protFamName='';
 my $pctIdt=50;
 my $matchThreshold=20;
+my $auth="";
 my $opt = GetOptions (
         "help" => \$help,
         "tree-id=s" => \$treeId,
@@ -82,7 +88,8 @@ my $opt = GetOptions (
         "source-family=s" => \$protFamSrc,
         "family-name=s" => \$protFamName,
         "percent-identity-threshold=f" => \$pctIdt,
-        "length-threshold=i" => \$matchThreshold
+        "length-threshold=i" => \$matchThreshold,
+        "auth=s" => \$auth
         );
 
 if($help) {
@@ -125,6 +132,7 @@ if($n_args==0) {
         $params->{'tree_id'} = $treeId;
         $params->{'percent_identity_threshold'} = $pctIdt;
         $params->{'match_length_threshold'} = $matchThreshold;
+        $params->{'mg_auth_key'} = $auth;
         
         $result = $treeClient->compute_abundance_profile($params);
     #};

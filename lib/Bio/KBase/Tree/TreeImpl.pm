@@ -202,7 +202,7 @@ sub replace_node_names
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN replace_node_names
-    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
     my $replacement_str="";
     foreach my $key ( keys %$replacements ) {
         $replacement_str = $replacement_str.$key.";".$$replacements{$key}.";";
@@ -287,7 +287,7 @@ sub remove_node_names_and_simplify
     my $ctx = $Bio::KBase::Tree::Service::CallContext;
     my($return);
     #BEGIN remove_node_names_and_simplify
-    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
     my $nodes_to_remove="";
     foreach my $val (@$removal_list) {
         $nodes_to_remove=$nodes_to_remove.$val.";";
@@ -1725,6 +1725,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	metagenomic_sample_id has a value which is a string
 	percent_identity_threshold has a value which is an int
 	match_length_threshold has a value which is an int
+	mg_auth_key has a value which is a string
 kbase_id is a string
 abundance_result is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
@@ -1746,6 +1747,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	metagenomic_sample_id has a value which is a string
 	percent_identity_threshold has a value which is an int
 	match_length_threshold has a value which is an int
+	mg_auth_key has a value which is a string
 kbase_id is a string
 abundance_result is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
@@ -1820,6 +1822,9 @@ sub compute_abundance_profile
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(
 		error => "'match_length_threshold' input field not set, but required" ,
 		method_name => 'compute_abundance_profile');
+    }
+    if(!exists($abundance_params->{mg_auth_key})) {
+	$abundance_params->{mg_auth_key}='';
     }
     
     # pass on the call to someone who will actually do the work
@@ -2574,6 +2579,7 @@ protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
 percent_identity_threshold has a value which is an int
 match_length_threshold has a value which is an int
+mg_auth_key has a value which is a string
 
 </pre>
 
@@ -2588,6 +2594,7 @@ protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
 percent_identity_threshold has a value which is an int
 match_length_threshold has a value which is an int
+mg_auth_key has a value which is a string
 
 
 =end text
