@@ -349,6 +349,16 @@ module Tree
     families. */
     funcdef get_tree_ids_by_source_id_pattern(string pattern) returns (list<list<kbase_id>>);
     
+    
+    /* Given a tree id, this method returns a mapping from a tree's unique internal ID to
+    a protein sequence ID on only the FIRST protein sequence if the alignment is a concatenation. */
+    funcdef get_leaf_to_protein_map(kbase_id tree_id) returns (mapping<kbase_id,kbase_id>);
+    
+    /* Given a tree id, this method returns a mapping from a tree's unique internal ID to
+    a KBase feature ID if and only if a cannonical feature id exists. */
+    funcdef get_leaf_to_feature_map(kbase_id tree_id) returns (mapping<kbase_id,kbase_id>);
+    
+    
     /* Returns all tree IDs in which the entire portion of the given sequence (which can optionally
     include start and end positions of the sequence) is used in the alignment which generates the tree.
     todo: should beg/end just be included in some options hash?

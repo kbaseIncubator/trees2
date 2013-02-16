@@ -282,6 +282,9 @@ fewer leaf nodes.
     > tree-get-tree -p 'kb|tree.994594' | tree-to-html -raw > myFirstTree.html
 </pre>
 <p><img src="myFirstTree.png" /></p>
+<p><a href="myFirstTree.html">view full tree</a></p>
+
+
 <p>The -raw option states that we want to visualize the tree in its raw form, without any additional automatically generated
 links or annotation.  MD5s of course are difficult to read, so instead let's try to view the tree wth feature IDs</p>
 <p>The tree renderer requires that every leaf node is labeled so that it can be identified. Therefore it is safe practice
@@ -291,7 +294,8 @@ IDs, remove any nodes that didn't have an associated feature ID, and render the 
 <pre>
     > tree-get-tree -f 'kb|tree.994594' | tree-remove-nodes | tree-to-html > myFirstFeatureLabeledTree.html
 </pre>
-<p><img src="pic.png" /></p>
+<p><img src="myFirstFeatureLabeledTree.png" /></p>
+<p><a href="myFirstFeatureLabeledTree.html">view full tree</a></p>
 <p>Although simple, the 'tree-to-html' renderer has several flexible options which allow you to customize how the tree
 is diplayed.  Let's work through a more complicated example to demonstrate how we can fetch a tree, retrieve more details
 about each node, and display a tree in a way that each leaf node links to a KBase Labs feature browser page.</p>
@@ -371,7 +375,8 @@ each feature came from.</p>
 <pre>
 cat my.tree | tree-to-html -a feature.data -l feature.links > niceTreeWithLinks.html
 </pre>
-<p><img src="pic.png" /></p>
+<p><img src="niceTreeWithLinks.png" /></p>
+<p><a href="niceTreeWithLinks.html">view full tree</a></p>
      
 
 

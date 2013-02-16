@@ -218,6 +218,9 @@ undeploy:
 	#undeploy custom libs
 	rm -rfv $(TARGET)/lib/TreeCppUtil.so
 	rm -fv  $(TARGET)/lib/forester_1005.jar
+	#remove scripts
+	rm -f $(TARGET)/bin/tree-*
+	rm -f $(TARGET)/plbin/tree-*.pl
 	echo "OK ... Removed all deployed files."
 
 # remove files generated within this directory
