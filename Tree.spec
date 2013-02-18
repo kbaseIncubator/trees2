@@ -1,5 +1,5 @@
 /*
-Phylogenetic Tree and Multiple Sequence Alignment Services (v0.03)
+Phylogenetic Tree and Multiple Sequence Alignment Services
 
 This service provides a set of methods for querying, manipulating, and analyzing multiple
 sequence alignments and phylogenetic trees.
@@ -29,18 +29,19 @@ module Tree
     /* A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
     designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and
     "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
-    identifier is "kb|g.1234", a protein within that genome may be represented as "kb|g.1234.fp.771".
-    See the standard KBase documentation for more information.
+    identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as
+    "kb|g.1234.peg.771".
     */
     typedef string kbase_id;
 
     /* A string representation of a phylogenetic tree.  The format/syntax of the string is
     specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
     'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
-    trees in different formats depending on addtional option parameters. Regardless of format, all leaf nodes
+    trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
     in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
     of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
-    Nodes, depending on the format, may also be annotated with structured data such as bootstrap values.
+    Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and
+    distances.
     */
     typedef string tree;
 
@@ -68,17 +69,18 @@ module Tree
     
     
     /* String representation of a sequence or set of sequences in FASTA format.  The precise alphabet used is
-    not yet specified, but will be similar to sequences stored in KBase.
+    not yet specified, but will be similar to sequences stored in KBase with '-' to denote gaps in alignments.
     */
     typedef string fasta;
     
     /* String representation of an alignment in FASTA format.  The precise alphabet and syntax of the alignment
-    string (e.g. symbol for gaps) is not yet specified, but will be similar to alignments currently in SEED.
+    string is not yet specified, but will be similar to sequences stored in KBase  with '-' to denote gaps in
+    alignments.
     */
     typedef fasta fasta_alignment;
     
-    /* The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note, this
-    is not the full, raw label in a newick_tree (which may include comments or distances).
+    /* The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this
+    is not the full, raw label in a newick_tree (which may include comments).
     */
     typedef string node_name;
     
@@ -115,6 +117,7 @@ module Tree
         string source_id;
     } tree_meta_data;
     
+    
     /* Meta data associated with an alignment.
     
         list<kbase_id> tree_ids - the set of trees that were built from this alignment
@@ -148,11 +151,12 @@ module Tree
     } alignment_meta_data;
     
     
+    
+    
     /* *********************************************************************************************** */
     /* METHODS FOR TREE PARSING AND STRING MANIPULATIONS */
     /* *********************************************************************************************** */
-    
-    
+
     /* Given a tree in newick format, replace the node names indicated as keys in the 'replacements' mapping
     with new node names indicated as values in the 'replacements' mapping.  Matching is EXACT and will not handle
     regular expression patterns.
@@ -168,8 +172,8 @@ module Tree
    
    
    
-    /* NOTE: methods that are commented out are not yet fully implemented yet, but will appear in future
-    versions of the Tree service as they are needed / requested.*/
+    /* NOTE: methods that are commented out are not yet fully implemented yet, but will likely appear in future
+    versions of the Tree service as they are needed or requested.*/
     /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
     */
     /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree); */
@@ -280,33 +284,7 @@ module Tree
     no labels will be added.  The default value if none is specified is 'raw'.
     */
     funcdef get_alignment(kbase_id alignment_id, mapping<string,string> options) returns (alignment);
-    
-    
-    
-    /* Returns the specified alignment in the specified format, or an empty string if the alignment does not exist.
-    The options hash provides a way to return the alignment with different labels replaced or with different attached meta
-    information.  Currently, the available flags and understood options are listed below. 
-    
-        options = [
-            format => 'fasta',
-            sequence_label => 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
-        ];
- 
-    The 'format' key indicates what string format the tree should be returned in.  Currently, there is only
-    support for 'fasta'. The default value if not specified is 'asta'.
-    
-    The 'sequence_label' key only affects trees returned as fasta format, and specifies what should be
-    placed as the label for each sequence. 'raw' indicates that the raw label mapping the leaf to an
-    alignement row is used. 'feature_id' indicates that the label will have an examplar feature_id in
-    each label (typically the feature that was originally used to define the sequence). Note that exemplar
-    feature_ids are not defined for all alignments, so this may result in unlabeled sequences.
-    'protein_sequence_id' indicates that the kbase id of the protein sequence used in the alignment is used.
-    'contig_sequence_id' indicates that the contig sequence id is added.  Note that alignments are typically
-    built with protein sequences OR contig sequences. If you select one type of sequence, but the tree was
-    built with the other type, then no labels will be added.  The default value if none is specified is 'raw'.
-    
-    funcdef get_alignment(kbase_id alignment_id, mapping<string,string> options) returns (alignment);*/
-    
+
     /* Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
     data may not be available for trees which are not built from alignments.  Also note that this method
     computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
@@ -351,7 +329,7 @@ module Tree
     
     
     /* Given a tree id, this method returns a mapping from a tree's unique internal ID to
-    a protein sequence ID on only the FIRST protein sequence if the alignment is a concatenation. */
+    a protein sequence ID. */
     funcdef get_leaf_to_protein_map(kbase_id tree_id) returns (mapping<kbase_id,kbase_id>);
     
     /* Given a tree id, this method returns a mapping from a tree's unique internal ID to

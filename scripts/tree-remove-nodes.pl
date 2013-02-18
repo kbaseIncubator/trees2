@@ -31,6 +31,11 @@ DESCRIPTION
                         remove; if multiple nodes have a identical labels, they are all
                         removed
                         
+      -s, --save-list
+                        instead of specifying the set set of nodes to remove, this flag indicates
+                        that the list includes the list of nodes to save; if a node label is
+                        on this list it is saved, otherwise it is removed
+                        
       -i, --input
                         specify an input file to read the tree from
                         
@@ -56,12 +61,14 @@ my $help = '';
 my $treeString='';
 my $inputFile = '';
 my $removalFile = '';
+my $saveFile = '';
 
 # parse arguments and output file
 my $stdinString = "";
 my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
-                     "removal-list=s" => \$removalFile
+                     "removal-list=s" => \$removalFile,
+                     "save-list=s" => \$saveFile
                      );
 if($help) {
      print $DESCRIPTION;
@@ -120,11 +127,12 @@ if ($client_error) {
 if ($treeString ne '') {
      
      my $removalList = [];
+     my $removalHash = {};
      if($removalFile) {
           my $inputFileHandle;
           open($inputFileHandle, "<", $removalFile);
           if(!$inputFileHandle) {
-               print "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
+               print STDERR "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
                exit 1;
           }
           #eval {
@@ -134,10 +142,45 @@ if ($treeString ne '') {
                     chomp($line);
                     if($line eq '') { next; }
                     push @$removalList, $line;
+                    $removalHash->{$line} = '1';
                }
                close $inputFileHandle;
           #};
      }
+     
+     if($saveFile) {
+          my $save_hashed_list = {};
+          my $inputFileHandle;
+          open($inputFileHandle, "<", $saveFile);
+          if(!$inputFileHandle) {
+               print STDERR "FAILURE - cannot open save list file '$saveFile' \n$!\n";
+               exit 1;
+          }
+          #eval {
+               my $line_number =0;
+               while (my $line = <$inputFileHandle>) {
+                    $line_number++;
+                    chomp($line);
+                    if($line eq '') { next; }
+                    $save_hashed_list->{$line} = '1';
+               }
+               close $inputFileHandle;
+          #};
+          
+          my $all_node_names = $treeClient->extract_leaf_node_names($treeString);
+          foreach my $name (@$all_node_names) {
+               if(!exists $save_hashed_list->{$name}) {
+                    push @$removalList, $name;
+               } else {
+                    if(exists $removalHash->{$name}) {
+                         print STDERR "FAILURE - node '$name' is in both the removal list and the save list!\n";
+                         exit 1;
+                    }
+               }
+          }
+     }
+     
+     
      my $new_tree;
      eval {
           $new_tree = $treeClient->remove_node_names_and_simplify($treeString, $removalList);
@@ -146,7 +189,7 @@ if ($treeString ne '') {
      $client_error = $@;
      if ($client_error) {
           print Dumper($client_error);
-          print "FAILURE - error calling Tree service.\n";
+          print STDERR "FAILURE - error calling Tree service.\n";
           exit 1;
      }
 
@@ -154,7 +197,7 @@ if ($treeString ne '') {
      exit 0;
      
 } else {
-     print "FAILURE - no tree specified.  Run with --help for usage.\n";
+     print STDERR "FAILURE - no tree specified.  Run with --help for usage.\n";
      exit 1;
 }
 

@@ -32,23 +32,23 @@ my $func_calls = {
                 get_leaf_count => ["((a,b));"],
                 get_tree => ["kb|tree.123", {format=>'newick'}],
                 get_alignment => ["kb|aln.1000000", {format=>'fasta'}],
+                get_tree_data => [ ["kb|tree.0","kb|tree.1"] ],
+                get_alignment_data => [ ["kb|aln.0","kb|aln.1"] ],
                 get_tree_ids_by_feature => [ ["kb|g.fake"] ],
                 get_tree_ids_by_protein_sequence => [ ["madeUpMD5"] ],
                 get_alignment_ids_by_feature => [ ["kb|g.fake"]],
                 get_alignment_ids_by_protein_sequence => [ ["madeUpMD5"] ],
-                draw_html_tree => ["((a,b)c);",{option=>"value"}],
-                get_tree_data => [ ["kb|tree.0","kb|tree.1"] ],
-                get_alignment_data => [ ["kb|aln.0","kb|aln.1"] ],
+                get_tree_ids_by_source_id_pattern => [ "COG.1" ],
+                get_leaf_to_protein_map => ["kb|tree.1000000"],
+                get_leaf_to_feature_map => ["kb|tree.1000000"],
                 compute_abundance_profile => [ {protein_family_name => "COG0593",
                                                 protein_family_source=>"COG",
                                                 metagenomic_sample_id=> "4447970.3",
                                                 tree_id=>"kb|tree.18428",
                                                 percent_identity_threshold=> 50,
                                                 match_length_threshold=>35} ],
-                get_tree_ids_by_source_id_pattern => [ "COG.1" ],
-                get_leaf_to_protein_map => ["kb|tree.1000000"],
-                get_leaf_to_feature_map => ["kb|tree.1000000"]
-                 };
+                draw_html_tree => ["((a,b)c);",{option=>"value"}],
+                };
 #############################################################################
 my $n_tests = (scalar(keys %$func_calls)+3); # set this to be the number of function calls + 3
 

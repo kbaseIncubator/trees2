@@ -11,7 +11,7 @@ Tree
 
 =head1 DESCRIPTION
 
-Phylogenetic Tree and Multiple Sequence Alignment Services (v0.03)
+Phylogenetic Tree and Multiple Sequence Alignment Services
 
 This service provides a set of methods for querying, manipulating, and analyzing multiple
 sequence alignments and phylogenetic trees.
@@ -1740,7 +1740,7 @@ kbase_id is a string
 =item Description
 
 Given a tree id, this method returns a mapping from a tree's unique internal ID to
-a protein sequence ID on only the FIRST protein sequence if the alignment is a concatenation.
+a protein sequence ID.
 
 =back
 
@@ -2244,8 +2244,8 @@ an int
 A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
 designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and
 "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
-identifier is "kb|g.1234", a protein within that genome may be represented as "kb|g.1234.fp.771".
-See the standard KBase documentation for more information.
+identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as
+"kb|g.1234.peg.771".
 
 
 =item Definition
@@ -2279,10 +2279,11 @@ a string
 A string representation of a phylogenetic tree.  The format/syntax of the string is
 specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
 'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
-trees in different formats depending on addtional option parameters. Regardless of format, all leaf nodes
+trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
 in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
 of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
-Nodes, depending on the format, may also be annotated with structured data such as bootstrap values.
+Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and
+distances.
 
 
 =item Definition
@@ -2444,7 +2445,7 @@ a string
 =item Description
 
 String representation of a sequence or set of sequences in FASTA format.  The precise alphabet used is
-not yet specified, but will be similar to sequences stored in KBase.
+not yet specified, but will be similar to sequences stored in KBase with '-' to denote gaps in alignments.
 
 
 =item Definition
@@ -2476,7 +2477,8 @@ a string
 =item Description
 
 String representation of an alignment in FASTA format.  The precise alphabet and syntax of the alignment
-string (e.g. symbol for gaps) is not yet specified, but will be similar to alignments currently in SEED.
+string is not yet specified, but will be similar to sequences stored in KBase  with '-' to denote gaps in
+alignments.
 
 
 =item Definition
@@ -2507,8 +2509,8 @@ a fasta
 
 =item Description
 
-The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note, this
-is not the full, raw label in a newick_tree (which may include comments or distances).
+The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this
+is not the full, raw label in a newick_tree (which may include comments).
 
 
 =item Definition
