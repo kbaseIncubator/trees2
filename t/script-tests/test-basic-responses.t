@@ -102,12 +102,20 @@ ok($out,'tree-relabel-node-names with long help flag returns some text');
 # [tree-compute-abundance-profile] script tests
 $out = `tree-compute-abundance-profile --help`;
 $exit_code = ($? >> 8);
-ok($exit_code==0,'tree-compute_abundance-profile with long help flag returns exit code 0');
-ok($out,'tree-compute_abundance-profile with long help flag returns some text');
+ok($exit_code==0,'tree-compute-abundance-profile with long help flag returns exit code 0');
+ok($out,'tree-compute-abundance-profile with long help flag returns some text');
 
 
 #######################################################
-# [tree-compute-abundance-profile] script tests
+# [tree-filter-abundance-profile] script tests
+$out = `tree-filter-abundance-profile --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-filter-abundance-profile with long help flag returns exit code 0');
+ok($out,'tree-filter-abundance-profile with long help flag returns some text');
+
+
+#######################################################
+# [tree-remove-nodes] script tests
 $out = `tree-remove-nodes --help`;
 $exit_code = ($? >> 8);
 ok($exit_code==0,'tree-remove-nodes with long help flag returns exit code 0');
