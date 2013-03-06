@@ -1,0 +1,3 @@
+#group-name	trees	Trees scripts
+#command-set	scripts/(.*).pl	trees
+
