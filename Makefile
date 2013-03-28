@@ -120,6 +120,8 @@ deploy-client: deploy-scripts deploy-docs
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/biokbase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/javascript/$(SERVICE_NAME)
+	touch lib/biokbase/__init__.py #do not include code in biokbase/__init__.py
+	touch lib/biokbase/$(SERVICE_NAME)/__init__.py
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Client.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/biokbase/$(SERVICE_NAME)/* $(TARGET)/lib/biokbase/$(SERVICE_NAME)/.
