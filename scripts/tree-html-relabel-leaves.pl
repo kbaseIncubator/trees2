@@ -16,16 +16,21 @@ SYNOPSIS
       tree-html-relabel-leaves [OPTIONS]
 
 DESCRIPTION
-      Modify html tree to replace leaf ids with any label. Html tree input is taken as STDIN or as a command line arg. Modified tree is STDOUT.
+      Modify html tree to replace leaf ids with any label. Html tree input is taken as 
+      STDIN or as a command line arg. Modified tree is STDOUT.
 
       -l, --label-file
-                        Required. Give the path to the leaf label file. Only one value per leaf is considered. Data file format is tab-delimited, one row per leaf with the leaf ID as the first column and the label as the second column.
+                        Required. Give the path to the leaf label file. Only one value 
+                        per leaf is considered. Data file format is tab-delimited, one 
+                        row per leaf with the leaf ID as the first column and the label
+                         as the second column.
 
       -t, --tree-html-file
-                        Optional. Give the path to the html tree file, or provide as STDIN.
+                        Optional. Give the path to the html tree file, or provide as 
+                        STDIN.
 
       -h, --help
-                        diplay this help message, ignore all arguments
+                        display this help message, ignore all arguments
                         
 EXAMPLES
       Add the labels file 'leaf_labels.txt' to html tree file 'tree1.html'
@@ -108,7 +113,56 @@ foreach my $line (@tree_html_buf) {
 	    $in_pre = undef;
 	}
 	else {
-	    $line =~ s/(<span[^\>]*\>\s*)([^\<]+?)(\s*\<\/span\>\s*\<span[^\>]*\>[^\<]*\<\/span\>\s*\<span[^\>]*\>[^\<]*\<\/span\>\s*)$/$1."<!--$2-->".$leaf_name{$2}.$3/e;
+	    if ($line !~ /^\s*\<a name="key"\>/i &&
+		$line !~ /^\s*\<a name="header"\>/i
+		) {
+
+		my $line_copy = $line;
+		my $new_line = '';
+		my $tree_chunk = '';
+		my $leader = '';
+		my $id = undef;
+
+		if ($line =~ /^(\S+\<font\s+\S+\<\/font\>)/) {
+		    $tree_chunk = $1;
+		}
+		elsif ($line =~ /^(\S+)/) {
+		    $tree_chunk = $1;
+		}
+		$line_copy =~ s/^$tree_chunk//;
+		$new_line .= $tree_chunk;
+
+		# get old boxes
+		while ($line_copy =~ s/^(\s*\<font color=\#\w{6}\>\&\#9608\;\<\/font\>\s*)//) {
+		    $new_line .= $1;
+		}
+
+		# determine leaf id
+		if ($line_copy =~ s/^(\s*\<span[^\>]*\>)([^\<\s]+)//) {
+		    $leader = $1;
+		    $id = $2;
+		} elsif ($line_copy =~ s/^(\s*)(\S+)//) {
+		    $leader = $1;
+		    $id = $2;
+		}
+		if (defined $leaf_name{$id}) {
+		    $new_line .= $leader.'<!--$id-->'.$leaf_name{$id};
+		} else {
+		    print STDERR "missing label for ID: '$id'\n";
+		    $new_line .= $leader.'<i>'.$id.'</i>';
+		}
+		$new_line .= $line_copy;  # add the remainder
+
+
+		if (! $id) {
+		    print STDERR "Bad tree line (missing ID): '$line'\n";
+		}
+		else {
+		    $line = $new_line;
+		}
+
+		#$line =~ s/(<span[^\>]*\>\s*)([^\<]+?)(\s*\<\/span\>\s*\<span[^\>]*\>[^\<]*\<\/span\>\s*\<span[^\>]*\>[^\<]*\<\/span\>\s*)$/$1."<!--$2-->".$leaf_name{$2}.$3/e;
+	    }
 	}
     }
     print $line;
