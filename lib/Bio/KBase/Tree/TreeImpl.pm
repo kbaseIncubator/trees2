@@ -2006,6 +2006,109 @@ sub compute_abundance_profile
 
 
 
+=head2 filter_abundance_profile
+
+  $abundance_data_processed = $obj->filter_abundance_profile($abundance_data, $filter_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$abundance_data is an abundance_data
+$filter_params is a filter_params
+$abundance_data_processed is an abundance_data
+abundance_data is a reference to a hash where the key is a string and the value is an abundance_profile
+abundance_profile is a reference to a hash where the key is a string and the value is a float
+filter_params is a reference to a hash where the following keys are defined:
+	cutoff_value has a value which is a float
+	use_cutoff_value has a value which is a bool
+	cutoff_number_of_records has a value which is a float
+	use_cutoff_number_of_records has a value which is a bool
+	normalization_scope has a value which is a string
+	normalization_type has a value which is a string
+	normalization_post_process has a value which is a string
+bool is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+$abundance_data is an abundance_data
+$filter_params is a filter_params
+$abundance_data_processed is an abundance_data
+abundance_data is a reference to a hash where the key is a string and the value is an abundance_profile
+abundance_profile is a reference to a hash where the key is a string and the value is a float
+filter_params is a reference to a hash where the following keys are defined:
+	cutoff_value has a value which is a float
+	use_cutoff_value has a value which is a bool
+	cutoff_number_of_records has a value which is a float
+	use_cutoff_number_of_records has a value which is a bool
+	normalization_scope has a value which is a string
+	normalization_type has a value which is a string
+	normalization_post_process has a value which is a string
+bool is an int
+
+
+=end text
+
+
+
+=item Description
+
+ORDER OF OPERATIONS:
+1) using normalization scope, defines whether process should occur per column or globally over every column
+2) using normalization type, normalize by dividing values by the option indicated
+3) apply normalization post process if set (ie take log of the result)
+4) apply the cutoff_value threshold to all records, eliminating any that are not above the specified threshold
+5) apply the cutoff_number_of_records (always applies per_column!!!), discarding any record that are not in the top N record values for that column
+
+- if a value is not a valid number, it is ignored
+
+=back
+
+=cut
+
+sub filter_abundance_profile
+{
+    my $self = shift;
+    my($abundance_data, $filter_params) = @_;
+
+    my @_bad_arguments;
+    (ref($abundance_data) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"abundance_data\" (value was \"$abundance_data\")");
+    (ref($filter_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"filter_params\" (value was \"$filter_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to filter_abundance_profile:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'filter_abundance_profile');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($abundance_data_processed);
+    #BEGIN filter_abundance_profile
+    
+    # @todo: perform some error checking on the input
+    
+    my $abundance_data_processed = $self->{comm}->filter_abundance_profile($abundance_data,$filter_params);
+    
+    #END filter_abundance_profile
+    my @_bad_returns;
+    (ref($abundance_data_processed) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"abundance_data_processed\" (value was \"$abundance_data_processed\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to filter_abundance_profile:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'filter_abundance_profile');
+    }
+    return($abundance_data_processed);
+}
+
+
+
+
 =head2 draw_html_tree
 
   $return = $obj->draw_html_tree($tree, $display_options)
@@ -2803,6 +2906,119 @@ a reference to a hash where the following keys are defined:
 abundances has a value which is a reference to a hash where the key is a string and the value is an int
 n_hits has a value which is an int
 n_reads has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 abundance_profile
+
+=over 4
+
+
+
+=item Description
+
+map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is a float
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is a float
+
+=end text
+
+=back
+
+
+
+=head2 abundance_data
+
+=over 4
+
+
+
+=item Description
+
+map the name of the profile with the profile data
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is an abundance_profile
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is an abundance_profile
+
+=end text
+
+=back
+
+
+
+=head2 filter_params
+
+=over 4
+
+
+
+=item Description
+
+cutoff_value                  => def: 0 || [any_valid_float_value]
+use_cutoff_value              => def: 0 || 1
+normalization_scope           => def:'per_column' || 'global'
+normalization_type            => def:'none' || 'total' || 'mean' || 'max' || 'min'
+normalization_post_process    => def:'none' || 'log10' || 'log2' || 'ln'
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+cutoff_value has a value which is a float
+use_cutoff_value has a value which is a bool
+cutoff_number_of_records has a value which is a float
+use_cutoff_number_of_records has a value which is a bool
+normalization_scope has a value which is a string
+normalization_type has a value which is a string
+normalization_post_process has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+cutoff_value has a value which is a float
+use_cutoff_value has a value which is a bool
+cutoff_number_of_records has a value which is a float
+use_cutoff_number_of_records has a value which is a bool
+normalization_scope has a value which is a string
+normalization_type has a value which is a string
+normalization_post_process has a value which is a string
 
 
 =end text

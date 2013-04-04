@@ -423,6 +423,44 @@ module Tree
     funcdef compute_abundance_profile(abundance_params abundance_params) returns (abundance_result abundance_result);
 
 
+    /* map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value) */
+    typedef mapping<string,float> abundance_profile;
+
+    /* map the name of the profile with the profile data */
+    typedef mapping <string, abundance_profile> abundance_data;
+
+    
+    /*
+      cutoff_value                  => def: 0 || [any_valid_float_value]
+      use_cutoff_value              => def: 0 || 1
+      normalization_scope           => def:'per_column' || 'global'
+      normalization_type            => def:'none' || 'total' || 'mean' || 'max' || 'min'
+      normalization_post_process    => def:'none' || 'log10' || 'log2' || 'ln'
+    */
+    typedef structure {
+        float cutoff_value;
+        bool use_cutoff_value;
+        float cutoff_number_of_records;
+        bool use_cutoff_number_of_records;
+        string normalization_scope;
+        string normalization_type;
+        string normalization_post_process;
+    } filter_params;
+
+    /* 
+    ORDER OF OPERATIONS:
+    1) using normalization scope, defines whether process should occur per column or globally over every column
+    2) using normalization type, normalize by dividing values by the option indicated
+    3) apply normalization post process if set (ie take log of the result)
+    4) apply the cutoff_value threshold to all records, eliminating any that are not above the specified threshold
+    5) apply the cutoff_number_of_records (always applies per_column!!!), discarding any record that are not in the top N record values for that column
+    
+    - if a value is not a valid number, it is ignored
+    
+    */
+    funcdef filter_abundance_profile(abundance_data abundance_data, filter_params filter_params) returns (abundance_data abundance_data_processed);
+    
+    
     
     /* *********************************************************************************************** */
     /* METHODS FOR TREE-BASED FEATURE/SEQUENCE LOOKUPS */

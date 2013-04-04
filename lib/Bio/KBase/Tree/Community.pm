@@ -24,6 +24,7 @@ use JSON;
 use LWP::UserAgent;
 use File::Temp;
 use Digest::MD5 qw(md5_hex);
+use Scalar::Util qw(looks_like_number);
 
 use Bio::KBase::ERDB_Service::Client;
 
@@ -109,6 +110,9 @@ sub runQiimeUclust {
     my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>1);
     close $uclustFh;
     my $uclustProcOut=`uclust --quiet --amino --libonly --id 0.70 --input $mgFh --lib $isoFh --uc $uclustFh`;
+    print $mgFh."\n";
+    print $isoFh."\n";
+    print $uclustFh."\n";
     my $exit_code = ($? >> 8);
     if($exit_code!=0) {
 	die 'ERROR RUNNING UCLUST';
@@ -355,6 +359,126 @@ sub computeAbundancesFromUclustOut {
     return ($abundance_counts, $hit_counter, $seq_counter);
 }
 
+
+# WARNING: this method does no error checking on parameters.  Error checking should be performed
+# in the calling function.
+sub filter_abundance_profile {
+    my $self=shift;
+    my $abundance_data=shift;
+    my $filter_params=shift;
+    
+    
+    my $cutoff_value = $filter_params->{'cutoff_value'};
+    my $use_cutoff_value = $filter_params->{'use_cutoff_value'};
+    my $cutoff_number_of_records = $filter_params->{'cutoff_number_of_records'};
+    my $use_cutoff_number_of_records = $filter_params->{'use_cutoff_number_of_records'};
+    
+    # can't believe I am writing this in perl, but here is the mostly quick & dirty method
+    # pass 1: compute total, avg, mean, min, max of each column and globally
+    my $gmin; my $gmax; my $gsum=0; my $gn=0; my $gavg;
+    my $min={}; my $max={}; my $sum={}; my $n={}; my $avg={};
+    foreach my $label (keys %$abundance_data) {
+    	my $data = $abundance_data->{$label};
+    	$sum->{$label}=0; $n->{$label}=0;
+    	foreach my $feature (keys %$data) {
+    	    my $value = $data->{$feature};
+    	    if(looks_like_number($value)) {
+	    	    if($gmin) { if($value<$gmin){ $gmin=$value; } } else { $gmin=$value; }
+	    	    if($min->{$label}) { if($value<$min->{$label}){ $min->{$label}=$value; } } else { $min->{$label}=$value; }
+	        	if($gmax) { if($value>$gmax){ $gmax=$value; } } else { $gmax=$value; }
+	    		if($max->{$label}) { if($value<$max->{$label}){ $max->{$label}=$value; } } else { $max->{$label}=$value; }
+	     	    $gsum += $value;
+	      	    $sum->{$label} += $value;
+	       	    $gn   += 1;
+        	    $n->{$label}   += 1;
+        	} else {
+        	    delete $abundance_data->{$label}->{$feature};
+        	}
+    	}
+    	$avg->{$label}=$sum->{$label} / $n->{$label};
+    }
+    $gavg = $gsum / $gn;
+    
+    #print 'min:'.Dumper($min)."\n";
+    #print 'max:'.Dumper($max)."\n";
+    #print 'sum:'.Dumper($sum)."\n";
+    #print 'n:'.Dumper($n)."\n";
+    #print 'gmin:'.$gmin."\n";
+    #print 'gmin:'.$gmax."\n";
+    #print 'gmin:'.$gsum."\n";
+    #print 'gmin:'.$gn."\n";
+    
+    
+    #pass 2: normalize / post normalize processing
+    my $useGlobal; if( $filter_params->{'normalization_scope'} eq 'global') { $useGlobal=1; }
+    foreach my $label (keys %$abundance_data) {
+        my $data = $abundance_data->{$label};
+        my $factor = 1;
+    	if( $filter_params->{'normalization_type'} eq 'total' ) {
+    	    if($useGlobal) { $factor = $gsum; }
+    	    else {           $factor = $sum->{$label}; }
+    	} elsif( $filter_params->{'normalization_type'} eq 'mean' ) {
+    	    if($useGlobal) { $factor = $gavg; }
+    	    else {           $factor = $avg->{$label}; }
+    	} elsif( $filter_params->{'normalization_type'} eq 'max' ) {
+    	    if($useGlobal) { $factor = $gmax; }
+    	    else {           $factor = $max->{$label}; }
+    	} elsif( $filter_params->{'normalization_type'} eq 'min' ) {
+    	    if($useGlobal) { $factor = $gmin; }
+    	    else {           $factor = $min->{$label}; }
+    	}
+    	
+    	foreach my $feature (keys %$data) {
+    	    my $value = $data->{$feature};
+    	    $value = $value / $factor;
+    	    if( $filter_params->{'normalization_post_process'} eq 'log2' ) {
+    	        $value = log($value)/log(2);
+    	    } elsif( $filter_params->{'normalization_post_process'} eq 'log10' ) {
+    	        $value = log($value)/log(10);
+    	    } elsif( $filter_params->{'normalization_post_process'} eq 'ln' ) {
+    	        $value = log($value);
+    	    }
+    	    $data->{$feature} = $value;
+    	    
+    	    # remove if we don't make the cut
+    	    if($use_cutoff_value) {
+    	        if( $value < $cutoff_value ) {
+    	            delete $abundance_data->{$label}->{$feature};
+    	        }
+    	    }
+    	    
+    	}
+    }
+    
+    # pass 3: now the (more) tricky part- we have to sort and return only the top n hits
+    if($use_cutoff_number_of_records) {
+        if($useGlobal) {
+            # we need a global sort of all the values, then we can delete all those that
+            # don't make the cut  NOT YET IMPLEMENTED!!!
+            
+            
+            
+        } else {
+            # we have to sort each column individually, and grab only the top N
+            foreach my $label (keys %$abundance_data) {
+            
+                my $data = $abundance_data->{$label};
+                my @sortedKeys = sort { $data->{$a} <=> $data->{$b} } keys %$data;
+                print "sorted: ".Dumper(\@sortedKeys)."\n";
+                print "number in list: ".scalar(@sortedKeys)."\n";
+                my $cut_count = scalar(@sortedKeys) - $cutoff_number_of_records;
+                for (my $i=0; $i<$cut_count; $i++) {
+                    delete $abundance_data->{$label}->{$sortedKeys[$i]};
+                } 
+            }
+        }
+    }
+    
+    
+    
+    
+    return $abundance_data;
+}
 
 
 
