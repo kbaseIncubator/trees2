@@ -14,7 +14,7 @@ NAME
       tree-normalize-abundance-profile -- normalize and filter metagenomic sample abundance data
 
 SYNOPSIS
-      tree-filter-abundance-profile [OPTIONS]
+      tree-normalize-abundance-profile [OPTIONS]
 
 DESCRIPTION
       Normalize metagenomic abundance read counts by sum, mean, min, or max of a column or globally,
@@ -49,9 +49,8 @@ AUTHORS
       
 ";
 
-
+# first, get options and set up the parameters to the call
 my $help = '';
-
 my $inputFile = '';
 
 my $cutoff_value='';
@@ -62,13 +61,14 @@ my $normalization_post_process='none';
 
 my $opt = GetOptions (
         "help" => \$help,
-        "input=s" => \$inputFile,
+        "input|i=s" => \$inputFile,
         "cutoff-value|v=s" => \$cutoff_value,
         "cutoff-num-records|r=s" => \$cutoff_number_of_records,
         "normalization-scope|s=s" => \$normalization_scope,
         "normalization-type|t=s" => \$normalization_type,
         "normalization-post-process|p=s" => \$normalization_post_process
         );
+if($help) { print $DESCRIPTION; exit 0; }
 
 my $use_cutoff_value = 0;
 if($cutoff_value) { $use_cutoff_value=1; }
@@ -77,8 +77,6 @@ else { $cutoff_value = 0; }
 my $use_cutoff_number_of_records = 0;
 if($cutoff_number_of_records) { $use_cutoff_number_of_records=1; }
 else { $cutoff_number_of_records = 0; }
-
-
 
 my $params = {
                      cutoff_value  =>  $cutoff_value,
@@ -91,13 +89,9 @@ my $params = {
     };
 
 
-if($help) {
-     print $DESCRIPTION;
-     exit 0;
-}
 
+# parse the actual input data, be it from a filename or from standard-in
 my $n_args = $#ARGV + 1;
-
 my $data={}; my $labels=[];
 
 # if we have specified an input file, then read the file
@@ -126,9 +120,7 @@ if($inputFile) {
           close $inputFileHandle;
      };
 }
-
-
-# if we have no arguments, then read the tree from standard-in
+# if we have no arguments, then read the data from standard-in
 elsif($n_args == 0) {
      my $first_line=1;
      while(my $line = <STDIN>) {
@@ -146,7 +138,7 @@ elsif($n_args == 0) {
      }
 }
 
-print Dumper($data)."\n";
+#print Dumper($data)."\n";
 
 if(scalar keys %$data) {
     
@@ -161,14 +153,39 @@ if(scalar keys %$data) {
     #make the call
     my $result = $treeClient->filter_abundance_profile($data,$params);
     
-    #output the result to standard out
-    print Dumper($result);
+    #TODO: optimize this
+    #output the result to standard out, first by assembling the output matrix
+    my $output_matrix = {}; my $label_index=0;
+    foreach my $label (sort keys %$result) {
+        foreach my $feature (keys %{$result->{$label}}) {
+            $output_matrix->{$feature}=[] if(!exists $output_matrix->{$feature});
+            $output_matrix->{$feature}->[$label_index] = $result->{$label}->{$feature};
+        }
+        $label_index++;
+    }
+    foreach my $value_array (values %$output_matrix) {
+        $value_array->[$label_index-1]=undef if(!exists $value_array->[$label_index-1]);
+    }
     
-    # todo!!!
-   # foreach my $label (keys %$result) {
+    # print the header
+    print "#";
+    foreach my $label (sort keys %$result) {
+        print "\t".$label;
+    }
+    print "\n";
     
-   # }
-
+    #print the actual data
+    foreach my $feature (sort keys %$output_matrix) {
+        print $feature;
+        my $values = $output_matrix->{$feature};
+        foreach my $v (@$values) {
+            print "\t";
+            print $v if(defined $v);
+        }
+        print "\n";
+    }
+   
+    exit 0;
 } else {
     print STDERR "FAILURE - unable to parse input file or standard-in.  Check your syntax.\n";
     exit 1;
