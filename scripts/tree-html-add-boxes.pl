@@ -24,8 +24,9 @@ DESCRIPTION
                         Required. Give the path to the data associated with each leaf.  
                         Data file format is tab-delimited, one row per leaf with the 
                         leaf ID as the first column and the data value(s) as the 
-                        remaining columns.  Header first line header permitted, and 
-                        if present will be used in key.  May rerun method with new
+                        remaining columns.  Header first line is permitted, but must
+                        have '#' in first column, and if present, will be used as 
+                        as a key in the legend.  May rerun method with new
                         data file and additional column(s) will be appended.
 
       -t, --tree-html-file
@@ -126,26 +127,33 @@ foreach my $line (@data_buf) {
     next if ($line =~ /^\s*$/);
     my ($id, @vals) = split (/\t/, $line);
     if (! $header_seen) {
-	foreach my $val (@vals) {
-	    if ($val !~ /^[\-\d\.\e]+$/) {
-		$header_seen = 'true';
-		push (@header, @vals);
-		last;
-	    }
-	}
+        if($line =~ /^#/) {
+            $header_seen = 'true';
+	    push (@header, @vals);
+        }
+        # original method doesn't work if headers are numeric
+	#foreach my $val (@vals) {
+	#   if ($val !~ /^[\-\d\.\e]+$/) {   
+        #   if($val =~ /^#/) {
+	#	$header_seen = 'true';
+	#	push (@header, @vals);
+	#	last;
+	#   }
+	#}
 	next  if ($header_seen);
     }
     $leaf_data{$id} = +[@vals];
     for (my $i=0; $i <= $#vals; ++$i) {
-	$global_min_val = $vals[$i]  if (! defined $global_min_val || $global_min_val > $vals[$i]);
-	$min_val[$i] = $vals[$i]  if (! defined $min_val[$i] || $min_val[$i] > $vals[$i]);
-	$max_val[$i] = $vals[$i]  if (! defined $max_val[$i] || $max_val[$i] < $vals[$i]);
+        if($vals[$i] ne '') { # we need to be able to handle null values
+            $global_min_val = $vals[$i]  if (! defined $global_min_val || $global_min_val > $vals[$i]);
+            $min_val[$i] = $vals[$i]  if (! defined $min_val[$i] || $min_val[$i] > $vals[$i]);
+            $max_val[$i] = $vals[$i]  if (! defined $max_val[$i] || $max_val[$i] < $vals[$i]);
+        }
     }
 }
 for (my $i=0; $i <= $#max_val; ++$i) {
     $range[$i] = $max_val[$i] - $min_val[$i];
 }
-
 
 # prepare key
 #
@@ -261,7 +269,7 @@ foreach my $line (@tree_html_buf) {
 		for (my $i=0; $i <= $#max_val; ++$i) {
 		    $col_header_line .= ' '.$alpha[$i];
 		}
-		push (@out, qq{<a name="header">$col_header_line});
+		push (@out, qq{<a name="header">$col_header_line</a>});
 
 		$seen_key = 'true';
 		$remove_header = undef;
@@ -329,7 +337,7 @@ foreach my $line (@tree_html_buf) {
 	# make new boxes
 	my @new_boxes = ();
 	for (my $i=0; $i <= $#max_val; ++$i) {
-	    if (! defined $leaf_data{$id}->[$i]) {
+	    if (! defined $leaf_data{$id}->[$i] || $leaf_data{$id}->[$i] eq '') {
 		$box_color = 'cccccc';
 	    } else {
 		$box_color = &getHexColor (($leaf_data{$id}->[$i] - $min_val[$i]), $range[$i], $min_val[$i], $color_scheme);

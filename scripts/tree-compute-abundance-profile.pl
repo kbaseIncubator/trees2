@@ -16,11 +16,10 @@ SYNOPSIS
       tree-compute-abundance-profile [OPTIONS]
 
 DESCRIPTION
-      Retrieve the specified tree or meta information associated with the tree.  The
-      raw tree is returned in newick format by default with leaf node labels in an
-      arbitrary internal id that is unique only within the given tree.  By default, the
-      raw tree stored in KBase is returned.  To return the tree with node labels replaced
-      with KBase protein sequence IDs or cannonical feature IDs, use the options below.
+      This method retrieves the set of metagenomic reads from a metagenomic sample that have been assigned
+      to the specified gene family.  Each read is mapped to a best hit protein sequence that corresponds to
+      a leaf in the specified KBase tree using uclust.  The result is printed to standard out as a tab
+      delimited file, and status messages on progress and results are printed to standard error.
       
       -t [ID], --tree-id [ID]
                         set this flag to specify the KBase ID of the tree to compute
@@ -29,9 +28,11 @@ DESCRIPTION
                         from an alignment willbe mapped to a sequence; this script assumes
                         that trees are built from protein sequences
                         
-      -m [ID], --metagenomic-sample-id [ID]
-                        set this flag to specify the ID of the metagenomic sample to lookup;
-                        see the KBase communities service to identifiy metagenomic samples
+      -m [ID1;ID2;ID3;...IDN;], --metagenomic-sample-id [ID1;ID2;ID3;...IDN;]
+                        set this flag to specify the IDs of the metagenomic samples to lookup;
+                        if there are multiple samples to lookup, pass a list of IDs without
+                        spaces delimited by a semicolon; see the KBase communities service to
+                        identifiy metagenomic sample ids, and the example below for 
                         
       -a [KEY], --auth [KEY]
                         set this flag to specify the authentication key that you generated with
@@ -58,14 +59,16 @@ DESCRIPTION
                         consider a hit; default value is set to 20
                         
       -h, --help
-                        diplay this help message, ignore all arguments
+                        display this help message, ignore all arguments
                         
                         
 
 EXAMPLES
-      Map reads to a tree and get an abundance profile
-      > tree-compute-abundance-profile -t 'kb|tree.18428' -m '4447970.3' -f 'COG0593' -s 'COG'
-      
+      Map reads to a tree and get an abundance profile for two metagenomic samples
+      > tree-compute-abundance-profile -t 'kb|tree.991335' -f COG0556 -s COG -m '4502923.3;4502924.3'
+
+SEE ALSO
+     tree-normalize-abundance-profile
       
 AUTHORS
       Michael Sneddon (mwsneddon\@lbl.gov)
@@ -75,7 +78,7 @@ AUTHORS
 
 my $help = '';
 my $treeId = '';
-my $mgId='';
+my $mgIdList='';
 my $protFamSrc='COG';
 my $protFamName='';
 my $pctIdt=50;
@@ -84,7 +87,7 @@ my $auth="";
 my $opt = GetOptions (
         "help" => \$help,
         "tree-id=s" => \$treeId,
-        "metagenomic-sample-id=s" => \$mgId,
+        "metagenomic-sample-id=s" => \$mgIdList,
         "source-family=s" => \$protFamSrc,
         "family-name=s" => \$protFamName,
         "percent-identity-threshold=f" => \$pctIdt,
@@ -105,7 +108,7 @@ if($n_args==0) {
         print STDERR "FAILURE - missing flag to specify a Tree ID.  Run with --help for usage.\n";
         exit 1;
     }
-    if(!$mgId) {
+    if(!$mgIdList) {
         print STDERR "FAILURE - missing flag to specify a metagenomic sample ID.  Run with --help for usage.\n";
         exit 1;
     }
@@ -122,31 +125,61 @@ if($n_args==0) {
         exit 1;
     }
     
-    # make the call
-    my $result;
-    #eval {   #add eval block so errors don't crash execution, should really handle exceptions here.
-        my $params = {};
-        $params->{'protein_family_name'} = $protFamName;
-        $params->{'protein_family_source'} = $protFamSrc;
-        $params->{'metagenomic_sample_id'} = $mgId;
-        $params->{'tree_id'} = $treeId;
-        $params->{'percent_identity_threshold'} = $pctIdt;
-        $params->{'match_length_threshold'} = $matchThreshold;
-        $params->{'mg_auth_key'} = $auth;
-        
-        $result = $treeClient->compute_abundance_profile($params);
-    #};
-
-    if($result) {
-        my $abundance_profile = $result->{abundances};
-        foreach my $leaf (keys %$abundance_profile) {
-            print $leaf."\t".$abundance_profile->{$leaf}."\n";
-        }
-        print STDERR "found $result->{n_hits} hits of $result->{n_reads} metagenomic reads\n";
-    } else {
-        print STDERR "FAILURE - command did not execute successfully.\n";
-        exit 1;
+    # set up the output hash
+    my $assembledResult = {}; # built as {mgID=>{leafId1=>count1,leafId2=>count2 ... }}
+    my $allFoundLeafNodes = {}; # built as {leafHit=>1 ....}, if a leaf is not in here by the end, then it recieved 0 hits across all samples
+    
+    # split the metagenomic sample ids and iterate over each one
+    my @mgIds = split(";",$mgIdList);
+    foreach my $mgId (@mgIds) {
+	    
+	    my $result;
+	    #eval {   #add eval block so errors don't crash execution, should really handle exceptions here.
+	        my $params = {};
+	        $params->{'protein_family_name'} = $protFamName;
+	        $params->{'protein_family_source'} = $protFamSrc;
+	        $params->{'metagenomic_sample_id'} = $mgId;
+	        $params->{'tree_id'} = $treeId;
+	        $params->{'percent_identity_threshold'} = $pctIdt;
+	        $params->{'match_length_threshold'} = $matchThreshold;
+	        $params->{'mg_auth_key'} = $auth;
+	        
+	    	# make the call
+	        $result = $treeClient->compute_abundance_profile($params);
+	    #};
+	
+	    if($result) {
+	        my $abundance_profile = $result->{abundances};
+	        $assembledResult->{$mgId} = $abundance_profile;
+	        foreach my $leaf (keys %$abundance_profile) {
+	        	$allFoundLeafNodes->{$leaf} = 1;
+	        }
+	        print STDERR "found $result->{n_hits} hits of $result->{n_reads} metagenomic reads for sample $mgId\n";
+	    } else {
+	        print STDERR "FAILURE - command did not execute successfully for metagenomic sample $mgId.\n";
+	        exit 1;
+	    }
     }
+    
+    
+    # print the result (probably there is a more effecient way to aggregate the result, but who cares)
+    print "#";
+    foreach my $mgId (@mgIds) {
+    	print "\t".$mgId;
+    }
+    print "\n";
+    foreach my $leaf (sort keys %$allFoundLeafNodes) {
+    	print $leaf;
+    	foreach my $mgId (@mgIds) {
+	    	if(exists $assembledResult->{$mgId}->{$leaf}) {
+	    		print "\t".$assembledResult->{$mgId}->{$leaf};
+	    	} else {
+	    		print "\t0";
+	    	}
+    	}
+    	print "\n";
+    }
+    
     exit 0;
 }
 

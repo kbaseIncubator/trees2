@@ -12,7 +12,7 @@ use Bio::KBase::Tree::Util qw(get_tree_client);
 my $DESCRIPTION =
 "
 NAME
-      tree-filter-abundance-profile -- filter metagenomic samples to abundance count tree mapping
+      tree-filter-abundance-profile-column -- filter metagenomic samples to abundance count tree mapping
 
 SYNOPSIS
       tree-filter-abundance-profile [OPTIONS]
@@ -74,9 +74,9 @@ EXAMPLES
       574925_1_289_696	3
 
       Normalize values by a reducing factor of 5.0
-      > tree-filter-abundance-profile -i abundance.out -n 5.0
+      > tree-filter-abundance-profile-column -i abundance.out -n 5.0
       OR
-      > tree-filter-abundance-profile -i abundance.out --normalize 5.0
+      > tree-filter-abundance-profile-column -i abundance.out --normalize 5.0
 
       19516952_1_320_727	0.2
       17606074_1_288_654	0.6
@@ -105,9 +105,9 @@ EXAMPLES
 
 
       Group the nodes into a set of 6 groups with evenly spaced range values      
-      > tree-filter-abundance-profile -i abundance.out -g 6
+      > tree-filter-abundance-profile-column -i abundance.out -g 6
       OR
-      > tree-filter-abundance-profile -i abundance.out --groups 6
+      > tree-filter-abundance-profile-column -i abundance.out --groups 6
 
       19516952_1_320_727	0_range_1.00-2.50
       17606074_1_288_654	1_range_2.50-4.00
@@ -136,9 +136,9 @@ EXAMPLES
 
 
       Apply a minimum threshold of 2.0 to the abundance counts, which will remove all counts less than 2.0
-      > tree-filter-abundance-profile -i abundance.out -t 2.0 
+      > tree-filter-abundance-profile-column -i abundance.out -t 2.0 
       OR
-      > tree-filter-abundance-profile -i abundance.out --threshold 2.0 
+      > tree-filter-abundance-profile-column -i abundance.out --threshold 2.0 
 
       17606074_1_288_654	3
       17606382_1_255_669	8

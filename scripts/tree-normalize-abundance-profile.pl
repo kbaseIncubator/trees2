@@ -18,29 +18,43 @@ SYNOPSIS
 
 DESCRIPTION
       Normalize metagenomic abundance read counts by sum, mean, min, or max of a column or globally,
-      and optionally post-process the normalized counts with a 
-
-      The expected input is a tab-delimited string with tree node labels in the first column
-      and abundance counts in the second column.
-
-      The -g, -t, -n options can all be supplied in a single call, or can be acheived using multiple script calls.
-      If you supply multiple options (-g,-t,-n), the order they will be applied is minimum thresholding, 
-      normalization, and then grouping.
-
-      -g, --groups
-                        specify a number of evenly spaced groups to divide the data into,
-                        which will bin the data into groups of size (max - min + 1)/number_of_groups,
-                        where data is in a group if (data >= group_min and data < next_group_min)
-      -t, --threshold
-                        specify a global minimum threshold to filter the input counts with,
-                        which will remove all nodes with counts strictly less than the threshold
-      -n, --normalize
-                        normalize the data by a constant factor (i.e. divide by some factor)
-      -i, --input                                                                                           
-                        specify an input file to read from; if provided, any other arguments
-                        and standard-in are ignored
+      take the log of the values, and threshold the data by providing a cutoff value.  These steps always
+      occur in this order, but all processing steps are optional, so executing this command multiple times
+      on the same data can
+      
+      The expected input is a tab-delimited file with tree node labels in the first column, sample names in
+      the first row, and abundance values in the remaining data matrix.  Note that this is the same format
+      as the output produced from tree-compute-abundance-profile.  The output format is identical to the input
+      format.  Missing values are acceptable and will not be used in calculations.
+      
+      Input can be piped to standard in or specified with the -i option.  Output is written to standard out.
+      
+      -s [SCOPE], --normalization-type [SCOPE]
+                        specify the scope of normalization; normalization can either be performed per column
+                        (e.g. mean is computed per column) or globally across all the data points; available
+                        options are: 'per_column', 'global'; the default option is 'per_column'
+      -t [TYPE], --normalization-type [TYPE]
+                        specify the method of normalization (ie the normalization factor); available
+                        options are 'none', 'total', 'mean', 'max', 'min'; the default value if no
+                        value is given is 'none', which performes no normalization
+      -p [OPERATION], --normalization-post-process [OPERATION]
+                        specify an operation to perform on each data element after values have been
+                        normalized; available options are 'none', 'log10', 'log2', 'ln'; the default
+                        value is 'none'
+      -v [VALUE], --cutoff-value [VALUE]
+                        specify a cutoff value to threshold the data AFTER it has been normalized and
+                        any specified post-normalization operation has been performed; the cutoff value
+                        is a floating-point number; if this option is not provided, then no thresholding
+                        is applied
+      -r [INTEGER], --cutoff-num-records [INTEGER]
+                        specify the maximum number of values to include per column, selecting those N
+                        elements in each column that are highest; note that the normalization scope
+                        parameter is completely ignored for this operation; the cutoff number must be
+                        an integer value; if this option is not provided, all records are preserved
+      -i [FILE_NAME], --input [FILE_NAME]  
+                        specify an input file to read from; if provided standard-in is ignored
       -h, --help
-                        diplay this help message, ignore all arguments
+                        display this help message, ignore all arguments
                                                 
 EXAMPLES
     

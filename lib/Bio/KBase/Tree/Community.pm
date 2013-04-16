@@ -432,11 +432,14 @@ sub filter_abundance_profile {
     	    my $value = $data->{$feature};
     	    $value = $value / $factor;
     	    if( $filter_params->{'normalization_post_process'} eq 'log2' ) {
-    	        $value = log($value)/log(2);
+	        if($value) { $value = log($value)/log(2); }     
+		else { $value=''; }
     	    } elsif( $filter_params->{'normalization_post_process'} eq 'log10' ) {
-    	        $value = log($value)/log(10);
+    	        if($value) { $value = log($value)/log(10); }
+		else { $value=''; }
     	    } elsif( $filter_params->{'normalization_post_process'} eq 'ln' ) {
-    	        $value = log($value);
+    	        if($value) { $value = log($value); }
+		else { $value=''; }
     	    }
     	    $data->{$feature} = $value;
     	    
