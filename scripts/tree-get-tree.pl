@@ -35,6 +35,23 @@ DESCRIPTION
                         feature IDs.  Note that some trees may not have assigned cannonical
                         feature IDs for each node, in which case blank labels will be returned.
                         
+      -e, --best-feature
+                        set this flag to return the tree with node labels replaced with KBase
+                        feature IDs, where one feature ID is selected for each leaf. Note that
+                        in most cases, MANY feature IDs will map to one leaf, and this method
+                        will just select one.  You should not assume that the same feature ID
+                        will be selected over multiple runs as the metric for selecting the
+                        best feature may change, or new features may be added to KBase!
+                        
+      -g, --best-genome
+                        set this flag to return the tree with node labels replaced with KBase
+                        genome IDs, where one genome ID is selected for each leaf. Note that
+                        in most cases, MANY feature IDs (from many genomes) will map to one
+                        leaf, and this method will just select one.  You should not assume
+                        that the same genome ID will be selected over multiple runs as the
+                        metric for selecting the best feature may change, or new features may
+                        be added to KBase!
+                        
       -b, --bootstrap-remove
                         set this flag to return the tree with bootstrap values removed
                         
@@ -72,17 +89,21 @@ AUTHORS
 my $help = '';
 my $metaFlag = '';
 my $replaceFeature='';
+my $replaceBestFeature='';
+my $replaceBestGenome='';
 my $replaceSequence='';
 my $noBootstrap='';
 my $noDist='';
 my $inputFile='';
 my $opt = GetOptions (
-        "help" => \$help,
-        "meta" => \$metaFlag,
-        "feature" => \$replaceFeature,
-        "protein-sequence" => \$replaceSequence,
-        "bootstrap-remove" => \$noBootstrap,
-        "distance-remove" => \$noDist,
+        "help|h" => \$help,
+        "meta|m" => \$metaFlag,
+        "feature|f" => \$replaceFeature,
+        "best-feature|e" => \$replaceBestFeature,
+        "best-genome|g" => \$replaceBestGenome,
+        "protein-sequence|p" => \$replaceSequence,
+        "bootstrap-remove|b" => \$noBootstrap,
+        "distance-remove|d" => \$noDist,
         "input" => \$inputFile
         );
 
@@ -99,7 +120,7 @@ if($inputFile) {
      my $inputFileHandle;
      open($inputFileHandle, "<", $inputFile);
      if(!$inputFileHandle) {
-          print "FAILURE - cannot open '$inputFile' \n$!\n";
+          print STDERR "FAILURE - cannot open '$inputFile' \n$!\n";
           exit 1;
      }
      eval {
@@ -125,7 +146,7 @@ elsif($n_args == 0) {
           push @$id_list,$line;
      }
 } else {
-     print "Invalid number of arguments.  Run with --help for usage.\n";
+     print STDERR "Invalid number of arguments.  Run with --help for usage.\n";
      exit 1;
 }
 
@@ -134,7 +155,7 @@ foreach my $treeId (@$id_list) {
     my $treeClient;
     eval{ $treeClient = get_tree_client(); };
     if(!$treeClient) {
-        print "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
+        print STDERR "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
         exit 1;
     }
     if($metaFlag) {
@@ -155,11 +176,17 @@ foreach my $treeId (@$id_list) {
         my $tree;
         # eval {   #add eval block so errors don't crash execution, should really handle exceptions here.
             my $options = {};
-            if($replaceFeature && $replaceSequence) { print "FAILURE - cannot use -p option with -f; choose one or the other.\n"; exit 1; }
-            if($replaceFeature) {$options->{newick_label}='feature_id';}
-            if($replaceSequence) {$options->{newick_label}='protein_sequence_id';}
+            
+            my $replace_opt_count = 0;
+            if($replaceFeature) {$options->{newick_label}='feature_id'; $replace_opt_count++;}
+            if($replaceSequence) {$options->{newick_label}='protein_sequence_id';  $replace_opt_count++;}
+            if($replaceBestFeature) {$options->{newick_label}='best_feature_id';  $replace_opt_count++;}
+            if($replaceBestGenome) {$options->{newick_label}='best_genome_id';  $replace_opt_count++;}
+            if( $replace_opt_count >= 2 ) { print STDERR "FAILURE - you can only select ONLY ONE of these options: [-p -f -e -g]\n"; exit 1; }
+            
             if($noBootstrap) {$options->{newick_bootstrap}='none';}
             if($noDist) {$options->{newick_distance}='none';}
+            
             ($tree) = $treeClient->get_tree($treeId,$options);
         # };
         if($tree) { print $tree."\n"; }

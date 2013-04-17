@@ -9,6 +9,7 @@ Authors
 Michael Sneddon, LBL (mwsneddon@lbl.gov)
 Fangfang Xia, ANL (fangfang.xia@gmail.com)
 Matt Henderson, LBL (mhenderson@lbl.gov)
+Dylan Chivian, LBL (dcchivian@lbl.gov)
 
 */
 module Tree
@@ -133,7 +134,6 @@ module Tree
         string alignment_protocol - simple free-form text which may provide additional details of how the alignment was built
         string source_db - the source database where this alignment originated, if one exists
         string source_id - the id of this alignment in an external database, if one exists
-    
     */
     typedef structure {
         list<kbase_id> tree_ids;
@@ -150,6 +150,67 @@ module Tree
         string source_id;
     } alignment_meta_data;
     
+    
+    
+    /*typedef structure {
+        int beg_pos_aln;
+        int end_pos_aln;
+        int beg_pos_in_parent;
+        int end_pos_in_parent;
+        int parent_seq_length;
+        string md5_of_ungapped_sequence;
+        
+        string parent_sequence;
+        string parent_sequence_type;
+        string parent_sequence_md5;
+        
+        string parent_sequence_canonical_kb_feature_id;
+    
+    } AlignmentRowComponent;
+    
+    typedef structure {
+        string row_id;
+        string row_description;
+        string raw_row_sequence;
+        list <AlignmentRowComponent> components;
+    } AlignmentRow;
+    
+    typedef structure {
+        string alignment_id;
+        list<AlignmentRow> rows;
+        mapping<string,string> alignment_attributes;
+        string status;
+        bool is_concatenation
+        string sequence_type
+        timestamp timestamp
+        string method
+        string parameters
+        string protocol;
+        string source_db;
+        string source_id;
+    } Alignment;
+    
+    typedef structure {
+        string tree_id;
+        newick_tree newick_tree;
+        mapping<string,string> tree_attributes;
+        mapping<string,mapping<string,string>> node_attributes;
+        string status;
+        string data_type;
+        timestamp timestamp;
+        string method;
+        string parameters;
+        string protocol;
+        string source_id;
+        string source_db;
+    } Tree;
+    
+    
+    typedef structure {
+        Tree tree;
+        Alignment alignment;
+    } AlignmentTree;
+    */
     
     
     
@@ -170,6 +231,14 @@ module Tree
     */
     funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
    
+    /* Some KBase trees keep information on canonical feature ids, even if they have the same protien sequence
+    in an alignment.  In these cases, some leaves with identical sequences will have zero distance so that
+    information on canonical features is maintained.  Often this information is not useful, and a single
+    example feature or genome is sufficient.  This method will accept a tree in newick format (with distances)
+    and merge all leaves that have zero distance between them (due to identical sequences), and keep arbitrarily
+    only one of these leaves.
+    */
+    funcdef merge_zero_distance_leaves(newick_tree tree) returns (newick_tree);
    
    
     /* NOTE: methods that are commented out are not yet fully implemented yet, but will likely appear in future
@@ -232,7 +301,8 @@ module Tree
     
         options = [
             format => 'newick',
-            newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+            newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' ||
+                            'contig_sequence_id' || 'best_feature_id' || 'best_genome_id',
             newick_bootstrap => 'none' || 'internal_node_labels'
             newick_distance => 'none' || 'raw'
         ];
@@ -245,11 +315,13 @@ module Tree
     of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
     'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
     feature that was originally used to define the sequence). Note that exemplar feature_ids are not
-    defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
+    defined for all trees, so this may result in an empty tree! 'protein_sequence_id' indicates that the
     kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
     the contig sequence id is added.  Note that trees are typically built with protein sequences OR
     contig sequences. If you select one type of sequence, but the tree was built with the other type, then
-    no labels will be added.  The default value if none is specified is 'raw'.
+    no labels will be added.  'best_feature_id' is used in the frequent case where a protein sequence has
+    been mapped to multiple feature ids, and an example feature_id is used.  Similarly, 'best_genome_id'
+    replaces the labels with the best example genome_id.  The default value if none is specified is 'raw'.
     
     The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
     how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
@@ -257,9 +329,13 @@ module Tree
     
     The 'newick_distance' key allows control over whether distance labels are generated or not.  If set to
     'none', no distances will be output. Default is 'raw', which outputs the distances exactly as they appeared
-    when loaded into kbase.
+    when loaded into KBase.
     */
     funcdef get_tree(kbase_id tree_id, mapping<string,string> options) returns (tree);
+    
+    
+    
+    
     
     /* Returns the specified alignment in the specified format, or an empty string if the alignment does not exist.
     The options hash provides a way to return the alignment with different labels replaced or with different attached meta

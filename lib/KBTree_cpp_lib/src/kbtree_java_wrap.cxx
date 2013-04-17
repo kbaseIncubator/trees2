@@ -468,6 +468,17 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1removeNodesByNameA
 }
 
 
+SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1mergeZeroDistLeaves(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(KBTreeLib::KBTree **)&jarg1; 
+  (arg1)->mergeZeroDistLeaves();
+}
+
+
 SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;

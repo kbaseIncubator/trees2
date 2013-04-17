@@ -114,6 +114,7 @@ void KBNode::clear()
 	this->post_dist_decoration="";
 	this->distanceToParent=NAN;
 	this->bootstrapValue=NAN;
+	this->hidden_marker="";
 }
 
 std::string KBNode::getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label)
@@ -815,7 +816,43 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames, bool
 
 
 
+void KBTree::mergeZeroDistLeaves() {
 
+	// we proceed in two steps.  First, we go through the entire tree and find the children
+	// that are zero distance.  We mark the parent if we found one for the first node we encounter,
+	// so that siblings can be marked for deletion. Marking for deletion is as simple as renaming
+	// the node to some string that (probably :) ) no one will use as a valid node name. Step
+	// two, we simply call the method to remove marked nodes and simplify the tree.
+	tree<KBNode>::post_order_iterator node;
+	map<string,string>::iterator name;
+	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
+	
+		if (tr.number_of_children(node)==0) {
+			if( !isnan((*node).getDistanceToParent()) ) {
+				if( (*node).getDistanceToParent()==0 ) {
+					if(verbose) {
+						cout<<"looking at node:"<<(*node).getName()<<endl;
+						cout<<"distance to parent: "<<(*node).getDistanceToParent()<<endl;
+						cout<<"parent marker: '" << (*tr.parent(node)).getHiddenMarkerLabel() <<"'"<< endl;
+					}
+					if((*tr.parent(node)).getHiddenMarkerLabel().compare("")==0) {
+						(*tr.parent(node)).setHiddenMarkerLabel("marked");
+						if(verbose) { cout<<"unmarked parent is now marked"<<endl; }
+					} else {
+						(*node).name="THE_SECRET_CODE_TO_DELETE_THIS_NODE_HACK";
+						if(verbose) { cout<<"i have decided to delete this node."<<endl; }
+					}
+				}
+			}
+		}
+		
+	}
+	
+	// carry out step 2
+	map<string,string> nodeNameMap;
+	nodeNameMap.insert(pair<string,string>("THE_SECRET_CODE_TO_DELETE_THIS_NODE_HACK",""));
+	removeNodesByNameAndSimplify(nodeNameMap);
+}
 
 
 

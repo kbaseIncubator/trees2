@@ -83,6 +83,10 @@ public class KBTree {
     KBTreeUtilJNI.KBTree_removeNodesByNameAndSimplify(swigCPtr, this, nodeNames);
   }
 
+  public void mergeZeroDistLeaves() {
+    KBTreeUtilJNI.KBTree_mergeZeroDistLeaves(swigCPtr, this);
+  }
+
   public void replaceNodeNames(String replacements) {
     KBTreeUtilJNI.KBTree_replaceNodeNames(swigCPtr, this, replacements);
   }

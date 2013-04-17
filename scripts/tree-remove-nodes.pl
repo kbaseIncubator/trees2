@@ -25,18 +25,23 @@ DESCRIPTION
      If the tree is not provided as an argument and no input file is specified,
      the tree is read in from standard-in.
       
-      -r, --removal-list
+      -r [FILE_NAME], --removal-list [FILE_NAME]
                         specify the file name of the list of nodes to remove; this file should
                         be a one column file where each line contains the name of the node to
                         remove; if multiple nodes have a identical labels, they are all
                         removed
                         
-      -s, --save-list
+      -s [FILE_NAME], --save-list [FILE_NAME]
                         instead of specifying the set set of nodes to remove, this flag indicates
                         that the list includes the list of nodes to save; if a node label is
                         on this list it is saved, otherwise it is removed
                         
-      -i, --input
+      -z, --merge-zero-distance-leaves
+                        after other removal operations have been performed, setting this flags
+                        specifies that all leaves with distance zero are merged into a single
+                        leaf, and an arbitrary leaf is kept.
+                        
+      -i [FILE_NAME], --input [FILE_NAME]
                         specify an input file to read the tree from
                         
       -h, --help
@@ -62,13 +67,15 @@ my $treeString='';
 my $inputFile = '';
 my $removalFile = '';
 my $saveFile = '';
+my $mergeZeroDistLeaves='';
 
 # parse arguments and output file
 my $stdinString = "";
 my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
                      "removal-list=s" => \$removalFile,
-                     "save-list=s" => \$saveFile
+                     "save-list=s" => \$saveFile,
+                     "merge-zero-distance-leaves|z" => \$mergeZeroDistLeaves
                      );
 if($help) {
      print $DESCRIPTION;
@@ -184,6 +191,9 @@ if ($treeString ne '') {
      my $new_tree;
      eval {
           $new_tree = $treeClient->remove_node_names_and_simplify($treeString, $removalList);
+          if($mergeZeroDistLeaves) {
+               $new_tree = $treeClient->merge_zero_distance_leaves($new_tree);
+          }
      };
 
      $client_error = $@;
@@ -192,6 +202,7 @@ if ($treeString ne '') {
           print STDERR "FAILURE - error calling Tree service.\n";
           exit 1;
      }
+     
 
      print $new_tree."\n";
      exit 0;

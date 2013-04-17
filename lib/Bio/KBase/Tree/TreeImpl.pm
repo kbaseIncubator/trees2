@@ -21,6 +21,7 @@ Authors
 Michael Sneddon, LBL (mwsneddon@lbl.gov)
 Fangfang Xia, ANL (fangfang.xia@gmail.com)
 Matt Henderson, LBL (mhenderson@lbl.gov)
+Dylan Chivian, LBL (dcchivian@lbl.gov)
 
 =cut
 
@@ -310,6 +311,86 @@ sub remove_node_names_and_simplify
 
 
 
+=head2 merge_zero_distance_leaves
+
+  $return = $obj->merge_zero_distance_leaves($tree)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$tree is a newick_tree
+$return is a newick_tree
+newick_tree is a tree
+tree is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$tree is a newick_tree
+$return is a newick_tree
+newick_tree is a tree
+tree is a string
+
+
+=end text
+
+
+
+=item Description
+
+Some KBase trees keep information on canonical feature ids, even if they have the same protien sequence
+in an alignment.  In these cases, some leaves with identical sequences will have zero distance so that
+information on canonical features is maintained.  Often this information is not useful, and a single
+example feature or genome is sufficient.  This method will accept a tree in newick format (with distances)
+and merge all leaves that have zero distance between them (due to identical sequences), and keep arbitrarily
+only one of these leaves.
+
+=back
+
+=cut
+
+sub merge_zero_distance_leaves
+{
+    my $self = shift;
+    my($tree) = @_;
+
+    my @_bad_arguments;
+    (!ref($tree)) or push(@_bad_arguments, "Invalid type for argument \"tree\" (value was \"$tree\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to merge_zero_distance_leaves:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'merge_zero_distance_leaves');
+    }
+
+    my $ctx = $Bio::KBase::Tree::Service::CallContext;
+    my($return);
+    #BEGIN merge_zero_distance_leaves
+    
+    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree,0,1);
+    $kb_tree->mergeZeroDistLeaves();
+    $return = $kb_tree->toNewick(1); # 1 indicates the style to out
+    
+    #END merge_zero_distance_leaves
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to merge_zero_distance_leaves:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'merge_zero_distance_leaves');
+    }
+    return($return);
+}
+
+
+
+
 =head2 extract_leaf_node_names
 
   $return = $obj->extract_leaf_node_names($tree)
@@ -371,7 +452,6 @@ sub extract_leaf_node_names
     my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree($tree);
     my $leaf_names = $kb_tree->getAllLeafNames();
     my @leaf_name_list = split(';', $leaf_names);
-    print "done\n";
     $return = \@leaf_name_list;
     #END extract_leaf_node_names
     my @_bad_returns;
@@ -653,7 +733,8 @@ information.  Currently, the available flags and understood options are listed b
 
     options = [
         format => 'newick',
-        newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' || 'contig_sequence_id',
+        newick_label => 'none' || 'raw' || 'feature_id' || 'protein_sequence_id' ||
+                        'contig_sequence_id' || 'best_feature_id' || 'best_genome_id',
         newick_bootstrap => 'none' || 'internal_node_labels'
         newick_distance => 'none' || 'raw'
     ];
@@ -666,11 +747,13 @@ placed in the label of each leaf.  'none' indicates that no label is added, so y
 of the tree only.  'raw' indicates that the raw label mapping the leaf to an alignement row is used.
 'feature_id' indicates that the label will have an examplar feature_id in each label (typically the
 feature that was originally used to define the sequence). Note that exemplar feature_ids are not
-defined for all trees, so this may result in an empty tree.  'protein_sequence_id' indicates that the
+defined for all trees, so this may result in an empty tree! 'protein_sequence_id' indicates that the
 kbase id of the protein sequence used in the alignment is used.  'contig_sequence_id' indicates that
 the contig sequence id is added.  Note that trees are typically built with protein sequences OR
 contig sequences. If you select one type of sequence, but the tree was built with the other type, then
-no labels will be added.  The default value if none is specified is 'raw'.
+no labels will be added.  'best_feature_id' is used in the frequent case where a protein sequence has
+been mapped to multiple feature ids, and an example feature_id is used.  Similarly, 'best_genome_id'
+replaces the labels with the best example genome_id.  The default value if none is specified is 'raw'.
 
 The 'newick_bootstrap' key allows control over whether bootstrap values are returned if they exist, and
 how they are returned.  'none' indicates that no bootstrap values are returned. 'internal_node_labels'
@@ -678,7 +761,7 @@ indicates that bootstrap values are returned as internal node labels.  Default v
 
 The 'newick_distance' key allows control over whether distance labels are generated or not.  If set to
 'none', no distances will be output. Default is 'raw', which outputs the distances exactly as they appeared
-when loaded into kbase.
+when loaded into KBase.
 
 =back
 
@@ -721,31 +804,14 @@ sub get_tree
 	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0],0,1);
 	    
 	    if($options->{format} eq "newick") {
-		
+		print "hello newick\n";
 		#figure out how to label the nodes
 		if($options->{newick_label} eq "none") {
 		    $kb_tree->setOutputFlagLabel(0);
 		} elsif ($options->{newick_label} eq "raw") {
 		    $kb_tree->setOutputFlagLabel(1);
 		} elsif ($options->{newick_label} eq "feature_id") {
-		    # go from feature id to sequence to lookup trees
-		    #$kb_tree->setOutputFlagLabel(1);
-		    #my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
-			#    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
-			#    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
-		    #my $replacement_str="";
-		    #for my $i (0 .. $#feature_ids) {
-			#if ($i>=1) {
-			#    $replacement_str = $replacement_str.${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";"
-			#	; #unless ( ${$feature_ids[$i]}[0] eq ${$feature_ids[$i-1]}[0]);
-			#} else {
-			#    $replacement_str = ${$feature_ids[$i]}[0].";".${$feature_ids[$i]}[1].";";
-			#}
-		    #}
-		    #Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $replacement_str, method_name => 'get_tree');
-		    #$kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
-		    
-		    # go from exemplar feature stored directly in the tree
+		    # use the exemplar feature stored directly in the tree
 		    $kb_tree->setOutputFlagLabel(1);
 		    # replace names with feature ids
 		    my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
@@ -780,13 +846,74 @@ sub get_tree
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedDNA(to-link)', $tree_id,
 			    [qw(AlignmentRow(row-id) ContainsAlignedDNA(to-link))]);
 		    my $replacement_str="";
-		    
-		    
-		    
 		    foreach (@contig_seq_ids) { #might be a better way to concatenate this list...
 			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
 		    }
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		} elsif ($options->{newick_label} eq "best_feature_id") {
+		
+		    # lookup the list of features
+		    $kb_tree->setOutputFlagLabel(1);
+		    my @row2featureId = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
+			    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
+		    my $replacement_str="";
+		    
+		    my $row2featureListMap = {};
+		    foreach my $pair (@row2featureId) {
+			# best = lowest ID number
+			if(exists $row2featureListMap->{$pair->[0]}) {
+			    my @new_match = split /\./, $pair->[1];
+			    my @old_match = split /\./, $row2featureListMap->{$pair->[0]};
+			    if($new_match[1] < $old_match[1]) { # first compare on genome numbers
+				$row2featureListMap->{$pair->[0]} = $pair->[1];
+			    } elsif($new_match[1] == $old_match[1]) { # next compare on FID numbers if genome ids are identical
+				if($new_match[3] == $old_match[3]) {
+				    $row2featureListMap->{$pair->[0]} = $pair->[1];
+				}
+			    }
+			} else {
+			    $row2featureListMap->{$pair->[0]} = $pair->[1];
+			}
+		    }
+		    my $replacement_str="";
+		    while( my ($rowId, $fid) = each %$row2featureListMap ) {
+			$replacement_str = $replacement_str.$rowId.";".$fid.";";
+		    }
+		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		    
+		} elsif($options->{newick_label} eq "best_genome_id") {
+		
+		    # lookup the list of features
+		    $kb_tree->setOutputFlagLabel(1);
+		    my @row2featureId = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
+			    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
+		    my $replacement_str="";
+		    
+		    my $row2featureListMap = {};
+		    foreach my $pair (@row2featureId) {
+		        my @tokens = split /\./, $pair->[1];
+			$pair->[1] = 'kb|g.'.@tokens[1];
+			# best = lowest ID number
+			if(exists $row2featureListMap->{$pair->[0]}) {
+			    my @new_match = split /\./, $pair->[1];
+			    my @old_match = split /\./, $row2featureListMap->{$pair->[0]};
+			    if($new_match[1] < $old_match[1]) { # first compare on genome numbers
+				$row2featureListMap->{$pair->[0]} = $pair->[1];
+			    }
+			} else {
+			    $row2featureListMap->{$pair->[0]} = $pair->[1];
+			}
+		    }
+		    my $replacement_str="";
+		    while( my ($rowId, $fid) = each %$row2featureListMap ) {
+			$replacement_str = $replacement_str.$rowId.";".$fid.";";
+		    }
+		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
+		
+		
+		
 		} elsif ($options->{newick_label} eq "scientific_name") {
 		    #$kb_tree->setOutputFlagLabel(1);
 		    # first get feature ids

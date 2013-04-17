@@ -40,7 +40,7 @@ namespace KBTreeLib {
 
 			/*! Returns the name of the node (from parsing the original label) */
 			std::string getName() const { return name; };
-
+	      
 			/*! Returns the distance from this node to its parent (from parsing the original label), or NAN if no distance was set */
 			double getDistanceToParent() const { return distanceToParent; };
 
@@ -51,6 +51,7 @@ namespace KBTreeLib {
 			 * @param[in] style Specifies what parts of the node to print to the string.
 			 */
 			std::string getLabelFromComponents(unsigned int style);
+			
 
 			/*! Return a string representation of this Node based on the output style.
 			* @param[in] style Specifies what parts of the node to print to the string.
@@ -74,6 +75,11 @@ namespace KBTreeLib {
 			std::string post_dist_decoration;  /*!< comments enclosed in [...] after the distance label  */
 			double distanceToParent;           /*!< Stores distance to parent if it is defined for this node, if not defined then it is set to NAN  */
 			double bootstrapValue;             /*!< Stores bootstrap value (which is parsed ONLY if activated from internal node names), if not defined then it is set to NAN  */
+	                
+			
+			void setHiddenMarkerLabel(std::string marker) { hidden_marker=marker; };
+			std::string getHiddenMarkerLabel() { return hidden_marker; };
+			std::string hidden_marker;         /*!< A hidden marker that can be set and retrieved for internal use only!!! */
 	};
 
 
@@ -184,6 +190,14 @@ namespace KBTreeLib {
 			void removeNodesByNameAndSimplify(std::map<std::string,std::string> &nodeNames);
 			void removeNodesByNameAndSimplify(const std::string &nodeNames);
 
+			
+			/**
+			 * merge leaves that have zero distance between each other, keeping an arbitrary leaf
+			 */
+			void mergeZeroDistLeaves();
+			
+			
+			
 
 			void printOutNamesAllPossibleTraversals(ostream &o);
 

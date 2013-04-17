@@ -39,7 +39,11 @@ namespace KBTreeLib {
 	    a name.  Distances are recomputed so that the distance between existing nodes
 	    in the original tree and the final tree are conserved. */
 	    void removeNodesByNameAndSimplify(const std::string &nodeNames);
-			
+	    
+            /* merge leaves that have zero distance between each other, keeping an arbitrary leaf */
+            void mergeZeroDistLeaves();
+            
+            
 	    /* given a list of node names to be replaced (concatented as from1;to1;from2;to2;...), 
 	    this function renames any node with an exact matching 'from name' from the tree, and
 	    replaces the name as 'to name'. */

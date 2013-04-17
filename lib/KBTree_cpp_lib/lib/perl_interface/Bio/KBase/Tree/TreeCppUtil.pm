@@ -81,6 +81,7 @@ sub DESTROY {
 *toNewick = *Bio::KBase::Tree::TreeCppUtilc::KBTree_toNewick;
 *writeNewickToFile = *Bio::KBase::Tree::TreeCppUtilc::KBTree_writeNewickToFile;
 *removeNodesByNameAndSimplify = *Bio::KBase::Tree::TreeCppUtilc::KBTree_removeNodesByNameAndSimplify;
+*mergeZeroDistLeaves = *Bio::KBase::Tree::TreeCppUtilc::KBTree_mergeZeroDistLeaves;
 *replaceNodeNames = *Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNames;
 *replaceNodeNamesOrMakeBlank = *Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNamesOrMakeBlank;
 *stripReservedCharsFromLabels = *Bio::KBase::Tree::TreeCppUtilc::KBTree_stripReservedCharsFromLabels;

@@ -22,6 +22,7 @@ public class KBTreeUtilJNI {
   public final static native boolean KBTree_writeNewickToFile__SWIG_0(long jarg1, KBTree jarg1_, String jarg2);
   public final static native boolean KBTree_writeNewickToFile__SWIG_1(long jarg1, KBTree jarg1_, String jarg2, long jarg3);
   public final static native void KBTree_removeNodesByNameAndSimplify(long jarg1, KBTree jarg1_, String jarg2);
+  public final static native void KBTree_mergeZeroDistLeaves(long jarg1, KBTree jarg1_);
   public final static native void KBTree_replaceNodeNames(long jarg1, KBTree jarg1_, String jarg2);
   public final static native void KBTree_replaceNodeNamesOrMakeBlank(long jarg1, KBTree jarg1_, String jarg2);
   public final static native void KBTree_stripReservedCharsFromLabels(long jarg1, KBTree jarg1_);

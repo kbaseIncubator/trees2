@@ -2693,6 +2693,33 @@ XS(_wrap_KBTree_removeNodesByNameAndSimplify) {
 }
 
 
+XS(_wrap_KBTree_mergeZeroDistLeaves) {
+  {
+    KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: KBTree_mergeZeroDistLeaves(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_KBTreeLib__KBTree, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "KBTree_mergeZeroDistLeaves" "', argument " "1"" of type '" "KBTreeLib::KBTree *""'"); 
+    }
+    arg1 = reinterpret_cast< KBTreeLib::KBTree * >(argp1);
+    (arg1)->mergeZeroDistLeaves();
+    ST(argvi) = sv_newmortal();
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
 XS(_wrap_KBTree_replaceNodeNames) {
   {
     KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
@@ -3551,6 +3578,7 @@ static swig_command_info swig_commands[] = {
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_toNewick", _wrap_KBTree_toNewick},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_writeNewickToFile", _wrap_KBTree_writeNewickToFile},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_removeNodesByNameAndSimplify", _wrap_KBTree_removeNodesByNameAndSimplify},
+{"Bio::KBase::Tree::TreeCppUtilc::KBTree_mergeZeroDistLeaves", _wrap_KBTree_mergeZeroDistLeaves},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNames", _wrap_KBTree_replaceNodeNames},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_replaceNodeNamesOrMakeBlank", _wrap_KBTree_replaceNodeNamesOrMakeBlank},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_stripReservedCharsFromLabels", _wrap_KBTree_stripReservedCharsFromLabels},
