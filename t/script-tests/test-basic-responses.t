@@ -108,10 +108,19 @@ ok($out,'tree-compute-abundance-profile with long help flag returns some text');
 
 #######################################################
 # [tree-filter-abundance-profile] script tests
-$out = `tree-filter-abundance-profile --help`;
+$out = `tree-filter-abundance-profile-column --help`;
 $exit_code = ($? >> 8);
 ok($exit_code==0,'tree-filter-abundance-profile with long help flag returns exit code 0');
 ok($out,'tree-filter-abundance-profile with long help flag returns some text');
+
+
+#######################################################
+# [tree-normalize-abundance-profile] script tests
+$out = `tree-normalize-abundance-profile --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-filter-abundance-profile with long help flag returns exit code 0');
+ok($out,'tree-filter-abundance-profile with long help flag returns some text');
+
 
 
 #######################################################
