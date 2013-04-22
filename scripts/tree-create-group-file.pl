@@ -19,8 +19,7 @@ DESCRIPTION
       standard out a two column, tab delimited file with the IDs in the first
       column and the group name in the second column.  This group file places
       all nodes in the same group.  The group file can be used as input to
-      tree-to-html.  This method is required because leaf nodes must be groupbed
-      for tree-html-add-boxes to function properly.
+      tree-to-html.
       
       -g [GROUP_NAME], --group [GROUP_NAME]
                         specify the name of the group
