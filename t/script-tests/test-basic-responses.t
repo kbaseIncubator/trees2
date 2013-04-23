@@ -110,7 +110,7 @@ ok($out,'tree-compute-abundance-profile with long help flag returns some text');
 # [tree-filter-abundance-profile] script tests
 $out = `tree-filter-abundance-profile-column --help`;
 $exit_code = ($? >> 8);
-ok($exit_code==0,'tree-filter-abundance-profile with long help flag returns exit code 0');
+ok($exit_code==0,'tree-filter-abundance-profile-column with long help flag returns exit code 0');
 ok($out,'tree-filter-abundance-profile with long help flag returns some text');
 
 
@@ -118,8 +118,8 @@ ok($out,'tree-filter-abundance-profile with long help flag returns some text');
 # [tree-normalize-abundance-profile] script tests
 $out = `tree-normalize-abundance-profile --help`;
 $exit_code = ($? >> 8);
-ok($exit_code==0,'tree-filter-abundance-profile with long help flag returns exit code 0');
-ok($out,'tree-filter-abundance-profile with long help flag returns some text');
+ok($exit_code==0,'tree-normalize-abundance-profile with long help flag returns exit code 0');
+ok($out,'tree-normalize-abundance-profile with long help flag returns some text');
 
 
 
@@ -130,6 +130,21 @@ $exit_code = ($? >> 8);
 ok($exit_code==0,'tree-remove-nodes with long help flag returns exit code 0');
 ok($out,'tree-remove-nodes with long help flag returns some text');
 
+
+#######################################################
+# [tree-html-add-boxes] script tests
+$out = `tree-html-add-boxes --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-html-add-boxes with long help flag returns exit code 0');
+ok($out,'tree-html-add-boxes with long help flag returns some text');
+
+
+#######################################################
+# [tree-html-relabel-leaves] script tests
+$out = `tree-html-relabel-leaves --help`;
+$exit_code = ($? >> 8);
+ok($exit_code==0,'tree-html-relabel-leaves with long help flag returns exit code 0');
+ok($out,'tree-html-relabel-leaves with long help flag returns some text');
 
 
 #######################################################

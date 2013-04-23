@@ -26,6 +26,7 @@ use TreeTestConfig qw(getHost getPort getURL);
 my $func_calls = {
                 replace_node_names => ["((a,b));",{"b"=>"x"}],
                 remove_node_names_and_simplify => ["((a,b));",["b"]],
+                merge_zero_distance_leaves => [ "((a:0,b:0):5,(c:3,d:2):1);" ],
                 extract_leaf_node_names => ["((a,b));"],
                 extract_node_names => ["((a,b));"],
                 get_node_count => ["((a,b));"],
@@ -47,6 +48,7 @@ my $func_calls = {
                                                 tree_id=>"kb|tree.18428",
                                                 percent_identity_threshold=> 50,
                                                 match_length_threshold=>35} ],
+                filter_abundance_profile => [ {s1=>{f1=>2,f2=>3},s2=>{f1=>0,f2=>8}}, {}],
                 draw_html_tree => ["((a,b)c);",{option=>"value"}],
                 };
 #############################################################################
