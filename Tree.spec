@@ -8,6 +8,7 @@ Authors
 ---------
 Michael Sneddon, LBL (mwsneddon@lbl.gov)
 Fangfang Xia, ANL (fangfang.xia@gmail.com)
+Keith Keller, LBL (kkeller@lbl.gov)
 Matt Henderson, LBL (mhenderson@lbl.gov)
 Dylan Chivian, LBL (dcchivian@lbl.gov)
 
@@ -116,7 +117,7 @@ module Tree
         int leaf_count;
         string source_db;
         string source_id;
-    } tree_meta_data;
+    } TreeMetaData;
     
     
     /* Meta data associated with an alignment.
@@ -148,11 +149,14 @@ module Tree
         string alignment_protocol;
         string source_db;
         string source_id;
-    } alignment_meta_data;
+    } AlignmentMetaData;
     
     
     
-    /*typedef structure {
+    /*
+    These structures are not currently used yet, and are therefore commented out....
+    
+    typedef structure {
         int beg_pos_aln;
         int end_pos_aln;
         int beg_pos_in_parent;
@@ -367,7 +371,7 @@ module Tree
     lists.  If you do not need this full meta information structure, it may be faster to directly query the
     CDS for just the field you need using the CDMI.
     */
-    funcdef get_tree_data(list<kbase_id> tree_ids) returns (mapping<kbase_id,tree_meta_data>);
+    funcdef get_tree_data(list<kbase_id> tree_ids) returns (mapping<kbase_id,TreeMetaData>);
     
     /* Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
     data may not be available for trees which are not built from alignments.  Also note that this method
@@ -375,7 +379,7 @@ module Tree
     lists.  If you do not need this full meta information structure, it may be faster to directly query the
     CDS for just the field you need using the CDMI.
     */
-    funcdef get_alignment_data(list<kbase_id> alignment_ids) returns (mapping<kbase_id,alignment_meta_data>);
+    funcdef get_alignment_data(list<kbase_id> alignment_ids) returns (mapping<kbase_id,AlignmentMetaData>);
     
     /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
     is identified and used to retrieve all trees by ID that were built using the given protein sequence. */
@@ -468,7 +472,7 @@ module Tree
         int percent_identity_threshold;
         int match_length_threshold;
         string mg_auth_key;
-    } abundance_params;
+    } AbundanceParams;
     
     /* Structure to group output of the compute_abundance_profile method.
     
@@ -483,7 +487,7 @@ module Tree
         mapping <string,int> abundances;
         int n_hits;
         int n_reads;
-    } abundance_result;
+    } AbundanceResult;
     
     /*
     Given an input KBase tree built from a sequence alignment, a metagenomic sample, and a protein family, this method
@@ -496,7 +500,7 @@ module Tree
     
     [1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
     */
-    funcdef compute_abundance_profile(abundance_params abundance_params) returns (abundance_result abundance_result);
+    funcdef compute_abundance_profile(AbundanceParams abundance_params) returns (AbundanceResult abundance_result);
 
 
     /* map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value) */
@@ -521,7 +525,7 @@ module Tree
         string normalization_scope;
         string normalization_type;
         string normalization_post_process;
-    } filter_params;
+    } FilterParams;
 
     /* 
     ORDER OF OPERATIONS:
@@ -534,7 +538,7 @@ module Tree
     - if a value is not a valid number, it is ignored
     
     */
-    funcdef filter_abundance_profile(abundance_data abundance_data, filter_params filter_params) returns (abundance_data abundance_data_processed);
+    funcdef filter_abundance_profile(abundance_data abundance_data, FilterParams filter_params) returns (abundance_data abundance_data_processed);
     
     
     
@@ -592,7 +596,5 @@ module Tree
     provides a way to pass parameters to the tree rendering algorithm, but currently no options are recognized. */
     funcdef draw_html_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);
     
-    /* Given a tree, render it as an SVG object and return the drawing. */
-    /* funcdef draw_svg_tree(newick_tree tree, mapping<string,string>display_options) returns (svg_file); */
 
 };

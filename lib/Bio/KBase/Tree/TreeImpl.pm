@@ -20,6 +20,7 @@ Authors
 ---------
 Michael Sneddon, LBL (mwsneddon@lbl.gov)
 Fangfang Xia, ANL (fangfang.xia@gmail.com)
+Keith Keller, LBL (kkeller@lbl.gov)
 Matt Henderson, LBL (mhenderson@lbl.gov)
 Dylan Chivian, LBL (dcchivian@lbl.gov)
 
@@ -43,43 +44,8 @@ sub new
     };
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
-    # NOTE: most code below copied from CDM library (CDMI_APIImpl.pm) on 10/16/12
-    # comments for my own reference are added by msneddon
-    # check if ref. to CDMI object was passed in
-#    my($cdmi) = @args;
-#    if (! $cdmi) {
-#
-#	# if not, then go to the config file defined by the deployment and import
-#	# the deployment settings
-#	my %params;
-#	if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
-#	{
-#	    my $CDMI_SERVICE_NAME = "cdmi";
-#	    
-#	    #parse the file and 
-#	    my $c = Config::Simple->new();
-#	    $c->read($e);
-#	    my @params = qw(DBD dbName sock userData dbhost port dbms develop);
-#	    for my $p (@params)
-#	    {
-#		my $v = $c->param("$CDMI_SERVICE_NAME.$p");
-#		if ($v)
-#		{
-#		    $params{$p} = $v;
-#		}
-#	    }
-#	}
-#	#Create a connection to the CDMI (and print a logging debug mssg)
-#	if( 0 < scalar keys(%params) ) {
-#	    	warn "Connection to CDMI established with the following non-default parameters:\n";
-#	    	foreach my $key (sort keys %params) { warn "   $key => $params{$key} \n"; }
-#	} else { warn "Connection to CDMI established with all default parameters.  See Bio/KBase/CDMI/CDMI.pm\n"; }
-#        $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
-#    }
-#    $self->{db} = $cdmi;
     
-    
-     #load a configuration file to determine where all the services live
+    #load a configuration file to determine where all the services live
     my %params;
     #if ((my $e = $ENV{KB_DEPLOYMENT_CONFIG}) && -e $ENV{KB_DEPLOYMENT_CONFIG})
     # I have to do this because the KBase deployment process is broken!!!
@@ -96,6 +62,7 @@ sub new
 	}
     }
 
+    # default URLs if none are found in the deploy.cfg file
     my $erdb_url = "https://kbase.us/services/erdb_service";
     my $mg_url = "http://api.metagenomics.anl.gov/sequences/";
     my $scratch = "/mnt/";
@@ -121,8 +88,10 @@ sub new
 	print STDERR "Scratch space configuration not found, defaulting to: $scratch\n";
     }
     
-    # create a new Community module which handles community based tree operations
+    # create an ERDB client connection
     $self->{erdb} = Bio::KBase::ERDB_Service::Client->new($erdb_url);
+    
+    # create a new Community module which handles community based tree operations
     $self->{comm} = Bio::KBase::Tree::Community->new($erdb_url,$mg_url,$scratch);
     
     #END_CONSTRUCTOR
@@ -1144,9 +1113,9 @@ sub get_alignment
 
 <pre>
 $tree_ids is a reference to a list where each element is a Tree.kbase_id
-$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.tree_meta_data
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.TreeMetaData
 kbase_id is a string
-tree_meta_data is a reference to a hash where the following keys are defined:
+TreeMetaData is a reference to a hash where the following keys are defined:
 	alignment_id has a value which is a Tree.kbase_id
 	type has a value which is a string
 	status has a value which is a string
@@ -1167,9 +1136,9 @@ timestamp is a string
 =begin text
 
 $tree_ids is a reference to a list where each element is a Tree.kbase_id
-$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.tree_meta_data
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.TreeMetaData
 kbase_id is a string
-tree_meta_data is a reference to a hash where the following keys are defined:
+TreeMetaData is a reference to a hash where the following keys are defined:
 	alignment_id has a value which is a Tree.kbase_id
 	type has a value which is a string
 	status has a value which is a string
@@ -1283,9 +1252,9 @@ sub get_tree_data
 
 <pre>
 $alignment_ids is a reference to a list where each element is a Tree.kbase_id
-$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.alignment_meta_data
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.AlignmentMetaData
 kbase_id is a string
-alignment_meta_data is a reference to a hash where the following keys are defined:
+AlignmentMetaData is a reference to a hash where the following keys are defined:
 	tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 	status has a value which is a string
 	sequence_type has a value which is a string
@@ -1307,9 +1276,9 @@ timestamp is a string
 =begin text
 
 $alignment_ids is a reference to a list where each element is a Tree.kbase_id
-$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.alignment_meta_data
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.AlignmentMetaData
 kbase_id is a string
-alignment_meta_data is a reference to a hash where the following keys are defined:
+AlignmentMetaData is a reference to a hash where the following keys are defined:
 	tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 	status has a value which is a string
 	sequence_type has a value which is a string
@@ -2001,9 +1970,9 @@ sub get_leaf_to_feature_map
 =begin html
 
 <pre>
-$abundance_params is a Tree.abundance_params
-$abundance_result is a Tree.abundance_result
-abundance_params is a reference to a hash where the following keys are defined:
+$abundance_params is a Tree.AbundanceParams
+$abundance_result is a Tree.AbundanceResult
+AbundanceParams is a reference to a hash where the following keys are defined:
 	tree_id has a value which is a Tree.kbase_id
 	protein_family_name has a value which is a string
 	protein_family_source has a value which is a string
@@ -2012,7 +1981,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	match_length_threshold has a value which is an int
 	mg_auth_key has a value which is a string
 kbase_id is a string
-abundance_result is a reference to a hash where the following keys are defined:
+AbundanceResult is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
 	n_hits has a value which is an int
 	n_reads has a value which is an int
@@ -2023,9 +1992,9 @@ abundance_result is a reference to a hash where the following keys are defined:
 
 =begin text
 
-$abundance_params is a Tree.abundance_params
-$abundance_result is a Tree.abundance_result
-abundance_params is a reference to a hash where the following keys are defined:
+$abundance_params is a Tree.AbundanceParams
+$abundance_result is a Tree.AbundanceResult
+AbundanceParams is a reference to a hash where the following keys are defined:
 	tree_id has a value which is a Tree.kbase_id
 	protein_family_name has a value which is a string
 	protein_family_source has a value which is a string
@@ -2034,7 +2003,7 @@ abundance_params is a reference to a hash where the following keys are defined:
 	match_length_threshold has a value which is an int
 	mg_auth_key has a value which is a string
 kbase_id is a string
-abundance_result is a reference to a hash where the following keys are defined:
+AbundanceResult is a reference to a hash where the following keys are defined:
 	abundances has a value which is a reference to a hash where the key is a string and the value is an int
 	n_hits has a value which is an int
 	n_reads has a value which is an int
@@ -2143,11 +2112,11 @@ sub compute_abundance_profile
 
 <pre>
 $abundance_data is a Tree.abundance_data
-$filter_params is a Tree.filter_params
+$filter_params is a Tree.FilterParams
 $abundance_data_processed is a Tree.abundance_data
 abundance_data is a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 abundance_profile is a reference to a hash where the key is a string and the value is a float
-filter_params is a reference to a hash where the following keys are defined:
+FilterParams is a reference to a hash where the following keys are defined:
 	cutoff_value has a value which is a float
 	use_cutoff_value has a value which is a Tree.boolean
 	cutoff_number_of_records has a value which is a float
@@ -2164,11 +2133,11 @@ boolean is an int
 =begin text
 
 $abundance_data is a Tree.abundance_data
-$filter_params is a Tree.filter_params
+$filter_params is a Tree.FilterParams
 $abundance_data_processed is a Tree.abundance_data
 abundance_data is a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 abundance_profile is a reference to a hash where the key is a string and the value is a float
-filter_params is a reference to a hash where the following keys are defined:
+FilterParams is a reference to a hash where the following keys are defined:
 	cutoff_value has a value which is a float
 	use_cutoff_value has a value which is a Tree.boolean
 	cutoff_number_of_records has a value which is a float
@@ -2792,7 +2761,7 @@ a string
 
 
 
-=head2 tree_meta_data
+=head2 TreeMetaData
 
 =over 4
 
@@ -2860,7 +2829,7 @@ source_id has a value which is a string
 
 
 
-=head2 alignment_meta_data
+=head2 AlignmentMetaData
 
 =over 4
 
@@ -2931,7 +2900,7 @@ source_id has a value which is a string
 
 
 
-=head2 abundance_params
+=head2 AbundanceParams
 
 =over 4
 
@@ -2993,7 +2962,7 @@ mg_auth_key has a value which is a string
 
 
 
-=head2 abundance_result
+=head2 AbundanceResult
 
 =over 4
 
@@ -3101,7 +3070,7 @@ a reference to a hash where the key is a string and the value is a Tree.abundanc
 
 
 
-=head2 filter_params
+=head2 FilterParams
 
 =over 4
 

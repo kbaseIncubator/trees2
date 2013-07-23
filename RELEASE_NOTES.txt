@@ -4,6 +4,18 @@ This KBase service provides helper methods for performing data access, manipulat
 and visualization of multiple sequence alignments (MSAs) and phylogenetic trees.
 
 
+VERSION: 0.9 (Released 8/5/2013)
+------------------------------------------
+NEW FEATURES:
+- none
+
+UPDATED FEATURES / MAJOR BUG FIXES:
+-general backend code cleanup, improvement
+-trivial API changes to conform to new API standards (note, may break old Java clients)
+-removed dependency on kb_seed
+-improved test coverage
+
+
 VERSION: 0.04 (Released 4/4/2013)
 ------------------------------------------
 NEW FEATURES:
