@@ -21,10 +21,10 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(getTreeURL get_tree_client);
 
-our $defaultTreeURL = "http://kbase.us/services/tree";
+our $defaultTreeURL = "https://kbase.us/services/tree";
 
 
-# simply returns a new copy of the PROM client based on the currently set URL
+# simply returns a new copy of the Tree client based on the currently set URL
 sub get_tree_client {
     return Bio::KBase::Tree::Client->new(getTreeURL());
 }

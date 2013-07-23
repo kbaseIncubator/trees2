@@ -23,6 +23,7 @@ v0.02 - 11/20/2012 - prepped for november build, tutorial is now available (test
 v0.03 - 2/1/2013 - added scripts and general additional functionality/testing (tested on image v20)
 
 
+
 Special deployment instructions
 ----------
 * The Tree service is currently only supported for server deployment in a linux environment.  Only clients and

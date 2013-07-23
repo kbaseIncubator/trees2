@@ -29,7 +29,7 @@ Dylan Chivian, LBL (dcchivian@lbl.gov)
 use Data::Dumper;
 use Config::Simple;
 use List::MoreUtils qw(uniq);
-use Bio::KBase::CDMI::CDMI;
+use Bio::KBase::ERDB_Service::Client;
 use Bio::KBase::Tree::TreeCppUtil;
 use Bio::KBase::Tree::Community;
 use ffxtree;
@@ -46,37 +46,37 @@ sub new
     # NOTE: most code below copied from CDM library (CDMI_APIImpl.pm) on 10/16/12
     # comments for my own reference are added by msneddon
     # check if ref. to CDMI object was passed in
-    my($cdmi) = @args;
-    if (! $cdmi) {
-
-	# if not, then go to the config file defined by the deployment and import
-	# the deployment settings
-	my %params;
-	if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
-	{
-	    my $CDMI_SERVICE_NAME = "cdmi";
-	    
-	    #parse the file and 
-	    my $c = Config::Simple->new();
-	    $c->read($e);
-	    my @params = qw(DBD dbName sock userData dbhost port dbms develop);
-	    for my $p (@params)
-	    {
-		my $v = $c->param("$CDMI_SERVICE_NAME.$p");
-		if ($v)
-		{
-		    $params{$p} = $v;
-		}
-	    }
-	}
-	#Create a connection to the CDMI (and print a logging debug mssg)
-	if( 0 < scalar keys(%params) ) {
-	    	warn "Connection to CDMI established with the following non-default parameters:\n";
-	    	foreach my $key (sort keys %params) { warn "   $key => $params{$key} \n"; }
-	} else { warn "Connection to CDMI established with all default parameters.  See Bio/KBase/CDMI/CDMI.pm\n"; }
-        $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
-    }
-    $self->{db} = $cdmi;
+#    my($cdmi) = @args;
+#    if (! $cdmi) {
+#
+#	# if not, then go to the config file defined by the deployment and import
+#	# the deployment settings
+#	my %params;
+#	if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
+#	{
+#	    my $CDMI_SERVICE_NAME = "cdmi";
+#	    
+#	    #parse the file and 
+#	    my $c = Config::Simple->new();
+#	    $c->read($e);
+#	    my @params = qw(DBD dbName sock userData dbhost port dbms develop);
+#	    for my $p (@params)
+#	    {
+#		my $v = $c->param("$CDMI_SERVICE_NAME.$p");
+#		if ($v)
+#		{
+#		    $params{$p} = $v;
+#		}
+#	    }
+#	}
+#	#Create a connection to the CDMI (and print a logging debug mssg)
+#	if( 0 < scalar keys(%params) ) {
+#	    	warn "Connection to CDMI established with the following non-default parameters:\n";
+#	    	foreach my $key (sort keys %params) { warn "   $key => $params{$key} \n"; }
+#	} else { warn "Connection to CDMI established with all default parameters.  See Bio/KBase/CDMI/CDMI.pm\n"; }
+#        $cdmi = Bio::KBase::CDMI::CDMI->new(%params);
+#    }
+#    $self->{db} = $cdmi;
     
     
      #load a configuration file to determine where all the services live
@@ -96,7 +96,7 @@ sub new
 	}
     }
 
-    my $erdb_url = "http://kbase.us/services/erdb_service";
+    my $erdb_url = "https://kbase.us/services/erdb_service";
     my $mg_url = "http://api.metagenomics.anl.gov/sequences/";
     my $scratch = "/mnt/";
     if (defined $params{"erdb"}) {
@@ -121,11 +121,9 @@ sub new
 	print STDERR "Scratch space configuration not found, defaulting to: $scratch\n";
     }
     
-    
+    # create a new Community module which handles community based tree operations
+    $self->{erdb} = Bio::KBase::ERDB_Service::Client->new($erdb_url);
     $self->{comm} = Bio::KBase::Tree::Community->new($erdb_url,$mg_url,$scratch);
-    
-    
-    
     
     #END_CONSTRUCTOR
 
@@ -151,10 +149,10 @@ sub new
 =begin html
 
 <pre>
-$tree is a newick_tree
-$replacements is a reference to a hash where the key is a node_name and the value is a node_name
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$replacements is a reference to a hash where the key is a Tree.node_name and the value is a Tree.node_name
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -164,10 +162,10 @@ node_name is a string
 
 =begin text
 
-$tree is a newick_tree
-$replacements is a reference to a hash where the key is a node_name and the value is a node_name
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$replacements is a reference to a hash where the key is a Tree.node_name and the value is a Tree.node_name
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -237,10 +235,10 @@ sub replace_node_names
 =begin html
 
 <pre>
-$tree is a newick_tree
-$removal_list is a reference to a list where each element is a node_name
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$removal_list is a reference to a list where each element is a Tree.node_name
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -250,10 +248,10 @@ node_name is a string
 
 =begin text
 
-$tree is a newick_tree
-$removal_list is a reference to a list where each element is a node_name
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$removal_list is a reference to a list where each element is a Tree.node_name
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -322,9 +320,9 @@ sub remove_node_names_and_simplify
 =begin html
 
 <pre>
-$tree is a newick_tree
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 
 </pre>
@@ -333,9 +331,9 @@ tree is a string
 
 =begin text
 
-$tree is a newick_tree
-$return is a newick_tree
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a Tree.newick_tree
+newick_tree is a Tree.tree
 tree is a string
 
 
@@ -402,9 +400,9 @@ sub merge_zero_distance_leaves
 =begin html
 
 <pre>
-$tree is a newick_tree
-$return is a reference to a list where each element is a node_name
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a reference to a list where each element is a Tree.node_name
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -414,9 +412,9 @@ node_name is a string
 
 =begin text
 
-$tree is a newick_tree
-$return is a reference to a list where each element is a node_name
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a reference to a list where each element is a Tree.node_name
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -478,9 +476,9 @@ sub extract_leaf_node_names
 =begin html
 
 <pre>
-$tree is a newick_tree
-$return is a reference to a list where each element is a node_name
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a reference to a list where each element is a Tree.node_name
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -490,9 +488,9 @@ node_name is a string
 
 =begin text
 
-$tree is a newick_tree
-$return is a reference to a list where each element is a node_name
-newick_tree is a tree
+$tree is a Tree.newick_tree
+$return is a reference to a list where each element is a Tree.node_name
+newick_tree is a Tree.tree
 tree is a string
 node_name is a string
 
@@ -556,9 +554,9 @@ sub extract_node_names
 =begin html
 
 <pre>
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $return is an int
-newick_tree is a tree
+newick_tree is a Tree.tree
 tree is a string
 
 </pre>
@@ -567,9 +565,9 @@ tree is a string
 
 =begin text
 
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $return is an int
-newick_tree is a tree
+newick_tree is a Tree.tree
 tree is a string
 
 
@@ -628,9 +626,9 @@ sub get_node_count
 =begin html
 
 <pre>
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $return is an int
-newick_tree is a tree
+newick_tree is a Tree.tree
 tree is a string
 
 </pre>
@@ -639,9 +637,9 @@ tree is a string
 
 =begin text
 
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $return is an int
-newick_tree is a tree
+newick_tree is a Tree.tree
 tree is a string
 
 
@@ -702,9 +700,9 @@ sub get_leaf_count
 =begin html
 
 <pre>
-$tree_id is a kbase_id
+$tree_id is a Tree.kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
-$return is a tree
+$return is a Tree.tree
 kbase_id is a string
 tree is a string
 
@@ -714,9 +712,9 @@ tree is a string
 
 =begin text
 
-$tree_id is a kbase_id
+$tree_id is a Tree.kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
-$return is a tree
+$return is a Tree.tree
 kbase_id is a string
 tree is a string
 
@@ -786,8 +784,8 @@ sub get_tree
     #BEGIN get_tree
     
     # first get the tree
-    my $kb = $self->{db};
-    my @rows = $kb->GetAll('Tree','Tree(id) = ?', $tree_id,[qw(Tree(newick))]);
+    my $erdb = $self->{erdb};
+    my $rows = $erdb->GetAll('Tree','Tree(id) = ?', [$tree_id],'Tree(newick)',0);
     
     # second parse the parameters and set the defaults
     if (!exists $options->{format})           { $options->{format}="newick"; }
@@ -796,15 +794,15 @@ sub get_tree
     if (!exists $options->{newick_distance}) { $options->{newick_distance}="raw"; }
     
     #check if query found something
-    if(@rows) {
+    if(@{$rows}) {
 	my @return_rows=();
-	foreach(@rows) {
+	foreach(@{$rows}) {
 	    #process the tree according the command-line options
 	    my $raw_newick = $_; my $output_newick="";
 	    my $kb_tree = new Bio::KBase::Tree::TreeCppUtil::KBTree(${$raw_newick}[0],0,1);
 	    
 	    if($options->{format} eq "newick") {
-		print "hello newick\n";
+	    
 		#figure out how to label the nodes
 		if($options->{newick_label} eq "none") {
 		    $kb_tree->setOutputFlagLabel(0);
@@ -814,9 +812,9 @@ sub get_tree
 		    # use the exemplar feature stored directly in the tree
 		    $kb_tree->setOutputFlagLabel(1);
 		    # replace names with feature ids
-		    my @feature_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'IsBuiltFromAlignment(from_link) = ?', $tree_id,
-			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
+		    my @feature_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ?', [$tree_id],
+			    'AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id)',0);
 		    my $replacement_str="";
 		    foreach (@feature_ids) { #might be a better way to concatenate this list...
 		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
@@ -825,9 +823,9 @@ sub get_tree
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "protein_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @prot_seq_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', $tree_id,
-			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
+		    my @prot_seq_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
+			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
 		    my $replacement_str="";
 		    # could be more than one sequence per row, so we have to check for this and only add the first one
 		    for my $i (0 .. $#prot_seq_ids) {
@@ -842,9 +840,9 @@ sub get_tree
 		} elsif ($options->{newick_label} eq "contig_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
 		    # todo: replace names with contig sequence ids
-		    my @contig_seq_ids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
-			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedDNA(to-link)', $tree_id,
-			    [qw(AlignmentRow(row-id) ContainsAlignedDNA(to-link))]);
+		    my @contig_seq_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedDNA(to-link)', [$tree_id],
+			    'AlignmentRow(row-id) ContainsAlignedDNA(to-link)',0);
 		    my $replacement_str="";
 		    foreach (@contig_seq_ids) { #might be a better way to concatenate this list...
 			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
@@ -854,9 +852,9 @@ sub get_tree
 		
 		    # lookup the list of features
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @row2featureId = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
-			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
-			    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
+		    my @row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
+			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
 		    
 		    my $row2featureListMap = {};
@@ -886,9 +884,9 @@ sub get_tree
 		
 		    # lookup the list of features
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @row2featureId = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
-			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', $tree_id,
-			    [qw(AlignmentRow(row-id) IsProteinFor(to_link))]);
+		    my @row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
+			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
 		    
 		    my $row2featureListMap = {};
@@ -1007,9 +1005,9 @@ sub get_tree
 =begin html
 
 <pre>
-$alignment_id is a kbase_id
+$alignment_id is a Tree.kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
-$return is an alignment
+$return is a Tree.alignment
 kbase_id is a string
 alignment is a string
 
@@ -1019,9 +1017,9 @@ alignment is a string
 
 =begin text
 
-$alignment_id is a kbase_id
+$alignment_id is a Tree.kbase_id
 $options is a reference to a hash where the key is a string and the value is a string
-$return is an alignment
+$return is a Tree.alignment
 kbase_id is a string
 alignment is a string
 
@@ -1084,30 +1082,30 @@ sub get_alignment
     if (!exists $options->{sequence_label})     { $options->{sequence_label}="raw"; }
     
     if($options->{format} eq "fasta") {
-	my $kb = $self->{db};
+	my $erdb = $self->{erdb};
 	#figure out how to label the seqeunces
 	if($options->{sequence_label} eq "none") {
-	    my @rows = $kb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ?', $alignment_id,[qw(AlignmentRow(sequence))]);
-	    foreach my $row (@rows) {
+	    my $rows = $erdb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ?', [$alignment_id],'AlignmentRow(sequence)',0);
+	    foreach my $row (@{$rows}) {
 		$fasta .= ">\n";
 		$fasta .= $row->[0]."\n";
 	    }
 	} else {
-	    my @rows;
+	    my $rows;
 	    if ($options->{sequence_label} eq "raw") {
-		@rows = $kb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(AlignmentRow(row-id) AlignmentRow(sequence))]);
+		$rows = $erdb->GetAll('AlignmentRow IsAlignmentRowIn','IsAlignmentRowIn(to-link) = ? ORDER BY AlignmentRow(row-id)', [$alignment_id],'AlignmentRow(row-id) AlignmentRow(sequence)',0);
 	    } elsif ($options->{sequence_label} eq "feature_id") {
-		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedProtein(kb-feature-id) AlignmentRow(sequence))]);
+		$rows = $erdb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', [$alignment_id],'ContainsAlignedProtein(kb-feature-id) AlignmentRow(sequence)',0);
 	    } elsif ($options->{sequence_label} eq "protein_sequence_id") {
-		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedProtein(to-link) AlignmentRow(sequence))]);
+		$rows = $erdb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', [$alignment_id],'ContainsAlignedProtein(to-link) AlignmentRow(sequence)',0);
 	    } elsif ($options->{sequence_label} eq "contig_sequence_id") {
-		@rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedDNA','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', $alignment_id,[qw(ContainsAlignedDNA(to-link) AlignmentRow(sequence))]);
+		$rows = $erdb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedDNA','IncludesAlignmentRow(from-link) = ? ORDER BY AlignmentRow(row-id)', [$alignment_id],'ContainsAlignedDNA(to-link) AlignmentRow(sequence)',0);
 	    } else {
 		my $msg = "Invalid option passed to get_alignment. Unrecognized value for option key: 'sequence_label'\n";
 		$msg = $msg."You set 'sequence_label' to be: '".$options->{sequence_label}."'";
 		Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg, method_name => 'get_alignment');
 	    }
-	    foreach my $row (@rows) {
+	    foreach my $row (@{$rows}) {
 		$fasta .= ">$row->[0]\n";
 		$fasta .= $row->[1]."\n";
 	    }
@@ -1145,14 +1143,14 @@ sub get_alignment
 =begin html
 
 <pre>
-$tree_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a tree_meta_data
+$tree_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.tree_meta_data
 kbase_id is a string
 tree_meta_data is a reference to a hash where the following keys are defined:
-	alignment_id has a value which is a kbase_id
+	alignment_id has a value which is a Tree.kbase_id
 	type has a value which is a string
 	status has a value which is a string
-	date_created has a value which is a timestamp
+	date_created has a value which is a Tree.timestamp
 	tree_contruction_method has a value which is a string
 	tree_construction_parameters has a value which is a string
 	tree_protocol has a value which is a string
@@ -1168,14 +1166,14 @@ timestamp is a string
 
 =begin text
 
-$tree_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a tree_meta_data
+$tree_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.tree_meta_data
 kbase_id is a string
 tree_meta_data is a reference to a hash where the following keys are defined:
-	alignment_id has a value which is a kbase_id
+	alignment_id has a value which is a Tree.kbase_id
 	type has a value which is a string
 	status has a value which is a string
-	date_created has a value which is a timestamp
+	date_created has a value which is a Tree.timestamp
 	tree_contruction_method has a value which is a string
 	tree_construction_parameters has a value which is a string
 	tree_protocol has a value which is a string
@@ -1221,15 +1219,15 @@ sub get_tree_data
     $return = {};
     if (@{$tree_ids}) {
 	#First get just the tree specific data
-	my $kb = $self->{db};
+	my $erdb = $self->{erdb};
 	my $n = @$tree_ids;
 	my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
 	my $constraint = "Tree(id) IN $targets";
-	my @rows = $kb->GetAll('Treed Tree',
+	my $rows = $erdb->GetAll('Treed Tree',
 		$constraint, $tree_ids,
-		[qw(Tree(id) Tree(status) Tree(data-type) Tree(timestamp) Tree(method) Tree(parameters) Tree(protocol) Treed(from_link) Tree(source-id) Tree(newick) )]);
+		'Tree(id) Tree(status) Tree(data-type) Tree(timestamp) Tree(method) Tree(parameters) Tree(protocol) Treed(from_link) Tree(source-id) Tree(newick)',0);
 	#2) put the tree ids in a single straight-up list
-	foreach (@rows) {
+	foreach (@{$rows}) {
 	    my $val = $_;
 	    my $res = {};
 	    $res->{alignment_id} = "";
@@ -1250,10 +1248,10 @@ sub get_tree_data
 	#now get information from alignments if we can (this will only work for trees built from alignments)
 	my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
 	my $constraint = "IsBuiltFromAlignment(from_link) IN $targets";
-	my @rows = $kb->GetAll('IsBuiltFromAlignment',
+	my $rows = $erdb->GetAll('IsBuiltFromAlignment',
 		$constraint, $tree_ids,
-		[qw(IsBuiltFromAlignment(from_link) IsBuiltFromAlignment(to_link))]);
-	foreach (@rows) {
+		'IsBuiltFromAlignment(from_link) IsBuiltFromAlignment(to_link)',0);
+	foreach (@{$rows}) {
 	    my $val = $_;
 	    $return->{${$val}[0]}->{alignment_id} = ${$val}[1];
 	}
@@ -1284,15 +1282,15 @@ sub get_tree_data
 =begin html
 
 <pre>
-$alignment_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is an alignment_meta_data
+$alignment_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.alignment_meta_data
 kbase_id is a string
 alignment_meta_data is a reference to a hash where the following keys are defined:
-	tree_ids has a value which is a reference to a list where each element is a kbase_id
+	tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 	status has a value which is a string
 	sequence_type has a value which is a string
 	is_concatenation has a value which is a string
-	date_created has a value which is a timestamp
+	date_created has a value which is a Tree.timestamp
 	n_rows has a value which is an int
 	n_cols has a value which is an int
 	alignment_construction_method has a value which is a string
@@ -1308,15 +1306,15 @@ timestamp is a string
 
 =begin text
 
-$alignment_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is an alignment_meta_data
+$alignment_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.alignment_meta_data
 kbase_id is a string
 alignment_meta_data is a reference to a hash where the following keys are defined:
-	tree_ids has a value which is a reference to a list where each element is a kbase_id
+	tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 	status has a value which is a string
 	sequence_type has a value which is a string
 	is_concatenation has a value which is a string
-	date_created has a value which is a timestamp
+	date_created has a value which is a Tree.timestamp
 	n_rows has a value which is an int
 	n_cols has a value which is an int
 	alignment_construction_method has a value which is a string
@@ -1361,17 +1359,17 @@ sub get_alignment_data
     #BEGIN get_alignment_data
     
     #get just the alignment specific data
-    my $kb = $self->{db};
+    my $erdb = $self->{erdb};
     my $n = @$alignment_ids;
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "Alignment(id) IN $targets";
-    my @rows = $kb->GetAll('Alignment WasAlignedBy',
+    my $rows = $erdb->GetAll('Alignment WasAlignedBy',
 	    $constraint, $alignment_ids,
-	    [qw(Alignment(id) Alignment(status) Alignment(sequence_type) Alignment(is_concatenation) Alignment(timestamp)
-	     Alignment(n_rows) Alignment(n_cols) Alignment(method) Alignment(parameters) Alignment(protocol) WasAlignedBy(to_link) Alignment(source-id) )]);
+	    'Alignment(id) Alignment(status) Alignment(sequence_type) Alignment(is_concatenation) Alignment(timestamp)
+	     Alignment(n_rows) Alignment(n_cols) Alignment(method) Alignment(parameters) Alignment(protocol) WasAlignedBy(to_link) Alignment(source-id)',0);
     # put the data into a proper hash
     $return = {};
-    foreach (@rows) {
+    foreach (@{$rows}) {
 	my $val = $_;
 	my $res = {};
 	$res->{tree_ids} = [ ];
@@ -1392,10 +1390,10 @@ sub get_alignment_data
     #now get information from alignments if we can
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "IsBuiltFromAlignment(to_link) IN $targets";
-    my @rows = $kb->GetAll('IsBuiltFromAlignment',
+    my $rows = $erdb->GetAll('IsBuiltFromAlignment',
 	    $constraint, $alignment_ids,
-	    [qw(IsBuiltFromAlignment(to_link) IsBuiltFromAlignment(from_link))]);
-    foreach (@rows) {
+	    'IsBuiltFromAlignment(to_link) IsBuiltFromAlignment(from_link)',0);
+    foreach (@{$rows}) {
 	my $val = $_;
 	push $return->{${$val}[0]}->{tree_ids}, ${$val}[1];
     }
@@ -1425,8 +1423,8 @@ sub get_alignment_data
 =begin html
 
 <pre>
-$feature_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$feature_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1435,8 +1433,8 @@ kbase_id is a string
 
 =begin text
 
-$feature_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$feature_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1470,17 +1468,17 @@ sub get_tree_ids_by_feature
     my($return);
     #BEGIN get_tree_ids_by_feature
     # 1) construct and execute the query
-    my $kb = $self->{db};    
+    my $erdb = $self->{erdb};    
     my $n = @$feature_ids;
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "IsProteinFor(to_link) IN $targets ORDER BY IsBuiltFromAlignment(from_link)";
-    my @rows = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+    my $rows = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
 	    $constraint, $feature_ids,
-	    [qw(IsBuiltFromAlignment(from_link))]);
+	    'IsBuiltFromAlignment(from_link)',0);
     
     #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@rows) { push(@return_list,${$_}[0]); }
+    foreach (@{$rows}) { push(@return_list,${$_}[0]); }
     #3) remove duplicates
     my @return_list = uniq(@return_list);
     #4) return the result
@@ -1510,8 +1508,8 @@ sub get_tree_ids_by_feature
 =begin html
 
 <pre>
-$protein_sequence_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1520,8 +1518,8 @@ kbase_id is a string
 
 =begin text
 
-$protein_sequence_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1555,17 +1553,17 @@ sub get_tree_ids_by_protein_sequence
     my($return);
     #BEGIN get_tree_ids_by_protein_sequence
     # 1) construct and execute the query
-    my $kb = $self->{db};    
+    my $erdb = $self->{erdb};    
     my $n = @$protein_sequence_ids;
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "ContainsAlignedProtein(to_link) IN $targets ORDER BY IsBuiltFromAlignment(from_link)";
-    my @rows = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+    my $rows = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 	    $constraint, $protein_sequence_ids,
-	    [qw(IsBuiltFromAlignment(from_link))]);
+	    'IsBuiltFromAlignment(from_link)',0);
     
     #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@rows) { push(@return_list,${$_}[0]); }
+    foreach (@{$rows}) { push(@return_list,${$_}[0]); }
     #3) remove duplicates
     my @return_list = uniq(@return_list);
     #4) return the result
@@ -1595,8 +1593,8 @@ sub get_tree_ids_by_protein_sequence
 =begin html
 
 <pre>
-$feature_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$feature_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1605,8 +1603,8 @@ kbase_id is a string
 
 =begin text
 
-$feature_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$feature_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1640,16 +1638,16 @@ sub get_alignment_ids_by_feature
     my($return);
     #BEGIN get_alignment_ids_by_feature
     # 1) construct and execute the query
-    my $kb = $self->{db};    
+    my $erdb = $self->{erdb};    
     my $n = @$feature_ids;
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "IsProteinFor(to_link) IN $targets ORDER BY IncludesAlignmentRow(from_link)";
-    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+    my $rows = $erdb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
 	    $constraint, $feature_ids,
-	    [qw(IncludesAlignmentRow(from_link))]);
+	    'IncludesAlignmentRow(from_link)',0);
     #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@rows) { push(@return_list,${$_}[0]); }
+    foreach (@{$rows}) { push(@return_list,${$_}[0]); }
     #3) remove duplicates
     my @return_list = uniq(@return_list);
     #4) return the result
@@ -1679,8 +1677,8 @@ sub get_alignment_ids_by_feature
 =begin html
 
 <pre>
-$protein_sequence_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1689,8 +1687,8 @@ kbase_id is a string
 
 =begin text
 
-$protein_sequence_ids is a reference to a list where each element is a kbase_id
-$return is a reference to a list where each element is a kbase_id
+$protein_sequence_ids is a reference to a list where each element is a Tree.kbase_id
+$return is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1724,17 +1722,17 @@ sub get_alignment_ids_by_protein_sequence
     my($return);
     #BEGIN get_alignment_ids_by_protein_sequence
     # 1) construct and execute the query
-    my $kb = $self->{db};    
+    my $erdb = $self->{erdb};    
     my $n = @$protein_sequence_ids;
     my $targets = "(" . ('?,' x $n); chop $targets; $targets .= ')';
     my $constraint = "ContainsAlignedProtein(to_link) IN $targets ORDER BY IncludesAlignmentRow(from_link)";
-    my @rows = $kb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein',
+    my $rows = $erdb->GetAll('IncludesAlignmentRow AlignmentRow ContainsAlignedProtein',
 	    $constraint, $protein_sequence_ids,
-	    [qw(IncludesAlignmentRow(from_link))]);
+	    'IncludesAlignmentRow(from_link)',0);
     
     #2) put the tree ids in a single straight-up list
     my @return_list = ();
-    foreach (@rows) { push(@return_list,${$_}[0]); }
+    foreach (@{$rows}) { push(@return_list,${$_}[0]); }
     #3) remove duplicates
     my @return_list = uniq(@return_list);
     #4) return the result
@@ -1765,7 +1763,7 @@ sub get_alignment_ids_by_protein_sequence
 
 <pre>
 $pattern is a string
-$return is a reference to a list where each element is a reference to a list where each element is a kbase_id
+$return is a reference to a list where each element is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1775,7 +1773,7 @@ kbase_id is a string
 =begin text
 
 $pattern is a string
-$return is a reference to a list where each element is a reference to a list where each element is a kbase_id
+$return is a reference to a list where each element is a reference to a list where each element is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1845,8 +1843,8 @@ sub get_tree_ids_by_source_id_pattern
 =begin html
 
 <pre>
-$tree_id is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+$tree_id is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1855,8 +1853,8 @@ kbase_id is a string
 
 =begin text
 
-$tree_id is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+$tree_id is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1891,10 +1889,10 @@ sub get_leaf_to_protein_map
     #BEGIN get_leaf_to_protein_map
     
     $return = {};
-    my $kb = $self->{db};
-    my @pids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', $tree_id,
-			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(to-link))]);
+    my $erdb = $self->{erdb};
+    my @pids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
+			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
     foreach my $p (@pids) {
 	$return->{${$p}[0]} = ${$p}[1];
     }
@@ -1924,8 +1922,8 @@ sub get_leaf_to_protein_map
 =begin html
 
 <pre>
-$tree_id is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+$tree_id is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.kbase_id
 kbase_id is a string
 
 </pre>
@@ -1934,8 +1932,8 @@ kbase_id is a string
 
 =begin text
 
-$tree_id is a kbase_id
-$return is a reference to a hash where the key is a kbase_id and the value is a kbase_id
+$tree_id is a Tree.kbase_id
+$return is a reference to a hash where the key is a Tree.kbase_id and the value is a Tree.kbase_id
 kbase_id is a string
 
 
@@ -1970,10 +1968,10 @@ sub get_leaf_to_feature_map
     #BEGIN get_leaf_to_feature_map
     
     $return = {};
-    my $kb = $self->{db};
-    my @fids = $kb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
-			    'IsBuiltFromAlignment(from_link) = ?', $tree_id,
-			    [qw(AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id))]);
+    my $erdb = $self->{erdb};
+    my @fids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+			    'IsBuiltFromAlignment(from_link) = ?', [$tree_id],
+			    'AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id)',0);
     foreach my $f (@fids) {
 	$return->{${$f}[0]} = ${$f}[1];
     }
@@ -2003,10 +2001,10 @@ sub get_leaf_to_feature_map
 =begin html
 
 <pre>
-$abundance_params is an abundance_params
-$abundance_result is an abundance_result
+$abundance_params is a Tree.abundance_params
+$abundance_result is a Tree.abundance_result
 abundance_params is a reference to a hash where the following keys are defined:
-	tree_id has a value which is a kbase_id
+	tree_id has a value which is a Tree.kbase_id
 	protein_family_name has a value which is a string
 	protein_family_source has a value which is a string
 	metagenomic_sample_id has a value which is a string
@@ -2025,10 +2023,10 @@ abundance_result is a reference to a hash where the following keys are defined:
 
 =begin text
 
-$abundance_params is an abundance_params
-$abundance_result is an abundance_result
+$abundance_params is a Tree.abundance_params
+$abundance_result is a Tree.abundance_result
 abundance_params is a reference to a hash where the following keys are defined:
-	tree_id has a value which is a kbase_id
+	tree_id has a value which is a Tree.kbase_id
 	protein_family_name has a value which is a string
 	protein_family_source has a value which is a string
 	metagenomic_sample_id has a value which is a string
@@ -2144,20 +2142,20 @@ sub compute_abundance_profile
 =begin html
 
 <pre>
-$abundance_data is an abundance_data
-$filter_params is a filter_params
-$abundance_data_processed is an abundance_data
-abundance_data is a reference to a hash where the key is a string and the value is an abundance_profile
+$abundance_data is a Tree.abundance_data
+$filter_params is a Tree.filter_params
+$abundance_data_processed is a Tree.abundance_data
+abundance_data is a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 abundance_profile is a reference to a hash where the key is a string and the value is a float
 filter_params is a reference to a hash where the following keys are defined:
 	cutoff_value has a value which is a float
-	use_cutoff_value has a value which is a bool
+	use_cutoff_value has a value which is a Tree.boolean
 	cutoff_number_of_records has a value which is a float
-	use_cutoff_number_of_records has a value which is a bool
+	use_cutoff_number_of_records has a value which is a Tree.boolean
 	normalization_scope has a value which is a string
 	normalization_type has a value which is a string
 	normalization_post_process has a value which is a string
-bool is an int
+boolean is an int
 
 </pre>
 
@@ -2165,20 +2163,20 @@ bool is an int
 
 =begin text
 
-$abundance_data is an abundance_data
-$filter_params is a filter_params
-$abundance_data_processed is an abundance_data
-abundance_data is a reference to a hash where the key is a string and the value is an abundance_profile
+$abundance_data is a Tree.abundance_data
+$filter_params is a Tree.filter_params
+$abundance_data_processed is a Tree.abundance_data
+abundance_data is a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 abundance_profile is a reference to a hash where the key is a string and the value is a float
 filter_params is a reference to a hash where the following keys are defined:
 	cutoff_value has a value which is a float
-	use_cutoff_value has a value which is a bool
+	use_cutoff_value has a value which is a Tree.boolean
 	cutoff_number_of_records has a value which is a float
-	use_cutoff_number_of_records has a value which is a bool
+	use_cutoff_number_of_records has a value which is a Tree.boolean
 	normalization_scope has a value which is a string
 	normalization_type has a value which is a string
 	normalization_post_process has a value which is a string
-bool is an int
+boolean is an int
 
 
 =end text
@@ -2247,10 +2245,10 @@ sub filter_abundance_profile
 =begin html
 
 <pre>
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $display_options is a reference to a hash where the key is a string and the value is a string
-$return is a html_file
-newick_tree is a tree
+$return is a Tree.html_file
+newick_tree is a Tree.tree
 tree is a string
 html_file is a string
 
@@ -2260,10 +2258,10 @@ html_file is a string
 
 =begin text
 
-$tree is a newick_tree
+$tree is a Tree.newick_tree
 $display_options is a reference to a hash where the key is a string and the value is a string
-$return is a html_file
-newick_tree is a tree
+$return is a Tree.html_file
+newick_tree is a Tree.tree
 tree is a string
 html_file is a string
 
@@ -2370,7 +2368,7 @@ sub version {
 
 
 
-=head2 bool
+=head2 boolean
 
 =over 4
 
@@ -2553,14 +2551,14 @@ and are returned to you in this format by default.
 =begin html
 
 <pre>
-a tree
+a Tree.tree
 </pre>
 
 =end html
 
 =begin text
 
-a tree
+a Tree.tree
 
 =end text
 
@@ -2586,14 +2584,14 @@ when additional information/annotations decorate the tree.
 =begin html
 
 <pre>
-a tree
+a Tree.tree
 </pre>
 
 =end html
 
 =begin text
 
-a tree
+a Tree.tree
 
 =end text
 
@@ -2619,14 +2617,14 @@ the JSON object.  This is useful when interacting with the tree in JavaScript, f
 =begin html
 
 <pre>
-a tree
+a Tree.tree
 </pre>
 
 =end html
 
 =begin text
 
-a tree
+a Tree.tree
 
 =end text
 
@@ -2716,14 +2714,14 @@ alignments.
 =begin html
 
 <pre>
-a fasta
+a Tree.fasta
 </pre>
 
 =end html
 
 =begin text
 
-a fasta
+a Tree.fasta
 
 =end text
 
@@ -2824,10 +2822,10 @@ Meta data associated with a tree.
 
 <pre>
 a reference to a hash where the following keys are defined:
-alignment_id has a value which is a kbase_id
+alignment_id has a value which is a Tree.kbase_id
 type has a value which is a string
 status has a value which is a string
-date_created has a value which is a timestamp
+date_created has a value which is a Tree.timestamp
 tree_contruction_method has a value which is a string
 tree_construction_parameters has a value which is a string
 tree_protocol has a value which is a string
@@ -2843,10 +2841,10 @@ source_id has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-alignment_id has a value which is a kbase_id
+alignment_id has a value which is a Tree.kbase_id
 type has a value which is a string
 status has a value which is a string
-date_created has a value which is a timestamp
+date_created has a value which is a Tree.timestamp
 tree_contruction_method has a value which is a string
 tree_construction_parameters has a value which is a string
 tree_protocol has a value which is a string
@@ -2875,7 +2873,7 @@ Meta data associated with an alignment.
     list<kbase_id> tree_ids - the set of trees that were built from this alignment
     string status - set to 'active' if this is the latest alignment for a particular set of sequences
     string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
-    bool is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
+    boolean is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
                             sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
     timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
     int n_rows - number of rows in the alignment
@@ -2893,11 +2891,11 @@ Meta data associated with an alignment.
 
 <pre>
 a reference to a hash where the following keys are defined:
-tree_ids has a value which is a reference to a list where each element is a kbase_id
+tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 status has a value which is a string
 sequence_type has a value which is a string
 is_concatenation has a value which is a string
-date_created has a value which is a timestamp
+date_created has a value which is a Tree.timestamp
 n_rows has a value which is an int
 n_cols has a value which is an int
 alignment_construction_method has a value which is a string
@@ -2913,11 +2911,11 @@ source_id has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-tree_ids has a value which is a reference to a list where each element is a kbase_id
+tree_ids has a value which is a reference to a list where each element is a Tree.kbase_id
 status has a value which is a string
 sequence_type has a value which is a string
 is_concatenation has a value which is a string
-date_created has a value which is a timestamp
+date_created has a value which is a Tree.timestamp
 n_rows has a value which is an int
 n_cols has a value which is an int
 alignment_construction_method has a value which is a string
@@ -2965,7 +2963,7 @@ Structure to group input parameters to the compute_abundance_profile method.
 
 <pre>
 a reference to a hash where the following keys are defined:
-tree_id has a value which is a kbase_id
+tree_id has a value which is a Tree.kbase_id
 protein_family_name has a value which is a string
 protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
@@ -2980,7 +2978,7 @@ mg_auth_key has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-tree_id has a value which is a kbase_id
+tree_id has a value which is a Tree.kbase_id
 protein_family_name has a value which is a string
 protein_family_source has a value which is a string
 metagenomic_sample_id has a value which is a string
@@ -3088,14 +3086,14 @@ map the name of the profile with the profile data
 =begin html
 
 <pre>
-a reference to a hash where the key is a string and the value is an abundance_profile
+a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 </pre>
 
 =end html
 
 =begin text
 
-a reference to a hash where the key is a string and the value is an abundance_profile
+a reference to a hash where the key is a string and the value is a Tree.abundance_profile
 
 =end text
 
@@ -3125,9 +3123,9 @@ normalization_post_process    => def:'none' || 'log10' || 'log2' || 'ln'
 <pre>
 a reference to a hash where the following keys are defined:
 cutoff_value has a value which is a float
-use_cutoff_value has a value which is a bool
+use_cutoff_value has a value which is a Tree.boolean
 cutoff_number_of_records has a value which is a float
-use_cutoff_number_of_records has a value which is a bool
+use_cutoff_number_of_records has a value which is a Tree.boolean
 normalization_scope has a value which is a string
 normalization_type has a value which is a string
 normalization_post_process has a value which is a string
@@ -3140,9 +3138,9 @@ normalization_post_process has a value which is a string
 
 a reference to a hash where the following keys are defined:
 cutoff_value has a value which is a float
-use_cutoff_value has a value which is a bool
+use_cutoff_value has a value which is a Tree.boolean
 cutoff_number_of_records has a value which is a float
-use_cutoff_number_of_records has a value which is a bool
+use_cutoff_number_of_records has a value which is a Tree.boolean
 normalization_scope has a value which is a string
 normalization_type has a value which is a string
 normalization_post_process has a value which is a string

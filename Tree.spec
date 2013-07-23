@@ -19,7 +19,7 @@ module Tree
     /* *********************************************************************************************** */
 
     /* indicates true or false values, false <= 0, true >=1 */
-    typedef int bool;
+    typedef int boolean;
     
     /* time in units of number of seconds since the epoch */
     typedef string timestamp;
@@ -124,7 +124,7 @@ module Tree
         list<kbase_id> tree_ids - the set of trees that were built from this alignment
         string status - set to 'active' if this is the latest alignment for a particular set of sequences
         string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
-        bool is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
+        boolean is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
                                 sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
         timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
         int n_rows - number of rows in the alignment
@@ -180,7 +180,7 @@ module Tree
         list<AlignmentRow> rows;
         mapping<string,string> alignment_attributes;
         string status;
-        bool is_concatenation
+        boolean is_concatenation
         string sequence_type
         timestamp timestamp
         string method
@@ -515,9 +515,9 @@ module Tree
     */
     typedef structure {
         float cutoff_value;
-        bool use_cutoff_value;
+        boolean use_cutoff_value;
         float cutoff_number_of_records;
-        bool use_cutoff_number_of_records;
+        boolean use_cutoff_number_of_records;
         string normalization_scope;
         string normalization_type;
         string normalization_post_process;

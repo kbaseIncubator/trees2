@@ -7,7 +7,7 @@ SERVICE_PSGI_FILE = Tree.psgi
 SERVICE_PORT = 7047
 
 ##################################################################################
-#Additional configuration variables which are pulled from the e
+#Additional configuration variables which are pulled from the environment
 TOP_DIR = ../..
 DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
@@ -43,8 +43,9 @@ compile-typespec:
 		--client Bio::KBase::$(SERVICE_NAME)::Client \
 		--py biokbase/$(SERVICE_NAME)/Client \
 		--js javascript/$(SERVICE_NAME)/Client \
-		--url http://kbase.us/services/tree \
+		--url https://kbase.us/services/tree \
 		$(SERVICE_NAME).spec lib
+	rm -f lib/Tree*.py
 
 build-docs: compile-typespec
 	mkdir -p docs
@@ -71,9 +72,6 @@ test: test-client test-scripts
 test-all: test-service test-client test-scripts
 
 test-client:
-#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testBasicResponses.t
-#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testIntrospectionMethods.t
-#	$(DEPLOY_RUNTIME)/bin/perl t/client-tests/testQueryMethods.t
 	echo "running client tests"
 	# run each test
 	export TREE_DEPLOYMENT_CONFIG=$(ROOT_DEV_MODULE_DIR)/deploy.cfg; \
@@ -102,6 +100,7 @@ test-scripts:
 		fi \
 	done
 
+	
 test-service:
 	$(DEPLOY_RUNTIME)/bin/perl t/server-tests/testServerUp.t
 
