@@ -2475,7 +2475,7 @@ a string
 
 A string representation of a phylogenetic tree.  The format/syntax of the string is
 specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
-'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
+'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
 trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
 in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
 of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
@@ -2535,7 +2535,7 @@ a Tree.tree
 
 
 
-=head2 phyloXML_tree
+=head2 phylo_xml_tree
 
 =over 4
 

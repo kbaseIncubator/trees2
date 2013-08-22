@@ -38,7 +38,7 @@ module Tree
 
     /* A string representation of a phylogenetic tree.  The format/syntax of the string is
     specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
-    'phyloXML_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
+    'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
     trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
     in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
     of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
@@ -56,7 +56,7 @@ module Tree
     but can optionally be converted to the more verbose phyloXML format, which is useful for compatibility or
     when additional information/annotations decorate the tree.
     */
-    typedef tree phyloXML_tree;
+    typedef tree phylo_xml_tree;
     
     /* Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
     but can optionally be converted to JSON format where the structure of the tree matches the structure of
@@ -249,10 +249,10 @@ module Tree
     versions of the Tree service as they are needed or requested.*/
     /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
     */
-    /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phyloXML_tree); */
+    /* funcdef convert_newick2phyloXML(newick_tree tree) returns (phylo_xml_tree); */
     /* Convert a tree encoded in newick format to a tree encded in phyloXML format.
     */
-    /* funcdef convert_phyloXML2newick(newick_tree tree) returns (phyloXML_tree); */
+    /* funcdef convert_phyloXML2newick(newick_tree tree) returns (phylo_xml_tree); */
     /* Convert a tree encoded in newick format to a tree encded in JSON format.
     */
     /* funcdef convert_newick2json(newick_tree tree) returns (json_tree); */
