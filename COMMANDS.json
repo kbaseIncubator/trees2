@@ -1,7 +1,7 @@
 {
     "iris": {
         "group-names":  [
-                {"group-name": "tree", "description": "Trees scripts"}
+                {"group-name": "tree", "description": "Phylogenetic Trees & Alignments"}
             ]
     },
     "cli": {
