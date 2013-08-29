@@ -30,7 +30,7 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 # default target is all, which compiles the typespec and builds documentation
 default: all
 
-all: compile-typespec build-docs
+all: compile-typespec  build-docs  build-dev-container-script-wrappers  COMMANDS
 
 compile-typespec:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
@@ -55,6 +55,26 @@ build-docs: compile-typespec
 # building the CPP libs amounts to calling another makefile in the KBTree_cpp_lib directory
 cpp-lib:
 	cd lib/KBTree_cpp_lib; make all DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
+
+
+# creates script wrappers in dev_container/bin without copying scripts (this is
+# how compile_typespec and kb_seed scripts are put on the path after ‘make’
+build-dev-container-script-wrappers:
+	$(TOOLS_DIR)/deploy-wrappers \
+		--jsonCommandsFile COMMANDS.json \
+		--target $(TOP_DIR) \
+		--no-copyScripts \
+		--devContainerToolsDir $(TOOLS_DIR)
+
+COMMANDS: COMMANDS.json
+	$(TOOLS_DIR)/deploy-wrappers \
+		--jsonCommandsFile COMMANDS.json \
+		--irisCommandsFile COMMANDS \
+		--devContainerToolsDir $(TOOLS_DIR)
+
+
+
+
 
 
 
@@ -112,10 +132,10 @@ test-service:
 # here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-service)
 deploy: deploy-all
 
-deploy-all: deploy-client deploy-scripts deploy-service
+deploy-all: deploy-client deploy-service deploy-scripts deploy-docs
 	echo "OK... Done deploying ALL artifacts (includes clients, docs, scripts and service) of $(SERVICE)."
 	
-deploy-client: deploy-scripts deploy-docs
+deploy-client:
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/biokbase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/javascript/$(SERVICE_NAME)
@@ -128,22 +148,14 @@ deploy-client: deploy-scripts deploy-docs
 	echo "deployed clients of $(SERVICE)."
 	
 deploy-scripts:
-	export KB_TOP=$(TARGET); \
-	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
-	export KB_PERL_PATH=$(TARGET)/lib bash ; \
-	for src in $(SRC_PERL) ; do \
-		basefile=`basename $$src`; \
-		base=`basename $$src .pl`; \
-		echo install $$src $$base ; \
-		cp $$src $(TARGET)/plbin ; \
-		$(WRAP_PERL_SCRIPT) "$(TARGET)/plbin/$$basefile" $(TARGET)/bin/$$base ; \
-	done
+	$(TOOLS_DIR)/deploy-wrappers \
+		--jsonCommandsFile COMMANDS.json \
+		--target $(TARGET) \
+		--devContainerToolsDir $(TOOLS_DIR)
 
-deploy-docs: build-docs
+deploy-docs:
 	mkdir -p $(SERVICE_DIR)/webroot
 	cp docs/*.html $(SERVICE_DIR)/webroot/.
-	
-	
 
 # deploys all libraries and scripts needed to start the service
 deploy-service: cpp-lib deploy-service-libs deploy-service-start_scripts
@@ -208,8 +220,8 @@ deploy-service-start_scripts:
 	cp reboot_service $(SERVICE_DIR)/
 
 
-# this undeploy target is a custom hack for Trees - note tat it doesn't currently remove deployed scripts
-undeploy:
+# this undeploy target is a custom hack for Trees
+undeploy: undeploy-script-wrappers
 	#undeploy standard stuff
 	rm -rfv $(SERVICE_DIR)
 	rm -rfv $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
@@ -219,13 +231,18 @@ undeploy:
 	#undeploy custom libs
 	rm -rfv $(TARGET)/lib/TreeCppUtil.so
 	rm -fv  $(TARGET)/lib/forester_1005.jar
-	#remove scripts
-	rm -f $(TARGET)/bin/tree-*
-	rm -f $(TARGET)/plbin/tree-*.pl
 	echo "OK ... Removed all deployed files."
 
-# remove files generated within this directory
-clean:
+undeploy-script-wrappers:
+	$(TOOLS_DIR)/deploy-wrappers \
+		--jsonCommandsFile COMMANDS.json \
+		--target $(TARGET) \
+		--devContainerToolsDir $(TOOLS_DIR) \
+		--undeploy
+
+
+# remove files generated within this directory and dev_container/bin
+clean: clean-dev-container-script-wrappers
 	cd lib/KBTree_cpp_lib; make clean DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
 	rm -f lib/Bio/KBase/$(SERVICE_NAME)/Client.pm
 	rm -f lib/Bio/KBase/$(SERVICE_NAME)/Service.pm
@@ -235,3 +252,10 @@ clean:
 	rm -rf docs
 	rm -f start_service stop_service reboot_service debug_start_service
 
+clean-dev-container-script-wrappers:
+	$(TOOLS_DIR)/deploy-wrappers \
+		--jsonCommandsFile COMMANDS.json \
+		--target $(TOP_DIR) \
+		--no-copyScripts \
+		--devContainerToolsDir $(TOOLS_DIR) \
+		--undeploy

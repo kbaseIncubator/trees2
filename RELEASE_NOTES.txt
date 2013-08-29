@@ -13,6 +13,11 @@ NEW FEATURES:
 
 UPDATED FEATURES / MAJOR BUG FIXES:
 -trivial update to conform to API standards
+-deprecated script tree-url (because users should no longer change the url, and
+ it doesn't work in IRIS)
+-migrated to COMMANDS.json format for deploy
+-allow deploying commands on make to dev_container/bin
+
 
 
 VERSION: 0.9 (Released 8/5/2013)
