@@ -30,7 +30,8 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 # default target is all, which compiles the typespec and builds documentation
 default: all
 
-all: compile-typespec  build-docs  build-dev-container-script-wrappers  COMMANDS
+all: compile-typespec  build-docs
+# additional targets that should be added soon: build-dev-container-script-wrappers  COMMANDS
 
 compile-typespec:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
@@ -148,6 +149,18 @@ deploy-client:
 	echo "deployed clients of $(SERVICE)."
 	
 deploy-scripts:
+	export KB_TOP=$(TARGET); \
+	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
+	export KB_PERL_PATH=$(TARGET)/lib bash ; \
+	for src in $(SRC_PERL) ; do \
+		basefile=`basename $$src`; \
+		base=`basename $$src .pl`; \
+		echo install $$src $$base ; \
+		cp $$src $(TARGET)/plbin ; \
+		$(WRAP_PERL_SCRIPT) "$(TARGET)/plbin/$$basefile" $(TARGET)/bin/$$base ; \
+	done
+	
+deploy-scripts-nice:
 	$(TOOLS_DIR)/deploy-wrappers \
 		--jsonCommandsFile COMMANDS.json \
 		--target $(TARGET) \
