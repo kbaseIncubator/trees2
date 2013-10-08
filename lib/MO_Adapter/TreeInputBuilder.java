@@ -6,12 +6,7 @@ import KBTreeUtil.KBTree;
 import KBTreeUtil.KBTreeUtil;
 
 
-
-public class TreeInputBuilder {
-
-	// this is all a hack where we use global variables... note that at least now GROUP is passed in as a parameter
-	public static String GROUP;
-	// Possible Groups (** indicates alignment files are ready)
+// Possible Groups (** indicates alignment files are ready)
 	// 16S
 	// 23S
 	// 5S
@@ -24,24 +19,16 @@ public class TreeInputBuilder {
 	// SMART     
 	// species
 	// SSF       
-	// TIGRFAMs  
+	// TIGRFAMs
 	
-        // only ever one master file for all trees, so this path is hardcoded
-	//public static String pathToLociFile =  "../../../input/locus_data_VERIFIED_WITH_ORPHANS.txt";  // expects a tab-delimited file: with locusID MD5 length kbaseFeatureID
-    
+public class TreeInputBuilder {
+
+	
 	public static long TIMESTAMP;
 
 	public static String ALN_METHOD="";
 	public static String ALN_PARAM="";
 
-        public static HashMap<String,TreeIdData> kbIdMap;
-        static class TreeIdData {
-	    public String alnId;
-            public String treeId;
-            public TreeIdData() { alnId=""; treeId=""; };
-	};
-	
-	
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -185,9 +172,13 @@ public class TreeInputBuilder {
 	protected String alignmentMethod;
 	protected String alignmentParameters;
 	
+	protected String treeGroupName;
+	
 	protected String pathToDumpDir;
 	protected String pathToAlnDir;
 	protected String pathToTreeDir;
+	
+	protected HashMap<String,String[]> treeIdLookupTable; //pos0=kbTreeId, pos1=kbAlnId
 	
 	protected BufferedWriter BW_trees;
 	protected BufferedWriter BW_treeAttribute;
@@ -203,9 +194,11 @@ public class TreeInputBuilder {
 	
 		System.out.println(" -> running from dir: "+System.getProperty("user.dir"));	
 		
+		this.treeGroupName = treeGroupName;
 		pathToDumpDir =    outputDir+treeGroupName;
 		pathToAlnDir  =    inputDir+treeGroupName+"/trimfasta/";
 		pathToTreeDir =    inputDir+treeGroupName+"/rooted/";
+		String idTablePath =    inputDir+treeGroupName+"/kbTreeIdMap.txt";
 		
 		if(! (new File(pathToDumpDir)).exists() )
 			throw new IOException("outputDir ("+pathToDumpDir+") does not exist!");
@@ -213,6 +206,8 @@ public class TreeInputBuilder {
 			throw new IOException("alignment directory ("+pathToAlnDir+") does not exist!");
 		if(! (new File(pathToTreeDir)).exists() )
 			throw new IOException("newick tree directory ("+pathToTreeDir+") does not exist!");
+		if(! (new File(idTablePath)).exists() )
+			throw new IOException("id table file ("+idTablePath+") does not exist!");
 		
 		if(treeGroupName.compareTo("COG")==0) { 		alignmentMethod="RPS-BLAST"; alignmentParameters="-e 1e-5"; }
 		else if(treeGroupName.compareTo("GENE3D")==0) { 	alignmentMethod="HMMER3"; alignmentParameters="-Z 2219 -E 0.001"; }
@@ -227,18 +222,32 @@ public class TreeInputBuilder {
 		}
 		System.out.println(" -> setting alignment method to: '"+alignmentMethod+"' and parameters to: '"+alignmentParameters+"'");
 		
-		assembleTreeList();
+		// read in the tree id lookup table
+		treeIdLookupTable = new HashMap<String,String[]>();
+		BufferedReader idReader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(idTablePath))));
+		String newick=""; String line="";
+		while ((line=idReader.readLine()) != null) {
+			String [] toks = line.trim().split("\\s+");
+			treeIdLookupTable.put(toks[0], new String[]{toks[1],toks[2]});
+		};
 		
+		//Determine the tree list
+		assembleTreeList();
 	}
+	
+	
+	
 	public static final String CS_URL   = "jdbc:mysql://127.0.0.1:13306/kbase_sapling_v2";
 	public static final String CS_USER  = "kbase_sapselect";
 	public static final String CS_PSSWD = "kbase4me2";
 	
 	protected Connection conn;
+	protected Statement st;
 	
 	public void setupCsConn() throws Exception {
 		System.out.println(" -> opening connection to "+CS_URL);
 		conn = DriverManager.getConnection(CS_URL,CS_USER,CS_PSSWD);
+		st = conn.createStatement();
 	}
 	
 	public void closeCsConn() throws Exception {
@@ -261,6 +270,7 @@ public class TreeInputBuilder {
 				}
 			}
 		}
+		Collections.sort(treeNames);
 		System.out.println(" -> processing "+treeNames.size()+" trees");
 	}
 	
@@ -308,11 +318,17 @@ public class TreeInputBuilder {
 			System.out.println(" -> ["+row_count+"]: processing tree "+name);
 			row_count++;
 			
+			
+			// determine the id of the tree/alignment
+			String [] kbids = getKbaseIds(name);
+			String kbTreeID = kbids[0];
+			String kbAlnID = kbids[1];
+			
 			// process the alignment file
 			String alignmentFileName = pathToAlnDir+name+RAW_FASTA_EXTENSION;
 			System.out.println("     | processing alignment file: "+alignmentFileName);
 			
-			AlignmentInformation ai = processAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/temp.fasta");
+			AlignmentInformation ai = processAlignmentFile(alignmentFileName,pathToDumpDir+"/Raw_Alignment_Files/"+kbAlnID+".fasta");
 			System.out.println("     | alignment contains "+ai.n_rows+" rows");
 			if(ai.n_rows==0) {
 				System.out.println("     | alignment is empty!  skipping this alignment/tree pair.");
@@ -322,6 +338,7 @@ public class TreeInputBuilder {
 			// grab the info about each feature
 			fetchFeatureInfoFromCS(ai);
 			
+			
 			// process the tree file
 			String treeFileName = pathToTreeDir+name+RAW_NEWICK_EXTENSION;
 			System.out.println("     | processing tree file: "+treeFileName);
@@ -329,46 +346,124 @@ public class TreeInputBuilder {
 			BufferedReader brTREE = new BufferedReader(new InputStreamReader(inTREE));
 			String newick=""; String treeFileLine="";
 			while ((treeFileLine=brTREE.readLine()) != null) { newick+=treeFileLine.trim(); };
-			processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+"temp"+".newick");
+			processNewickGeneTree(newick, ai, pathToDumpDir+"/Raw_Tree_Files/"+kbTreeID+".newick");
+			
+			
+			// WRITE THE ALIGNMENT RECORD IN ALIGNMENT.TAB FILE
+			System.out.println("     | writing alignment/tree meta data info ");
+			BW_aln.write(kbAlnID+"\t"); // kb_aln_id	 M	 unique kbase id reserved for the alignment from ID server: 'kb|aln.XXXXX'
+			BW_aln.write(ai.n_rows+"\t");   // n_rows	 M	 number of rows in the alignment, must be an integer valued 1 or greater
+			BW_aln.write(ai.n_cols+"\t");   // n_cols	 R	 number of columns in the alignment, must be an integer valued 1 or greater
+			BW_aln.write("active\t");       // status	 M	 string indicating if the alignment is "active", "superseded" or "bad"
+			BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
+			BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
+			BW_aln.write(TIMESTAMP+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
+			BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+			BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+			BW_aln.write("MO Pipeline\t"); // protocol	 O	 human readable description of the alignment, if needed
+			BW_aln.write("KBase\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
+			BW_aln.write(name);      // source_db_aln_id	 M	 the id of this alignment in the original database
+			BW_aln.write("\n");
+			BW_aln.flush();
+						
+			// WRITE THE TREE RECORD IN TREE.TAB FILE
+			BW_trees.write(kbTreeID+"\t");  // kb_tree_id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
+			BW_trees.write(kbAlnID+"\t");   // kb_aln_id	 M	 the kbase id of the alignment from which this tree was built
+			BW_trees.write("active\t");        // status	 M	 string indicating if the tree is "active", "superseded" or "bad"
+			BW_trees.write("sequence_alignment\t");  // data_type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
+			BW_trees.write(TIMESTAMP+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
+			BW_trees.write("FastTree2\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+			BW_trees.write("-fastest\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+			BW_trees.write("MO Pipeline\t"); // protocol	 O	 human readable description of the alignment, if needed
+			BW_trees.write("KBase\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
+			BW_trees.write(name);      // source_db_aln_id	 M	 the id of this alignment in the original database   
+			BW_trees.write("\n");
+			BW_trees.flush();
+			
+			// write the alignment row information
+			writeAlignmentRowDataForProtAln(kbAlnID, ai);
+					
+			// WRITE ANY OTHER ATTRIBUTES WE NEED TO THE APPROPRIATE FILES
+			BW_alnAttribute.write(kbAlnID+"\t"+"seeded_by_src\tMOL:"+treeGroupName+"\n");
+			BW_alnAttribute.write(kbAlnID+"\t"+"seeded_by_id\t"+name+"\n");
+			BW_alnAttribute.flush();
+						
+			BW_treeAttribute.write(kbTreeID+"\t"+"seeded_by_src\tMOL:"+treeGroupName+"\n");
+			BW_treeAttribute.write(kbTreeID+"\t"+"seeded_by_id\t"+name+"\n");
+			BW_treeAttribute.write(kbTreeID+"\t"+"style\t"+"phylogram\n");
+			BW_treeAttribute.write(kbTreeID+"\t"+"bootstrap_type\t"+"Shimodaira-Hasegawa Test\n");
+			BW_treeAttribute.write(kbTreeID+"\t"+"rooted\t"+"midpoint\n");
+			BW_treeAttribute.flush();
+			
+			long estimatedIterationTime = System.currentTimeMillis() - iterationStartTime;
+			System.out.println("     | iteration time="+estimatedIterationTime*0.001+"s");
 		}
 	}
 
 
-
+	public static final int SQL_ID_BATCH_SIZE = 1250;
 	
 	protected void fetchFeatureInfoFromCS(AlignmentInformation ai) throws Exception {
 		
 		System.out.println("     | fetching protein sequence id and length for each row");
+		int row_count = 0;
+		
 		// construct the list of feature ids in this alignment
-		StringBuilder sb = new StringBuilder(ai.n_rows*25);
+		StringBuilder sb = new StringBuilder(SQL_ID_BATCH_SIZE*25);
 		for(int i=0; i<ai.n_rows; i++) {
-			if(i==0) sb.append("'"+ai.kbFeatureIds.get(i)+"'");
-			else sb.append(",'"+ai.kbFeatureIds.get(i)+"'");
-		}
-		
-		// fetch the protein sequence MD5, the protein sequence length, mapped to the feature id
-		String query = "SELECT to_link,id,LENGTH(sequence) " +
-				"FROM ProteinSequence,IsProteinFor WHERE ProteinSequence.id = IsProteinFor.from_link AND " +
-				"IsProteinFor.to_link IN ("+sb.toString()+")";
-		
-		Statement st = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
-				java.sql.ResultSet.CONCUR_READ_ONLY);
-		st.setFetchSize(Integer.MIN_VALUE);
-
-		ResultSet rs = st.executeQuery(query);
-		long iterationTime=0,iterationStartTime=0; int row_count = 0;
-		while (rs.next())
-		{
-			for(int k=0; k<rs.getMetaData().getColumnCount();k++) {
-				// pos1= feature id; pos2= protein MD5; pos3= protein length
-				ai.parentProteinData.put(rs.getString(1),new ProteinData(rs.getString(2),rs.getInt(3)));
+			sb.append(",'"+ai.kbFeatureIds.get(i)+"'");
+			if(i%SQL_ID_BATCH_SIZE==0) {
+				// start at index 1 to get rid of leading comma
+				row_count += fetchBatchSet(sb.toString().substring(1), ai);
+				sb = new StringBuilder(SQL_ID_BATCH_SIZE*25);
 			}
-			row_count++;
 		}
-		rs.close();
+		String query = sb.toString();
+		if(!query.isEmpty()) {
+			row_count += fetchBatchSet(query.substring(1), ai);
+		}
 		System.out.println("     | CS query retrieved "+row_count+" rows");
 	}
 	
+	protected int fetchBatchSet(String idlist, AlignmentInformation ai) throws Exception {
+		String query = "SELECT to_link,from_link " +
+				"FROM IsProteinFor WHERE " +
+				"IsProteinFor.to_link IN ("+idlist+")";
+		int row_count=0;
+		StringBuilder sb = new StringBuilder(SQL_ID_BATCH_SIZE*25);
+		ResultSet rs = st.executeQuery(query);
+		while (rs.next()) {
+			// pos1= feature id; pos2= protein MD5; pos3= protein length
+			String featureId = rs.getString(1);
+			String md5 = rs.getString(2);
+			ai.parentProteinMd5.put(featureId,md5);
+			sb.append(",'"+md5+"'");
+			row_count++;
+		}
+		rs.close();
+		
+		// now fetch the protein sequence length
+		query = "SELECT id,LENGTH(sequence) " +
+				"FROM ProteinSequence WHERE " +
+				"ProteinSequence.id IN ("+sb.toString().substring(1)+")";
+		rs = st.executeQuery(query);
+		while (rs.next()) {
+			// pos1= feature id; pos2= protein MD5; pos3= protein length
+			String md5 = rs.getString(1);
+			int length = rs.getInt(2);
+			ai.parentProteinLength.put(md5,new Integer(length));
+		}
+		
+		return row_count;
+	}
+	
+	
+	protected String [] getKbaseIds(String name) throws IOException {
+		String [] ids = treeIdLookupTable.get(name);
+		if(ids==null)
+			throw new IOException("registered kbase ids for "+name+" not found!");
+		return ids;
+	}
 	
 	//protected void computeFeatureInfoFromUntrimmedFasta(String inputPath, AlignmentInformation ai) throws Exception {
 	//	
@@ -601,14 +696,7 @@ public class TreeInputBuilder {
 		catch (IOException ex)            {System.err.println("IOException: "+ex.getMessage());}
 */
 	
-	static class ProteinData {
-		String proteinMd5;
-		int proteinLength;
-		public ProteinData(String md5, int length) {
-			proteinMd5=md5; proteinLength=length;
-		};
-	};
-	
+
 	static class AlignmentInformation {
 		// need to be vectors because they are created as the file is read
 		ArrayList <String> ids;
@@ -617,7 +705,8 @@ public class TreeInputBuilder {
 		ArrayList <String> descriptions;
 		
 		// keys are kb feature ids, data is info on the protein
-		HashMap<String,ProteinData> parentProteinData;
+		HashMap<String,String> parentProteinMd5;
+		HashMap<String,Integer> parentProteinLength;
 		
 		// can be arrays for efficiency since they are computed after everything
 		// has been read in already
@@ -639,7 +728,8 @@ public class TreeInputBuilder {
 			kbFeatureIds = new ArrayList <String> (initialCapacity);
 			descriptions = new ArrayList <String> (initialCapacity);
 			replacementIdMappingString = "";
-			parentProteinData = new HashMap <String,ProteinData> (initialCapacity);
+			parentProteinMd5 = new HashMap <String,String> (initialCapacity);
+			parentProteinLength = new HashMap <String,Integer> (initialCapacity);
 			
 			row_start_pos_in_alignment = new ArrayList <Integer> (initialCapacity);
 			row_end_pos_in_alignment = new ArrayList <Integer> (initialCapacity);
@@ -740,11 +830,6 @@ public class TreeInputBuilder {
 		return ai;
 	}
 	
-	/**
-	 * Writes a fasta file with only the public genes
-	 * @param ai
-	 * @param file_path
-	 */
 	public static void writeNextFASTAfileEntry(String id, String description, String sequence, BufferedWriter bw) {
 		try {
 			bw.write(">"+id+" "+description+"\n");
@@ -782,7 +867,7 @@ public class TreeInputBuilder {
 
 	
 	
-	public static void writeAlignmentRowDataForProtAln(String KBaseAlnID, BufferedWriter BW_aln_row, BufferedWriter BW_containsProtein, AlignmentInformation ai) throws IOException
+	protected void writeAlignmentRowDataForProtAln(String KBaseAlnID, AlignmentInformation ai) throws IOException
 	{
 		int currentRow = 1;
 		for(int k=0; k<ai.ids.size(); k++) {			
@@ -798,11 +883,12 @@ public class TreeInputBuilder {
 			
 			// get data regarding this sequence
 			String featureId = ai.kbFeatureIds.get(k);
-			ProteinData pd = ai.parentProteinData.get(featureId);
-			if(pd==null)
+			String parentMd5 = ai.parentProteinMd5.get(featureId);
+			if(parentMd5==null)
 				throw new IOException("Error in processing! Feature "+featureId+" was not found in the CS!  aborting!");
-			String parentMd5 = pd.proteinMd5;
-			int parentLength = pd.proteinLength;
+			Integer parentLength = ai.parentProteinLength.get(parentMd5);
+			if(parentLength==null)
+				throw new IOException("Error in processing! Protein "+parentMd5+" was not found in the CS!  aborting!");
 			
 			BW_containsProtein.write(KBaseAlnID+"\t");    // kb-aln-id	 M	 maps this component to a particular alignment identified by the kbase id
 			BW_containsProtein.write(currentRow+"\t");    // aln-row-number	 M	 row number in alignment file, count starts at '1'
@@ -810,7 +896,7 @@ public class TreeInputBuilder {
 			BW_containsProtein.write(parentMd5+"\t");     // parent-seq-id	 M	 MD5 for protein sequence
 			BW_containsProtein.write(ai.begin_pos_in_parent.get(k)+"\t");           // beg-pos-in-parent	 M	 the alignment includes the original sequence starting at this postion, 1-based
 			BW_containsProtein.write(ai.end_pos_in_parent.get(k)+"\t");             // end-pos-in-parent	 M	 the alignment includes the original sequence ending at this postion, 1-based
-			BW_containsProtein.write(parentLength+"\t");     // parent-seq-len	 M	 the length of the untrimmed sequence for quick reference of the coverage of this alignment
+			BW_containsProtein.write(parentLength.intValue()+"\t");     // parent-seq-len	 M	 the length of the untrimmed sequence for quick reference of the coverage of this alignment
 			BW_containsProtein.write(ai.row_start_pos_in_alignment.get(k)+"\t");   // beg-pos-in-aln	 M	 integer value providing a coordinate/mapping to the starting column in the alignment where this sequence component begins
 			BW_containsProtein.write(ai.row_end_pos_in_alignment.get(k)+"\t");     // end-pos-in-aln	 M	 integer value providing a coordinate/mapping to the ending column in the alignment where this sequence component ends
 			BW_containsProtein.write(featureId);                           // kb-feature-id	 O	 associated kbase feature id, e.g., when intending to refer to a particular genome
