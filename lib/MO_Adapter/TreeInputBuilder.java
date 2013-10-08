@@ -24,7 +24,8 @@ import KBTreeUtil.KBTreeUtil;
 public class TreeInputBuilder {
 
 	
-	public static final String CS_URL   = "jdbc:mysql://127.0.0.1:13306/kbase_sapling_v2";
+	//public static final String CS_URL   = "jdbc:mysql://127.0.0.1:13306/kbase_sapling_v2";
+	public static final String CS_URL   = "jdbc:mysql://fir.mcs.anl.gov/kbase_sapling_v2";
 	public static final String CS_USER  = "kbase_sapselect";
 	public static final String CS_PSSWD = "kbase4me2";
 	
