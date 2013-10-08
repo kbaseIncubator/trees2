@@ -37,10 +37,6 @@ public class TreeInputBuilder {
 	
 	public static long TIMESTAMP;
 
-	public static String ALN_METHOD="";
-	public static String ALN_PARAM="";
-
-	
 	public static void main(String[] args) throws Exception
 	{
 		// start a timer so that we can measure performance
@@ -270,8 +266,8 @@ public class TreeInputBuilder {
 			BW_aln.write("0\t");            // is_concatenation	 M	 boolean to indicate if the alignment was composed by concatenating multiple alignments together; use numeric 0 and 1
 			BW_aln.write("Protein\t");      // sequence_type	 M	 string indicating the type of sequence; initial support should include "Protein", "DNA", "RNA", and "Mixed"; the first letter needs to be capitalized for protein and mixed
 			BW_aln.write(TIMESTAMP+"\t");      // timestamp	 M	 the time at which this alignment was loaded into KBase. Other timestamps can be added to AlignmentAttribute?; the time format is an integer indicating seconds since epoch
-			BW_aln.write(ALN_METHOD+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-			BW_aln.write(ALN_PARAM+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
+			BW_aln.write(alignmentMethod+"\t");  // method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
+			BW_aln.write(alignmentParameters+"\t");       // parameters	 R	 free form string that might be a hash to provide additional alignment parameters e.g., the program option values used
 			BW_aln.write("MO Pipeline\t"); // protocol	 O	 human readable description of the alignment, if needed
 			BW_aln.write("KBase\t");           // source_db	 M	 the database where this alignment originated, eg MO, SEED
 			BW_aln.write(name);      // source_db_aln_id	 M	 the id of this alignment in the original database
