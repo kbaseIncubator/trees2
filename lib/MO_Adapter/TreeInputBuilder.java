@@ -24,6 +24,13 @@ import KBTreeUtil.KBTreeUtil;
 public class TreeInputBuilder {
 
 	
+	public static final boolean USE_LIVE_CS = false;
+	
+	// IF we decide NOT to connect to the live CS, we need to set the location of the mapping file
+	public static final String SERIALIZED_FEATURE_MAP = "featureMapBuilder/featureMapExample.txt.serialized"; //"../../../feature_map/fid_mapping.txt.serialized";
+	public static final String SERIALIZED_PROT_SIZE_MAP =  "featureMapBuilder/proteinLengthExample.txt.serialized"; //"../../../feature_map/prot_size_mapping.txt.serialized";
+	
+	// IF we decide to connect to the live CS, we need to set he mysql parameters
 	//public static final String CS_URL   = "jdbc:mysql://127.0.0.1:13306/kbase_sapling_v2";
 	public static final String CS_URL   = "jdbc:mysql://fir.mcs.anl.gov/kbase_sapling_v2";
 	public static final String CS_USER  = "kbase_sapselect";
@@ -70,9 +77,7 @@ public class TreeInputBuilder {
 		TreeInputBuilder tib = new TreeInputBuilder(args[0], args[1], args[2]);
 		tib.setupDumpLocation(true);
 		
-		tib.setupCsConn();
 		tib.process();
-		tib.closeCsConn();
 		
 		// give us some stats on how we did
 		long estimatedTime = System.currentTimeMillis() - startTime;
@@ -91,6 +96,9 @@ public class TreeInputBuilder {
 	protected String pathToTreeDir;
 	
 	protected HashMap<String,String[]> treeIdLookupTable; //pos0=kbTreeId, pos1=kbAlnId
+	
+	protected HashMap<String,String> featureToProtMd5Map;
+	protected HashMap<String,Integer> md5ToSizeMap;
 	
 	protected BufferedWriter BW_trees;
 	protected BufferedWriter BW_treeAttribute;
@@ -151,14 +159,31 @@ public class TreeInputBuilder {
 	protected Connection conn;
 	protected Statement st;
 	
-	public void setupCsConn() throws Exception {
+	protected void setupCsConn() throws Exception {
 		System.out.println(" -> opening connection to "+CS_URL);
 		conn = DriverManager.getConnection(CS_URL,CS_USER,CS_PSSWD);
 		st = conn.createStatement();
 	}
 	
-	public void closeCsConn() throws Exception {
+	protected void closeCsConn() throws Exception {
 		conn.close();
+	}
+	
+	protected void initializeFeatureLookupTable() throws Exception {
+		
+		System.out.println(" -> loading feature to md5 map ("+SERIALIZED_FEATURE_MAP+")");
+		InputStream buffer = new BufferedInputStream(new FileInputStream(SERIALIZED_FEATURE_MAP));
+		ObjectInput input = new ObjectInputStream (buffer);
+		//@SuppressWarnings("unchecked")
+		featureToProtMd5Map = (HashMap<String,String>)input.readObject();
+		System.out.println(" -> loaded with "+featureToProtMd5Map.size()+" entries");
+		
+		System.out.println(" -> loading md5 to length map ("+SERIALIZED_PROT_SIZE_MAP+")");
+		InputStream buffer2 = new BufferedInputStream(new FileInputStream(SERIALIZED_PROT_SIZE_MAP));
+		ObjectInput input2 = new ObjectInputStream (buffer2);
+		//@SuppressWarnings("unchecked")
+		md5ToSizeMap = (HashMap<String,Integer>)input2.readObject();
+		System.out.println(" -> loaded with "+md5ToSizeMap.size()+" entries");
 	}
 
 	protected void assembleTreeList() throws IOException {
@@ -217,6 +242,9 @@ public class TreeInputBuilder {
 	
 
 	public void process() throws Exception {
+		if(USE_LIVE_CS) { setupCsConn(); }
+		else { initializeFeatureLookupTable(); }
+		
 		int row_count = 1; int written_count=0;
 		
 		long processStartTime = System.currentTimeMillis();
@@ -244,7 +272,8 @@ public class TreeInputBuilder {
 			}
 			
 			// grab the info about each feature
-			fetchFeatureInfoFromCS(ai);
+			if(USE_LIVE_CS) { fetchFeatureInfoFromCS(ai); }
+			else { fetchFeatureInfoFromMemory(ai); }
 			
 			
 			// process the tree file
@@ -312,13 +341,21 @@ public class TreeInputBuilder {
 			
 			row_count++;
 		}
+		
+		
+		
+		if(USE_LIVE_CS) { closeCsConn(); }
 	}
 
 
-	
+	protected void fetchFeatureInfoFromMemory(AlignmentInformation ai) throws Exception {
+		
+		// all we do is assign the ai lookup tables to point to the universal lookup table
+		ai.parentProteinLength = md5ToSizeMap;
+		ai.parentProteinMd5 = featureToProtMd5Map;
+	}
 	
 	protected void fetchFeatureInfoFromCS(AlignmentInformation ai) throws Exception {
-		
 		System.out.println("     | fetching protein sequence id and length for each row");
 		int row_count = 0;
 		
@@ -568,10 +605,10 @@ public class TreeInputBuilder {
 			String featureId = ai.kbFeatureIds.get(k);
 			String parentMd5 = ai.parentProteinMd5.get(featureId);
 			if(parentMd5==null)
-				throw new IOException("Error in processing! Feature "+featureId+" was not found in the CS!  aborting!");
+				throw new IOException("Error in processing! Feature "+featureId+" could not be found!  aborting!");
 			Integer parentLength = ai.parentProteinLength.get(parentMd5);
 			if(parentLength==null)
-				throw new IOException("Error in processing! Protein "+parentMd5+" was not found in the CS!  aborting!");
+				throw new IOException("Error in processing! Protein "+parentMd5+" could not be found!  aborting!");
 			
 			BW_containsProtein.write(KBaseAlnID+"\t");    // kb-aln-id	 M	 maps this component to a particular alignment identified by the kbase id
 			BW_containsProtein.write(currentRow+"\t");    // aln-row-number	 M	 row number in alignment file, count starts at '1'
