@@ -784,7 +784,7 @@ sub get_tree
 		    my $feature_ids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ?', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id)',0);
-		    my @feature_ids = @{$feature_ids};
+		    my @feature_ids = @{$feature_ids_raw};
 		    my $replacement_str="";
 		    foreach (@feature_ids) { #might be a better way to concatenate this list...
 		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
@@ -828,7 +828,7 @@ sub get_tree
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
 			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
-		    my @row2featureId = @{$row2featureId_raw}
+		    my @row2featureId = @{$row2featureId_raw};
 		    my $row2featureListMap = {};
 		    foreach my $pair (@row2featureId) {
 			# best = lowest ID number
@@ -860,7 +860,7 @@ sub get_tree
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
 			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
-		    my $row2featureId = @{$row2featureId_raw};
+		    my @row2featureId = @{$row2featureId_raw};
 		    my $row2featureListMap = {};
 		    foreach my $pair (@row2featureId) {
 		        my @tokens = split /\./, $pair->[1];
