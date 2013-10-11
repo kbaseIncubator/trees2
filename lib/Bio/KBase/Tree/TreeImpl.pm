@@ -796,7 +796,7 @@ sub get_tree
 		    my $prot_seq_ids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
-		    my $prot_seq_ids = @{$prot_seq_ids_raw};
+		    my @prot_seq_ids = @{$prot_seq_ids_raw};
 		    my $replacement_str="";
 		    # could be more than one sequence per row, so we have to check for this and only add the first one
 		    for my $i (0 .. $#prot_seq_ids) {
@@ -824,11 +824,11 @@ sub get_tree
 		
 		    # lookup the list of features
 		    $kb_tree->setOutputFlagLabel(1);
-		    my $row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+		    my $row2featureId_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
 			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
-		    
+		    my @row2featureId = @{$row2featureId_raw}
 		    my $row2featureListMap = {};
 		    foreach my $pair (@row2featureId) {
 			# best = lowest ID number
@@ -1865,7 +1865,7 @@ sub get_leaf_to_protein_map
     my $pids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
-    my @pids = @{$pids};
+    my @pids = @{$pids_raw};
     foreach my $p (@pids) {
 	$return->{${$p}[0]} = ${$p}[1];
     }
