@@ -781,9 +781,10 @@ sub get_tree
 		    # use the exemplar feature stored directly in the tree
 		    $kb_tree->setOutputFlagLabel(1);
 		    # replace names with feature ids
-		    my @feature_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+		    my $feature_ids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ?', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id)',0);
+		    my @feature_ids = @{$feature_ids};
 		    my $replacement_str="";
 		    foreach (@feature_ids) { #might be a better way to concatenate this list...
 		    	$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
@@ -792,9 +793,10 @@ sub get_tree
 		    $kb_tree->replaceNodeNamesOrMakeBlank($replacement_str);
 		} elsif ($options->{newick_label} eq "protein_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @prot_seq_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+		    my $prot_seq_ids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
+		    my $prot_seq_ids = @{$prot_seq_ids_raw};
 		    my $replacement_str="";
 		    # could be more than one sequence per row, so we have to check for this and only add the first one
 		    for my $i (0 .. $#prot_seq_ids) {
@@ -809,9 +811,10 @@ sub get_tree
 		} elsif ($options->{newick_label} eq "contig_sequence_id") {
 		    $kb_tree->setOutputFlagLabel(1);
 		    # todo: replace names with contig sequence ids
-		    my @contig_seq_ids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
+		    my $contig_seq_ids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedDNA',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedDNA(to-link)', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedDNA(to-link)',0);
+		    my @contig_seq_ids = @{$contig_seq_ids_raw};
 		    my $replacement_str="";
 		    foreach (@contig_seq_ids) { #might be a better way to concatenate this list...
 			$replacement_str = $replacement_str.${$_}[0].";".${$_}[1].";";
@@ -821,7 +824,7 @@ sub get_tree
 		
 		    # lookup the list of features
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+		    my $row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
 			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
@@ -853,11 +856,11 @@ sub get_tree
 		
 		    # lookup the list of features
 		    $kb_tree->setOutputFlagLabel(1);
-		    my @row2featureId = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
+		    my $row2featureId_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein ProteinSequence IsProteinFor',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY IsProteinFor(to_link)', [$tree_id],
 			    'AlignmentRow(row-id) IsProteinFor(to_link)',0);
 		    my $replacement_str="";
-		    
+		    my $row2featureId = @{$row2featureId_raw};
 		    my $row2featureListMap = {};
 		    foreach my $pair (@row2featureId) {
 		        my @tokens = split /\./, $pair->[1];
@@ -1859,9 +1862,10 @@ sub get_leaf_to_protein_map
     
     $return = {};
     my $erdb = $self->{erdb};
-    my @pids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+    my $pids_raw = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ? ORDER BY AlignmentRow(row-id),ContainsAlignedProtein(to-link)', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(to-link)',0);
+    my @pids = @{$pids};
     foreach my $p (@pids) {
 	$return->{${$p}[0]} = ${$p}[1];
     }
@@ -1938,9 +1942,10 @@ sub get_leaf_to_feature_map
     
     $return = {};
     my $erdb = $self->{erdb};
-    my @fids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
+    my $fids = $erdb->GetAll('IsBuiltFromAlignment Alignment IsAlignmentRowIn AlignmentRow ContainsAlignedProtein',
 			    'IsBuiltFromAlignment(from_link) = ?', [$tree_id],
 			    'AlignmentRow(row-id) ContainsAlignedProtein(kb-feature-id)',0);
+    my @fids = @{$fids};
     foreach my $f (@fids) {
 	$return->{${$f}[0]} = ${$f}[1];
     }
