@@ -15,6 +15,7 @@
 #include "tree.hh"
 #include <string>
 #include <map>
+#include <sstream>
 
 using namespace std;
 
@@ -40,7 +41,7 @@ namespace KBTreeLib {
 
 			/*! Returns the name of the node (from parsing the original label) */
 			std::string getName() const { return name; };
-	      
+
 			/*! Returns the distance from this node to its parent (from parsing the original label), or NAN if no distance was set */
 			double getDistanceToParent() const { return distanceToParent; };
 
@@ -51,7 +52,6 @@ namespace KBTreeLib {
 			 * @param[in] style Specifies what parts of the node to print to the string.
 			 */
 			std::string getLabelFromComponents(unsigned int style);
-			
 
 			/*! Return a string representation of this Node based on the output style.
 			* @param[in] style Specifies what parts of the node to print to the string.
@@ -75,8 +75,7 @@ namespace KBTreeLib {
 			std::string post_dist_decoration;  /*!< comments enclosed in [...] after the distance label  */
 			double distanceToParent;           /*!< Stores distance to parent if it is defined for this node, if not defined then it is set to NAN  */
 			double bootstrapValue;             /*!< Stores bootstrap value (which is parsed ONLY if activated from internal node names), if not defined then it is set to NAN  */
-	                
-			
+
 			void setHiddenMarkerLabel(std::string marker) { hidden_marker=marker; };
 			std::string getHiddenMarkerLabel() { return hidden_marker; };
 			std::string hidden_marker;         /*!< A hidden marker that can be set and retrieved for internal use only!!! */
@@ -111,7 +110,7 @@ namespace KBTreeLib {
 			bool writeNewickToFile(const std::string &filename,unsigned int style);
 
 			unsigned int getNodeCount() const { return nodeCount; };
-                        unsigned int getLeafCount();
+            unsigned int getLeafCount();
 
 
 			// @todo implement this function
@@ -119,8 +118,7 @@ namespace KBTreeLib {
 			// @todo implement this function
 			bool validateNewickString(string &infoMssg) {return false;};
 
-                        void stripReservedCharsFromLabels();
-
+			void stripReservedCharsFromLabels();
 
 			/**
 			* returns a string with a list of all the names of the leaves in this tree
@@ -190,14 +188,11 @@ namespace KBTreeLib {
 			void removeNodesByNameAndSimplify(std::map<std::string,std::string> &nodeNames);
 			void removeNodesByNameAndSimplify(const std::string &nodeNames);
 
-			
 			/**
 			 * merge leaves that have zero distance between each other, keeping an arbitrary leaf
 			 */
 			void mergeZeroDistLeaves();
-			
-			
-			
+
 
 			void printOutNamesAllPossibleTraversals(ostream &o);
 
@@ -208,7 +203,7 @@ namespace KBTreeLib {
 			 * Prints the tree to the given output stream in an indented format.  Used primarily for debugging.
 			 */
 			void printTree(ostream &o);
-			static void printTree(ostream &o, const tree<KBNode>& tr, tree<KBNode>::pre_order_iterator it, tree<KBNode>::pre_order_iterator end);
+			static void printTree(ostream &o, const tree<KBNode> *tr, tree<KBNode>::pre_order_iterator it, tree<KBNode>::pre_order_iterator end);
 
 
 			// set of methods to traverse a tree, node by node, in a breadth first search, and mark specific
@@ -238,13 +233,14 @@ namespace KBTreeLib {
 			//////////////////// NEWICK PARSING METHODS ///////////////////////////
 			/** recursive parsing of a string assuming newick format.  Do not call this method directly outside of KBTree */
 			void parseNewick(const std::string &newickString, unsigned int &k, tree<KBNode>::iterator &currentNode);
+			void parseNewickNonRecursive(const std::string &newickString);
 			bool getNextLabel(const std::string &newickString, unsigned int &k, KBNode &node);
 			bool getNextLabelWithoutComments(const std::string &newickString, unsigned int &k, KBNode &node);
 			void passLeadingWhiteSpace(const std::string &newickString, unsigned int &k);
 
 			//////////////////// BASIC TREE DATA STRUCTURES ///////////////////////////
 			unsigned int nodeCount;
-			tree <KBNode> tr;
+			tree <KBNode> *tr;
 
 
 			//////////////////// FLAGS FOR OUTPUTTING THE NEWICK STRING VIA toNewick() ///////////////////////////
@@ -265,13 +261,7 @@ namespace KBTreeLib {
 
 			bool verbose;
 			bool assumeBootstrapNames;
-
-			/** Internal recursive function called from public toNewick() method.  Never call this method directly **/
-			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString,unsigned int style);
-
-			void toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString);
-
-
+			std::stringstream ss;
 	};
 
 	/**

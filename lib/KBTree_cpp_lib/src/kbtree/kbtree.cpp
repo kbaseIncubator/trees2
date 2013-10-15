@@ -3,17 +3,17 @@
  * @brief KBase Tree Utility Library Implementation
  *
  * @author Michael Sneddon, mwsneddon@lbl.gov
- * @date created Jun 6, 2012, last edited Nov 2012
+ * @date created Jun 6, 2012, last edited Oct 2013
  */
 
 
 /**
  * The tree library makes use of the C library assert functionality
- * for internal testing of the code.  Uncomment this define statement
- * when debugging, leave this statement commented to test assertions.
+ * for internal testing of the code.  Comment out this define statement
+ * when debugging to evaluate assertions.
  * @see http://www.cplusplus.com/reference/clibrary/cassert/assert/
  */
-//#define NDEBUG
+#define NDEBUG
 
 // for parsing Newick strings, it is useful to define a set of
 // characters we will need to identify and match frequently
@@ -36,13 +36,14 @@
 #include <cassert>
 #include <cmath>
 #include <sstream>
-
+#include <stack>
+#include <stdlib.h>
 
 using namespace std;
 using namespace KBTreeLib;
 
 
-
+// in place removal of leading and trailing whitespace
 void KBTreeLib::trim(std::string& str) {
 	size_t startpos = str.find_first_not_of(" \t");
 	size_t endpos = str.find_last_not_of(" \t");
@@ -53,18 +54,21 @@ void KBTreeLib::trim(std::string& str) {
 	}
 }
 
+// convert string value to double, ends program if this fails
 double KBTreeLib::convertToDouble(const std::string& s)
 {
+	//return strtod(s.c_str(),NULL);
 	bool failIfLeftoverChars = true;
 	std::istringstream i(s);
 	double x; char c;
 	if (!(i >> x) || (failIfLeftoverChars && i.get(c))) {
-		cerr<<"Cannot convert string '"+s+"' to double value."<<endl; //,"Util::convertToDouble(\"" + s + "\")");
+		cerr<<"Cannot convert string '"+s+"' to double value."<<endl;
 		throw "error in convertToDouble";
 	}
 	return x;
 }
 
+// convert double valto string, ends program if fails
 std::string KBTreeLib::toString(double x)
 {
 	std::ostringstream o;
@@ -104,8 +108,7 @@ const unsigned int KBNode::ORIGINAL_LABEL=5;
 
 KBNode::KBNode() { clear(); }
 KBNode::~KBNode() { }
-void KBNode::clear()
-{
+void KBNode::clear() {
 	this->original_label="";
 	this->name="";
 	this->pre_name_decoration="";
@@ -117,8 +120,7 @@ void KBNode::clear()
 	this->hidden_marker="";
 }
 
-std::string KBNode::getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label)
-{
+std::string KBNode::getLabelFromComponents(bool with_label, bool with_distance, bool with_comments, bool with_bootstrap_value_as_label) {
 	string constructedLabel = "";
 
 	//add pre name comments
@@ -147,7 +149,6 @@ std::string KBNode::getLabelFromComponents(bool with_label, bool with_distance, 
 
 
 std::string KBNode::getLabelFromComponents(unsigned int style) {
-
 	string constructedLabel = "";
 	if(style==NAME_AND_DISTANCE) { //name:distance, distance left blank if no distance
 		constructedLabel=getQuotedString(name);
@@ -186,8 +187,7 @@ std::string KBNode::getLabelFromComponents(unsigned int style) {
 
 
 
-KBTree::KBTree(const std::string &newickString)
-{
+KBTree::KBTree(const std::string &newickString) {
 	this->nodeCount=0;
 	this->verbose=false;
 	this->assumeBootstrapNames=false;
@@ -198,8 +198,8 @@ KBTree::KBTree(const std::string &newickString)
 	this->initializeFromNewick(newickString);
 	this->resetBreadthFirstIterToRoot();
 }
-KBTree::KBTree(const std::string &newickString,bool verbose)
-{
+
+KBTree::KBTree(const std::string &newickString,bool verbose) {
 	this->nodeCount=0;
 	this->verbose=verbose;
 	this->assumeBootstrapNames=false;
@@ -210,8 +210,8 @@ KBTree::KBTree(const std::string &newickString,bool verbose)
 	this->initializeFromNewick(newickString);
 	this->resetBreadthFirstIterToRoot();
 }
-KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrapNames)
-{
+
+KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrapNames) {
 	this->nodeCount=0;
 	this->verbose=verbose;
 	this->assumeBootstrapNames=assumeBootstrapNames;
@@ -223,33 +223,34 @@ KBTree::KBTree(const std::string &newickString,bool verbose,bool assumeBootstrap
 	this->resetBreadthFirstIterToRoot();
 }
 
-KBTree::~KBTree()
-{
-	this->tr.clear();
+KBTree::~KBTree() {
+	this->tr->clear();
 }
 
-void KBTree::initializeFromNewick(const std::string &newickString)
-{
+void KBTree::initializeFromNewick(const std::string &newickString) {
+	this->tr = new tree <KBNode> ();
 	// create and add the root node
 	if(verbose) { cout<<"KBTREE-- initializing tree from newick string"<<endl; }
-	tr.set_head(KBNode());
+	tr->set_head(KBNode());
 	this->nodeCount++;
-	unsigned int curserPosition = 0;
-	// go on and parse the rest recursively
-	tree<KBNode>::iterator rootIter = tr.begin();
-	parseNewick(newickString,curserPosition,rootIter);
+	// Recursive parse can encounter stack overflow if tree is large, thus we have switched to non-recursive parse
+	//unsigned int curserPosition = 0;
+	//tree<KBNode>::iterator rootIter = tr->begin();
+	parseNewickNonRecursive(newickString);
+	//parseNewick(newickString,curserPosition,rootIter);
 }
 
 
-void printPos(const std::string &newickString, unsigned int &k)
-{
+void printPos(const std::string &newickString, unsigned int &k) {
 	for(unsigned int j=0;j<k;j++) { cout<<" "; }
 	cout<<"|"<<endl;
 	cout<<newickString<<endl;
 }
 
-void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<KBNode>::iterator &currentNode)
-{
+
+// DO NOT USE!!  Replaced by parseNewickNonRecursive, which is more effecient and will not run into stack overflow problems
+void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<KBNode>::iterator &currentNode) {
+
 	// ditch leading white space first
 	passLeadingWhiteSpace(newickString, k);
 	if( k >= newickString.length() ) return;
@@ -258,10 +259,10 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 	if( newickString.at(k)==OPEN_PARAN ) {
 		//cout<<"OPEN"<<endl;printPos(newickString,k);
 		// note here that the begin iterator points to the first child of the current node
-		tree<KBNode>::iterator newChild = tr.insert(currentNode.begin(),KBNode());
+		tree<KBNode>::iterator newChild = tr->insert(currentNode.begin(),KBNode());
 		this->nodeCount++;
 		k=k++;
-		if( k >= newickString.length() ) { cerr<<"syntax error in tree"<<endl; exit(1); }
+		if( k >= newickString.length() ) { cerr<<"syntax error in tree at position:"<<k<<endl; exit(1); }
 		if(newickString.at(k)!=CLOSE_PARAN) {
 			parseNewick(newickString,k,newChild);
 		}
@@ -296,12 +297,91 @@ void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<
 	// If we get to a comma, then the current node has some siblings, so recurse on the sibling node
 	if (newickString.at(k)==COMMA) {
 		//cout<<"COMMA"<<endl;printPos(newickString,k);
-		tree<KBNode>::iterator newSibling = tr.insert_after(currentNode,KBNode());
+		tree<KBNode>::iterator newSibling = tr->insert_after(currentNode,KBNode());
 		this->nodeCount++;
 		k++;
 		parseNewick(newickString,k,newSibling);
 	}
 }
+
+
+
+void KBTree::parseNewickNonRecursive(const std::string &newickString)
+{
+	// setup stack and cursor
+	unsigned int cursor = 0;
+	stack<tree<KBNode>::iterator> nodeStack;
+	nodeStack.push(tr->begin());
+
+	// handle every node we encounter
+	while(!nodeStack.empty()) {
+
+		// pop off the next node to process
+		tree<KBNode>::iterator currentNode = nodeStack.top();
+		nodeStack.pop();
+
+		// advance the cursor as far as we can
+		while(cursor<newickString.length()) {
+
+			// ditch leading white space first by advancing the cursor, if this gets us to the end then break
+			passLeadingWhiteSpace(newickString, cursor);
+			if( cursor >= newickString.length() ) break;
+
+			// if we get to an open parenthesis, then create a child and recurse down
+			if( newickString.at(cursor)==OPEN_PARAN ) {
+				// note here that the begin iterator points to the first child of the current node
+				tree<KBNode>::iterator newChild = tr->insert(currentNode.begin(),KBNode());
+				this->nodeCount++;
+				cursor++;
+				if( cursor >= newickString.length() ) { cerr<<"syntax error in tree at position:"<<cursor<<endl; exit(1); }
+				if(newickString.at(cursor)!=CLOSE_PARAN) {
+					nodeStack.push(currentNode);
+					nodeStack.push(newChild);
+					break;
+				}
+			}
+
+			// If we get here, then we are ready to label it
+			getNextLabel(newickString,cursor,(*currentNode));
+			// if it is an internal node and has a name and we are assuming that internal node names are bootstrap values,
+			// then update the parsing. (note that this is the case for most MO trees)
+			if(this->assumeBootstrapNames && currentNode.number_of_children()>0 && (*currentNode).getName().size()>0) {
+				try {
+					(*currentNode).bootstrapValue = convertToDouble((*currentNode).name);
+					(*currentNode).name="";
+				} catch (...) {
+					this->assumeBootstrapNames = false;
+					cerr<<"assuming that internal nodes are NOT bootstrap values"<<endl;
+				}
+			}
+
+			// if we get to a close parenthesis, then go on to the next position in the string
+			// and return back up the hierarchy
+			if( cursor >= newickString.length() ) { break; }
+			if (newickString.at(cursor)==CLOSE_PARAN) {
+				cursor++;
+				break;
+			}
+
+			//again make sure we can go further
+			if( cursor >= newickString.length() ) break;
+
+			// If we get to a comma, then the current node has some siblings, so recurse on the sibling node
+			if (newickString.at(cursor)==COMMA) {
+				tree<KBNode>::iterator newSibling = tr->insert_after(currentNode,KBNode());
+				this->nodeCount++;
+				cursor++;
+				nodeStack.push(newSibling);
+				break;
+			}
+		}
+	}
+	// should be all done if we get here
+}
+
+
+
+
 
 
 
@@ -364,7 +444,6 @@ void getQuotedText(const std::string &newickString, unsigned int &k, string &quo
 		quotedText+=C;
 		k++;
 	}
-	//cout<<"**got it chief!"<<endl;
 }
 
 bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNode &node)
@@ -383,11 +462,18 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 	bool afterColonOperator = false;
 	bool quotedTextWasFound = false;
 
-	char C; string textToAdd;
+	char C; string textToAdd="";
 	while( k<newickString.size() ) {
 
 		// first things first - get the next character
 		C=newickString.at(k);
+		//cout << k <<endl;
+		//cout <<"char: "<<C<<endl;
+		//cout <<"context: "<< newickString.substr(k,20);
+		string C_as_str;
+		ss << C;
+		ss >> C_as_str;
+		ss.clear();
 
 		// Now handle anything in quotes.  Note how this is a bit deceptive.  We first save the character to
 		// the textToAdd string.  This will be the text that we eventually add to the comment, name, or distance
@@ -395,7 +481,9 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 		// character is a quote, then we parse the entire quote and overwrite the variable textToAdd.  Then later,
 		// we can simply add textToAdd to the appropriate string.  Note that this also advances k such that we
 		// won't try to parse anything inside the quoted string as a special character
-		textToAdd=""; textToAdd+=C; quotedTextWasFound=false;
+		textToAdd="";
+		textToAdd+=C_as_str;
+		quotedTextWasFound=false;
 		if ( C==SGL_QUOTE ) { getQuotedText(newickString,k,textToAdd,label,SGL_QUOTE); }
 		if ( C==DBL_QUOTE ) { getQuotedText(newickString,k,textToAdd,label,DBL_QUOTE); }
 
@@ -486,11 +574,11 @@ void KBTree::passLeadingWhiteSpace(const std::string &newickString, unsigned int
 void KBTree::printTree() { printTree(cout); }
 std::string KBTree::printSimpleTreeToString() {
 	string pretty_tree;
-	tree<KBNode>::pre_order_iterator it  =this->tr.begin();
-	tree<KBNode>::pre_order_iterator end =this->tr.end();
-	int rootdepth=tr.depth(it);
+	tree<KBNode>::pre_order_iterator it  =this->tr->begin();
+	tree<KBNode>::pre_order_iterator end =this->tr->end();
+	int rootdepth=tr->depth(it);
 	while(it!=end) {
-		for(int i=0; i<tr.depth(it)-rootdepth; ++i) { pretty_tree += "   "; }
+		for(int i=0; i<tr->depth(it)-rootdepth; ++i) { pretty_tree += "   "; }
 		pretty_tree += " -";
 		pretty_tree += (*it).name; pretty_tree+="\n";
 		++it;
@@ -504,18 +592,18 @@ std::string KBTree::printTreeToString() {
 	return ss.str();
 }
 void KBTree::printTree(ostream &o) {
-	KBTree::printTree(o,this->tr,this->tr.begin(),this->tr.end());
+	KBTree::printTree(o,this->tr,this->tr->begin(),this->tr->end());
 }
 
-void KBTree::printTree(ostream &o, const tree<KBNode>& tr, tree<KBNode>::pre_order_iterator it, tree<KBNode>::pre_order_iterator end)
+void KBTree::printTree(ostream &o, const tree<KBNode> *tr, tree<KBNode>::pre_order_iterator it, tree<KBNode>::pre_order_iterator end)
 {
 	o<<"*****************"<<endl;
-	o<<"Tree Size: "<<tr.size()<<endl;
-	if(!tr.is_valid(it)) return;
-	int rootdepth=tr.depth(it);
+	o<<"Tree Size: "<<tr->size()<<endl;
+	if(!tr->is_valid(it)) return;
+	int rootdepth=tr->depth(it);
 	o << "-----" << std::endl;
 	while(it!=end) {
-		for(int i=0; i<tr.depth(it)-rootdepth; ++i)
+		for(int i=0; i<tr->depth(it)-rootdepth; ++i)
 			o << "  ";
 		string full_label = (*it).getLabelFromComponents(KBNode::NAME_DISTANCE_AND_COMMENTS);
 		o << (*it).name<<"   (dist="<<(*it).distanceToParent <<",full="<<full_label<<")"<< std::endl << std::flush;
@@ -539,101 +627,106 @@ void printAllNodes(ostream &o)
 
 
 
+class NodeHandle {
+	public:
+		NodeHandle(bool hasVisitedBefore,tree<KBNode>::iterator node) {
+			this->hasVisitedBefore = hasVisitedBefore;
+			this->node = node;
+		};
+		bool hasVisitedBefore;
+		tree<KBNode>::iterator node;
+};
+
 std::string KBTree::toNewick() {
-	// retrieve the root node, then call the recursive version of this function
+
 	std::string newickString="";
-	tree<KBNode>::iterator rootIter = tr.begin();
-	toNewick(rootIter, newickString);
+	stack<NodeHandle> nodeStack;
+	nodeStack.push(NodeHandle(false,tr->begin()));
+
+	while(!nodeStack.empty()) {
+
+		// pop off the next node to process
+		NodeHandle currentNode = nodeStack.top();
+		nodeStack.pop();
+
+		if(currentNode.hasVisitedBefore) {
+			// we've seen this node before, so we have to just print, and move on to a sibling if one exists
+			newickString+=(*(currentNode.node)).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
+			tree<KBNode>::iterator sibling = tr->next_sibling(currentNode.node);
+			if(sibling!=NULL && sibling!=tr->end()) {
+				/// if we have a next sibling, then go there
+				newickString+=",";
+				nodeStack.push(NodeHandle(false,sibling));
+			} else if(!nodeStack.empty()){
+				newickString+=")";
+			} else {
+				newickString+=";";
+			}
+
+		} else {
+			if(tree<KBNode>::number_of_children(currentNode.node)>0) {
+				// if there are children, add the current node back to the stack, but remember that we've been here...
+				newickString+="(";
+				nodeStack.push(NodeHandle(true,currentNode.node));
+				tree<KBNode>::iterator childIter = currentNode.node.begin();
+				nodeStack.push(NodeHandle(false,childIter));
+			} else {
+				// if there are no children, we can print so add this node to the stack, and mark that we have seen its children
+				nodeStack.push(NodeHandle(true,currentNode.node));
+			}
+		}
+	}
 	return newickString;
 }
 
-std::string KBTree::toNewick(unsigned int style)
-{
-	// retrieve the root node, then call the recursive version of this function
+
+
+std::string KBTree::toNewick(unsigned int style) {
+
 	std::string newickString="";
-	tree<KBNode>::iterator rootIter = tr.begin();
-	toNewick(rootIter, newickString,style);
+	stack<NodeHandle> nodeStack;
+	nodeStack.push(NodeHandle(false,tr->begin()));
+
+	while(!nodeStack.empty()) {
+
+		// pop off the next node to process
+		NodeHandle currentNode = nodeStack.top();
+		nodeStack.pop();
+
+		if(currentNode.hasVisitedBefore) {
+			// we've seen this node before, so we have to just print, and move on to a sibling if one exists
+			newickString+=(*(currentNode.node)).getLabelFromComponents(style);
+			tree<KBNode>::iterator sibling = tr->next_sibling(currentNode.node);
+			if(sibling!=NULL && sibling!=tr->end()) {
+				/// if we have a next sibling, then go there
+				newickString+=",";
+				nodeStack.push(NodeHandle(false,sibling));
+			} else if(!nodeStack.empty()){
+				newickString+=")";
+			} else {
+				newickString+=";";
+			}
+
+		} else {
+			if(tree<KBNode>::number_of_children(currentNode.node)>0) {
+				// if there are children, add the current node back to the stack, but remember that we've been here...
+				newickString+="(";
+				nodeStack.push(NodeHandle(true,currentNode.node));
+				tree<KBNode>::iterator childIter = currentNode.node.begin();
+				nodeStack.push(NodeHandle(false,childIter));
+			} else {
+				// if there are no children, we can print so add this node to the stack, and mark that we have seen its children
+				nodeStack.push(NodeHandle(true,currentNode.node));
+			}
+		}
+	}
 	return newickString;
 }
 
 
 
-void KBTree::toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString)
-{
-	assert(currentNode!=NULL);
-	//cout<<"here:"<<newickString<<":"<<(*currentNode)->label<<endl;
-	// First check if we have children, if we do then descend to that child
-	if(tree<KBNode>::number_of_children(currentNode)>0) {
-		//cout<<"  -num of children>0"<<endl;
-		newickString+="(";
-		tree<KBNode>::iterator childIter = currentNode.begin();
-		toNewick(childIter,newickString);
-	}
-
-	// Next check if we have siblings, and if so we have to go there next
-	tree<KBNode>::iterator sibling = tr.next_sibling(currentNode);
-	if(sibling!=NULL && sibling!=tr.end()) {
-		// if we have a next sibling, then go there
-		//cout<<"  -num of siblings>0"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
-		newickString+=",";
-		toNewick(sibling,newickString);
-	}
-
-	// If we don't have siblings, do we have a parent? if so go back up
-	else if(tr.parent(currentNode)!=NULL && tr.parent(currentNode)!=tr.end()) {
-		//cout<<"  -has parent"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
-		newickString+=")";
-	}
-
-	// And finally, if we don't have a parent, then we're back at root,
-	// so print the label and close the tree with a semicolon.
-	else {
-		//cout<<"  -no siblings, no parent"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(this->with_labels, this->with_distances, this->with_comments, this->with_bootstrap_values_as_labels);
-		newickString+=";";
-	}
-}
 
 
-void KBTree::toNewick(tree<KBNode>::iterator &currentNode, std::string &newickString, unsigned int style)
-{
-	assert(currentNode!=NULL);
-	//cout<<"here:"<<newickString<<":"<<(*currentNode)->label<<endl;
-	// First check if we have children, if we do then descend to that child
-	if(tree<KBNode>::number_of_children(currentNode)>0) {
-		//cout<<"  -num of children>0"<<endl;
-		newickString+="(";
-		tree<KBNode>::iterator childIter = currentNode.begin();
-		toNewick(childIter,newickString,style);
-	}
-
-	// Next check if we have siblings, and if so we have to go there next
-	tree<KBNode>::iterator sibling = tr.next_sibling(currentNode);
-	if(sibling!=NULL && sibling!=tr.end()) {
-		// if we have a next sibling, then go there
-		//cout<<"  -num of siblings>0"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(style);
-		newickString+=",";
-		toNewick(sibling,newickString,style);
-	}
-
-	// If we don't have siblings, do we have a parent? if so go back up
-	else if(tr.parent(currentNode)!=NULL && tr.parent(currentNode)!=tr.end()) {
-		//cout<<"  -has parent"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(style);
-		newickString+=")";
-	}
-
-	// And finally, if we don't have a parent, then we're back at root,
-	// so print the label and close the tree with a semicolon.
-	else {
-		//cout<<"  -no siblings, no parent"<<endl;
-		newickString+=(*currentNode).getLabelFromComponents(style);
-		newickString+=";";
-	}
-}
 
 
 void KBTree::removeNodesByNameAndSimplify(const std::string &nodeNames)
@@ -663,8 +756,8 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 	// loop through the nodes in a depth-first, post-order traversal
 	// thus, as we look at each node, we can assume all nodes below have been processed
 	bool nodeWasErased=false;
-	tree<KBNode>::post_order_iterator node = tr.begin_post();
-	while(node!=tr.end_post()) {
+	tree<KBNode>::post_order_iterator node = tr->begin_post();
+	while(node!=tr->end_post()) {
 		// look for this node in the removal list (only if it has some non-empty name)
 		if((*node).getName().size()>0) {
 			map<string,string>::iterator nodeIter=nodeNames.find((*node).getName());
@@ -674,10 +767,10 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 				}
 				nodeIter->second="+";
 				// if we are a leaf node, then just erase
-				if(tr.number_of_children(node)==0) {
+				if(tr->number_of_children(node)==0) {
 					if(verbose) { cout<<"KBTREE--   REMOVING LEAF NODE NAMED: '"<<(*node).getName()<<"'"<<endl;}
 					tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
-					tr.erase(nodeToBeAxed); nodeCount--;
+					tr->erase(nodeToBeAxed); nodeCount--;
 					nodeWasErased=true;
 				}
 				// if we have children, then we must replace this node with its child
@@ -686,11 +779,11 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 					//refactor distances to the child by adding the edge lengths
 					if(node.has_parent()) {
 						double distFromThisNodeToParent = (*node).distanceToParent;
-						for(tree<KBNode>::sibling_iterator child=node.begin(); child!=tr.end(child); child++) {
+						for(tree<KBNode>::sibling_iterator child=node.begin(); child!=tr->end(child); child++) {
 							(*child).distanceToParent += distFromThisNodeToParent;
 						}
 						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
-						tr.erase_and_reparent_children(nodeToBeAxed); nodeCount--;
+						tr->erase_and_reparent_children(nodeToBeAxed); nodeCount--;
 						nodeWasErased=true;
 					} else {
 						cerr<<"!!KBTREE ERROR-- CANNOT REMOVE ROOT NODE FROM TREE."<<endl;
@@ -703,13 +796,13 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 			// if node is unamed and has only zero or one children and is not the root node (has no parent), then remove
 			if(node.has_parent()) {
 				if(((*node).getName()).size()==0) {
-					if(tr.number_of_children(node)==0) {
+					if(tr->number_of_children(node)==0) {
 						if(verbose) { cout<<"KBTREE--   REMOVING UNAMED LEAF NODE"<<endl;}
 						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
-						tr.erase(nodeToBeAxed); nodeCount--;
+						tr->erase(nodeToBeAxed); nodeCount--;
 						nodeWasErased=true;
 					}
-					else if (tr.number_of_children(node)==1) {
+					else if (tr->number_of_children(node)==1) {
 						if(verbose) { cout<<"KBTREE--   REMOVING UNAMED INTERNAL NODE WITH ONE CHILD"<<endl;}
 						// manage distances! distance from the removal node's parent to it's new child should be the sum of the
 						// distances (so that the total distance to the leaf nodes are conserved).  So update that first.  Note
@@ -717,7 +810,7 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 						double distFromThisNodeToParent = (*node).distanceToParent;
 						(*(node.begin())).distanceToParent += distFromThisNodeToParent;
 						tree<KBNode>::post_order_iterator nodeToBeAxed(node); node++;
-						tr.erase_and_reparent_children(nodeToBeAxed); nodeCount--;
+						tr->erase_and_reparent_children(nodeToBeAxed); nodeCount--;
 						nodeWasErased=true;
 					}
 
@@ -744,9 +837,12 @@ void KBTree::removeNodesByNameAndSimplify(std::map<std::string,std::string> &nod
 void KBTree::replaceNodeNames(const std::string &replacements) {
 	map<string,string> nodeNameMap;
 	string delimiters = ";",fromName="",toName="";
-	size_t current; size_t next = -1;
+	size_t current=0; size_t next = 0;
 	do {
-		current = next + 1;
+		//if we are starting the list, then start at zero
+		if(next==0) { current=0; }
+		else { current = next + 1; }
+		if(current>replacements.length()-1) { break; }
 		next = replacements.find_first_of( delimiters, current );
 		fromName = replacements.substr( current, next - current );
 		trim(fromName);
@@ -770,16 +866,13 @@ void KBTree::replaceNodeNames(const std::string &replacements) {
 void KBTree::replaceNodeNamesOrMakeBlank(const std::string &replacements) {
 	map<string,string> nodeNameMap;
 	string delimiters = ";",fromName="",toName="";
-	size_t current=0; size_t next = 0;
+	size_t current; size_t next = -1;
 	do {
-		//if we are starting the list, then start at zero
-		if(next==0) { current=0; }
-		else { current = next + 1; }
-		if(current>replacements.length()-1) { break; }
+		current = next + 1;
 		next = replacements.find_first_of( delimiters, current );
 		fromName = replacements.substr( current, next - current );
 		trim(fromName);
-		
+
 		current = next + 1;
 		next = replacements.find_first_of( delimiters, current );
 		toName = replacements.substr( current, next - current );
@@ -803,7 +896,7 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames, bool
 {
 	tree<KBNode>::post_order_iterator node;
 	map<string,string>::iterator name;
-	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
+	for(node=tr->begin_post(); node!=tr->end_post(); node++) {
 		name = nodeNames.find((*node).getName());
 		if(verbose) { cout<<"looking at node:"<<(*node).getName()<<endl; }
 		if( name!=nodeNames.end() ) {
@@ -816,6 +909,7 @@ void KBTree::replaceNodeNames(std::map<std::string,std::string> &nodeNames, bool
 
 
 
+
 void KBTree::mergeZeroDistLeaves() {
 
 	// we proceed in two steps.  First, we go through the entire tree and find the children
@@ -825,18 +919,18 @@ void KBTree::mergeZeroDistLeaves() {
 	// two, we simply call the method to remove marked nodes and simplify the tree.
 	tree<KBNode>::post_order_iterator node;
 	map<string,string>::iterator name;
-	for(node=tr.begin_post(); node!=tr.end_post(); node++) {
-	
-		if (tr.number_of_children(node)==0) {
+	for(node=tr->begin_post(); node!=tr->end_post(); node++) {
+
+		if (tr->number_of_children(node)==0) {
 			if( !isnan((*node).getDistanceToParent()) ) {
 				if( (*node).getDistanceToParent()==0 ) {
 					if(verbose) {
 						cout<<"looking at node:"<<(*node).getName()<<endl;
 						cout<<"distance to parent: "<<(*node).getDistanceToParent()<<endl;
-						cout<<"parent marker: '" << (*tr.parent(node)).getHiddenMarkerLabel() <<"'"<< endl;
+						cout<<"parent marker: '" << (*tr->parent(node)).getHiddenMarkerLabel() <<"'"<< endl;
 					}
-					if((*tr.parent(node)).getHiddenMarkerLabel().compare("")==0) {
-						(*tr.parent(node)).setHiddenMarkerLabel("marked");
+					if((*tr->parent(node)).getHiddenMarkerLabel().compare("")==0) {
+						(*tr->parent(node)).setHiddenMarkerLabel("marked");
 						if(verbose) { cout<<"unmarked parent is now marked"<<endl; }
 					} else {
 						(*node).name="THE_SECRET_CODE_TO_DELETE_THIS_NODE_HACK";
@@ -845,9 +939,9 @@ void KBTree::mergeZeroDistLeaves() {
 				}
 			}
 		}
-		
+
 	}
-	
+
 	// carry out step 2
 	map<string,string> nodeNameMap;
 	nodeNameMap.insert(pair<string,string>("THE_SECRET_CODE_TO_DELETE_THIS_NODE_HACK",""));
@@ -881,7 +975,7 @@ std::string KBTree::getAllLeafNames()
 {
 	std::string leafNames="";
 	tree<KBNode>::leaf_iterator leafIter;
-	for(leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
+	for(leafIter=tr->begin_leaf(); leafIter!=tr->end_leaf(); leafIter++) {
 		string name = (*leafIter).getName();
 		if(name.size()>0) { leafNames += name; leafNames+=";"; }
 	}
@@ -890,7 +984,7 @@ std::string KBTree::getAllLeafNames()
 void KBTree::getAllLeafNames(vector<string> &names) {
 	tree<KBNode>::leaf_iterator leafIter;
 	names.reserve((size_t)(1+getNodeCount()/2)); //assume full binary tree of leaves
-	for(leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
+	for(leafIter=tr->begin_leaf(); leafIter!=tr->end_leaf(); leafIter++) {
 		string name = (*leafIter).getName();
 		if(name.size()>0) { names.push_back(name); }
 	}
@@ -900,7 +994,7 @@ std::string KBTree::getAllNodeNames()
 {
 	std::string nodeNames="";
 	tree<KBNode>::post_order_iterator nodeIter;
-	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+	for(nodeIter=tr->begin_post(); nodeIter!=tr->end_post(); nodeIter++) {
 		string name = (*nodeIter).getName();
 		if(name.size()>0) { nodeNames += name; nodeNames+=";"; }
 	}
@@ -909,7 +1003,7 @@ std::string KBTree::getAllNodeNames()
 void KBTree::getAllNodeNames(vector<string> &names) {
 	names.reserve((size_t)(1+getNodeCount()));
 	tree<KBNode>::post_order_iterator nodeIter;
-	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+	for(nodeIter=tr->begin_post(); nodeIter!=tr->end_post(); nodeIter++) {
 		string name = (*nodeIter).getName();
 		if(name.size()>0) { names.push_back(name); }
 	}
@@ -919,7 +1013,7 @@ void KBTree::getAllNodeNames(vector<string> &names) {
 
 void KBTree::stripReservedCharsFromLabels() {
 	tree<KBNode>::post_order_iterator nodeIter;
-	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+	for(nodeIter=tr->begin_post(); nodeIter!=tr->end_post(); nodeIter++) {
 		string name = (*nodeIter).getName();
 		string stripped_name = "";
 		for (size_t i=0; i < name.length(); i++) {
@@ -937,27 +1031,25 @@ void KBTree::stripReservedCharsFromLabels() {
 	}
 }
 
-
-
 void KBTree::printOutNamesAllPossibleTraversals(ostream &o)
 {
 	tree<KBNode>::leaf_iterator leafIter;
-	for(leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
+	for(leafIter=tr->begin_leaf(); leafIter!=tr->end_leaf(); leafIter++) {
 		o<<"leafIter::"<<(*leafIter).getName()<<" "<<leafIter.number_of_children()<<endl;
 
 	}
 	tree<KBNode>::post_order_iterator nodeIter;
-	for(nodeIter=tr.begin_post(); nodeIter!=tr.end_post(); nodeIter++) {
+	for(nodeIter=tr->begin_post(); nodeIter!=tr->end_post(); nodeIter++) {
 		o<<"postOrderDF::"<<(*nodeIter).getName()<<endl;
 	}
 
 	tree<KBNode>::pre_order_iterator preNodeIter;
-	for(preNodeIter=tr.begin(); preNodeIter!=tr.end(); preNodeIter++) {
+	for(preNodeIter=tr->begin(); preNodeIter!=tr->end(); preNodeIter++) {
 		o<<"preOrderDF::"<<(*preNodeIter).getName()<<endl;
 	}
 
 	tree<KBNode>::breadth_first_queued_iterator bfNodeIter;
-	for(bfNodeIter=tr.begin_breadth_first(); bfNodeIter!=tr.end_breadth_first(); bfNodeIter++) {
+	for(bfNodeIter=tr->begin_breadth_first(); bfNodeIter!=tr->end_breadth_first(); bfNodeIter++) {
 		o<<"breadthFirst::"<<(*bfNodeIter).getName()<<endl;
 	}
 }
@@ -965,7 +1057,7 @@ void KBTree::printOutNamesAllPossibleTraversals(ostream &o)
 unsigned int KBTree::getLeafCount()
 {
 	int leafNodeCount=0;
-	for(tree<KBNode>::leaf_iterator leafIter=tr.begin_leaf(); leafIter!=tr.end_leaf(); leafIter++) {
+	for(tree<KBNode>::leaf_iterator leafIter=tr->begin_leaf(); leafIter!=tr->end_leaf(); leafIter++) {
 		leafNodeCount++;
 	}
 	return leafNodeCount;
@@ -977,19 +1069,19 @@ unsigned int KBTree::getLeafCount()
 // set of methods to traverse a tree, node by node, in a breadth first search, and mark specific
 // nodes for future fast retrieval.
 void KBTree::resetBreadthFirstIterToRoot() {
-	this->bfi = tr.begin_breadth_first();
+	this->bfi = tr->begin_breadth_first();
 }
 bool KBTree::breadthFirstIterNext() {
-	if(this->bfi!=tr.end_breadth_first()) {
+	if(this->bfi!=tr->end_breadth_first()) {
 		bfi++;
-		if(this->bfi!=tr.end_breadth_first()) {
+		if(this->bfi!=tr->end_breadth_first()) {
 			return true;
 		}
 	}
 	return false;
 }
 std::string KBTree::breadthFirstIterGetName() {
-	if(this->bfi!=tr.end_breadth_first()) {
+	if(this->bfi!=tr->end_breadth_first()) {
 		return (*bfi).getName();
 	}
 	return "END_OF_KB_TREE";
@@ -997,7 +1089,7 @@ std::string KBTree::breadthFirstIterGetName() {
 
 std::string KBTree::breadthFirstIterGetParentName() {
 	if(bfi.has_parent()) {
-		return (*tr.parent(bfi)).getName();
+		return (*tr->parent(bfi)).getName();
 	}
 	return "";
 }
@@ -1007,7 +1099,7 @@ unsigned int KBTree::breadthFirstIterMarkNode() {
 }
 bool KBTree::breadthFirstIterSetToNode(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) {
-		this->bfi = tr.end_breadth_first();
+		this->bfi = tr->end_breadth_first();
 		return false;
 	}
 	this->bfi = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
@@ -1020,7 +1112,7 @@ std::string KBTree::breadthFirstIterGetName(unsigned int nodeMarker) {
 	if(this->bfiNodeIndex.size()<=nodeMarker) { return ""; }
 	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
-	if(node!=tr.end_breadth_first()) {
+	if(node!=tr->end_breadth_first()) {
 		return (*node).getName();
 	}
 	return "";
@@ -1032,7 +1124,7 @@ std::string KBTree::breadthFirstIterGetPathToRoot(unsigned int nodeMarker) {
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	std::string path="";
 	while( node.has_parent() ){
-		node = tr.parent(node);
+		node = tr->parent(node);
 		path += (*node).getName()+";";
 	}
 	return path;
@@ -1043,7 +1135,7 @@ std::string KBTree::breadthFirstIterGetParentName(unsigned int nodeMarker) {
 	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	if(node.has_parent()) {
-		return (*tr.parent(node)).getName();
+		return (*tr->parent(node)).getName();
 	}
 	return "";
 }
@@ -1053,7 +1145,7 @@ std::string KBTree::breadthFirstIterGetAllChildrenNames(unsigned int nodeMarker)
 	// grab a copy of the iterator at the marker position
 	tree<KBNode>::breadth_first_queued_iterator node = tree<KBNode>::breadth_first_queued_iterator(this->bfiNodeIndex.at(nodeMarker));
 	std::string namelist = "";
-	for(tree<KBNode>::sibling_iterator child = tr.begin(node);child!=tr.end(node);child++) {
+	for(tree<KBNode>::sibling_iterator child = tr->begin(node);child!=tr->end(node);child++) {
 		namelist+=(*child).getName()+";";
 	}
 	return namelist;
@@ -1066,7 +1158,7 @@ std::string KBTree::breadthFirstIterGetAllDescendantNames(unsigned int nodeMarke
 	tree<KBNode>::breadth_first_queued_iterator node( this->bfiNodeIndex.at(nodeMarker) );
 	node.clear(); // clear the queue so we only search the subtree
 	node++; // drop the given node, cause we don't want to return that one.
-	for(; node!=tr.end_breadth_first(); node++) {
+	for(; node!=tr->end_breadth_first(); node++) {
 		namelist+=(*node).getName()+";";
 	}
 	return namelist;
