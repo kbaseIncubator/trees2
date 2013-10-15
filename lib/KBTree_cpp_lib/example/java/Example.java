@@ -15,5 +15,10 @@ public class Example {
         t.removeNodesByNameAndSimplify("A");
         System.out.println("node count="+t.getNodeCount());
         System.out.println("node count="+t.toNewick());
+        
+        String s = "GCCCGACGCTGAAGCAGGCGATGGAGGCGATCAGGCATGAGCTCGAGGAACGGCTGAAGGAGCTGGTCGCGGAAGGGCGGCTGCTGGAGGCGCAGCGG";
+        
+        
+        System.out.println("'"+KBTreeUtil.translateToProt(s)+"'");
     }
 }

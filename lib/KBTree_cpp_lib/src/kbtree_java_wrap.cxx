@@ -223,11 +223,34 @@ static void SWIGUNUSED SWIG_JavaThrowException(JNIEnv *jenv, SWIG_JavaExceptionC
 
 
 #include "kbtree/kbtree.hh"
+std::string translateToProt(const std::string &dna);
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_translateToProt(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+  jstring jresult = 0 ;
+  std::string *arg1 = 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  if(!jarg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  }
+  const char *arg1_pstr = (const char *)jenv->GetStringUTFChars(jarg1, 0); 
+  if (!arg1_pstr) return 0;
+  std::string arg1_str(arg1_pstr);
+  arg1 = &arg1_str;
+  jenv->ReleaseStringUTFChars(jarg1, arg1_pstr); 
+  result = translateToProt((std::string const &)*arg1);
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
 
 SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   jlong jresult = 0 ;

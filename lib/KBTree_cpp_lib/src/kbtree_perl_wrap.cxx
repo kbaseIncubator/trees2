@@ -1580,6 +1580,7 @@ void SwigSvFromString(SV* sv, const std::string& s) {
 
 
 #include "kbtree/kbtree.hh"
+std::string translateToProt(const std::string &dna);
 
 
 SWIGINTERN swig_type_info*
@@ -1666,22 +1667,6 @@ SWIG_AsPtr_std_string SWIG_PERL_DECL_ARGS_2(SV * obj, std::string **val)
 }
 
 
-SWIGINTERN int
-SWIG_AsVal_bool SWIG_PERL_DECL_ARGS_2(SV *obj, bool* val)
-{
-  if (obj == &PL_sv_yes) {
-    if (val) *val = true;
-    return SWIG_OK;
-  } else if (obj == &PL_sv_no) { 
-    if (val) *val = false;
-    return SWIG_OK;
-  } else {
-    if (val) *val = SvTRUE(obj) ? true : false;
-    return SWIG_AddCast(SWIG_OK);    
-  }
-}
-
-
 SWIGINTERNINLINE SV *
 SWIG_FromCharPtrAndSize(const char* carray, size_t size)
 {
@@ -1699,6 +1684,22 @@ SWIGINTERNINLINE SV *
 SWIG_From_std_string  SWIG_PERL_DECL_ARGS_1(const std::string& s)
 {
   return SWIG_FromCharPtrAndSize(s.data(), s.size());
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_bool SWIG_PERL_DECL_ARGS_2(SV *obj, bool* val)
+{
+  if (obj == &PL_sv_yes) {
+    if (val) *val = true;
+    return SWIG_OK;
+  } else if (obj == &PL_sv_no) { 
+    if (val) *val = false;
+    return SWIG_OK;
+  } else {
+    if (val) *val = SvTRUE(obj) ? true : false;
+    return SWIG_AddCast(SWIG_OK);    
+  }
 }
 
 
@@ -1897,6 +1898,39 @@ SWIGCLASS_STATIC int swig_magic_readonly(pTHX_ SV *SWIGUNUSEDPARM(sv), MAGIC *SW
 #ifdef __cplusplus
 extern "C" {
 #endif
+XS(_wrap_translateToProt) {
+  {
+    std::string *arg1 = 0 ;
+    int res1 = SWIG_OLDOBJ ;
+    int argvi = 0;
+    std::string result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: translateToProt(dna);");
+    }
+    {
+      std::string *ptr = (std::string *)0;
+      res1 = SWIG_AsPtr_std_string SWIG_PERL_CALL_ARGS_2(ST(0), &ptr);
+      if (!SWIG_IsOK(res1)) {
+        SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "translateToProt" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      if (!ptr) {
+        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "translateToProt" "', argument " "1"" of type '" "std::string const &""'"); 
+      }
+      arg1 = ptr;
+    }
+    result = translateToProt((std::string const &)*arg1);
+    ST(argvi) = SWIG_From_std_string  SWIG_PERL_CALL_ARGS_1(static_cast< std::string >(result)); argvi++ ;
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    XSRETURN(argvi);
+  fail:
+    if (SWIG_IsNewObj(res1)) delete arg1;
+    SWIG_croak_null();
+  }
+}
+
+
 XS(_wrap_new_KBTree__SWIG_0) {
   {
     std::string *arg1 = 0 ;
@@ -3553,6 +3587,7 @@ static swig_variable_info swig_variables[] = {
 {0,0,0,0}
 };
 static swig_command_info swig_commands[] = {
+{"Bio::KBase::Tree::TreeCppUtilc::translateToProt", _wrap_translateToProt},
 {"Bio::KBase::Tree::TreeCppUtilc::new_KBTree", _wrap_new_KBTree},
 {"Bio::KBase::Tree::TreeCppUtilc::delete_KBTree", _wrap_delete_KBTree},
 {"Bio::KBase::Tree::TreeCppUtilc::KBTree_setOutputFlagLabel", _wrap_KBTree_setOutputFlagLabel},

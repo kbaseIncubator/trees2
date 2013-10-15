@@ -9,6 +9,7 @@
 package KBTreeUtil;
 
 public class KBTreeUtilJNI {
+  public final static native String translateToProt(String jarg1);
   public final static native long new_KBTree__SWIG_0(String jarg1);
   public final static native long new_KBTree__SWIG_1(String jarg1, boolean jarg2);
   public final static native long new_KBTree__SWIG_2(String jarg1, boolean jarg2, boolean jarg3);

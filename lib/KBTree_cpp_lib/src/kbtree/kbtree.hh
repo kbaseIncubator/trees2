@@ -19,6 +19,9 @@
 
 using namespace std;
 
+
+std::string translateToProt(const std::string &dna);
+
 namespace KBTreeLib {
 
 	class KBTree;

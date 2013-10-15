@@ -27,6 +27,7 @@ use Digest::MD5 qw(md5_hex);
 use Scalar::Util qw(looks_like_number);
 
 use Bio::KBase::ERDB_Service::Client;
+use Bio::KBase::Tree::TreeCppUtil;
 
 #
 # create a new Community object with the URLs and scratch space specified.  The order
@@ -44,7 +45,7 @@ sub new
 	$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://kbase.us/services/erdb_service");
 	#$self->{erdb} = Bio::KBase::ERDB_Service::Client->new("http://localhost:7099");
 	#OLD URL: $self->{mg_base_url} = "http://api.metagenomics.anl.gov/sequences/";
-	$self->{mg_base_url} = 'http://api.metagenomics.anl.gov/api2.cgi/sequences/';
+	$self->{mg_base_url} = 'http://www.kbase.us/services/communities/1/annotation/sequence/';
 	$self->{scratch} = "/mnt/";
 	#$self->{scratch} = "/home/msneddon/Desktop/scratch";
     } else {
@@ -99,7 +100,7 @@ sub runQiimeUclust {
     my $unique_mg_seq_list = $self->getUniqueSequenceList($mg_seq_list);
     my $mg_seq_fasta = $self->convertSeqListToFasta($unique_mg_seq_list);
     my $mg_seq_file_name_template = $self->{scratch}.$mgId.'.XXXXXX';
-    my $mgFh = new File::Temp(TEMPLATE=>$isolate_seq_file_name_template,SUFFIX=>'.faa',UNLINK=>1);
+    my $mgFh = new File::Temp(TEMPLATE=>$mg_seq_file_name_template,SUFFIX=>'.faa',UNLINK=>0);
     print $mgFh $mg_seq_fasta;
     close $mgFh;
     
@@ -107,7 +108,7 @@ sub runQiimeUclust {
     # step 3 - prep the output file, make the system call, handle errors if the run failed
     print "3) running uclust\n";
     my $uclust_out_file_name_template = $self->{scratch}.$protFamName."-".$mgId.'.XXXXXX';
-    my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>1);
+    my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>0);
     close $uclustFh;
     my $uclustProcOut=`uclust --quiet --amino --libonly --id 0.70 --input $mgFh --lib $isoFh --uc $uclustFh`;
     print $mgFh."\n";
@@ -210,7 +211,6 @@ sub convertSeqListToFasta {
 }
 
 
-
 # given a kbase tree id, get all the sequences that comprise the alignment that was
 # used to build the tree.  call this method as: $c->getTreeProtSeqs("kb|tree.0");
 sub getTreeProtSeqList {
@@ -296,22 +296,40 @@ sub getMgSeqsByProtFam {
     my $authkey=$params->{'mg_auth_key'};
     
     my $base_url = $self->{mg_base_url};
-    my $full_url=$base_url.$mgId.'/?data_type=ontology&sequence_type=protein&annotation='.$protFamName.'&source='.$protFamSource;
+    my $full_url=$base_url.$mgId.'/?type=ontology&source='.$protFamSource.'&filter='.$protFamName;
     if($authkey ne '') {
 	$full_url .= "&auth=".$authkey;
     }
     print "\ngetMgSeqsByProtFam: fetching from URL: ".$full_url."\n";
+    my $start_run = time();
     
     my $ua = LWP::UserAgent->new;
-    $ua->timeout(600);
+    $ua->timeout(1200);
     
+    my $sequence_list = [];
     my $response=$ua->get($full_url);
     if ($response->is_success) {
-	my $json = new JSON;
-	my $mgSeqs=$json->decode($response->content);
-	return $mgSeqs->{data}->{$protFamName};
+	# now we need to parse the response, which always has a header
+	my $tab_data=$response->content;
+	my @lines = split /\n/, $tab_data;
+	my $is_header = 1;
+	foreach my $line (@lines) {
+	    if ($is_header) { $is_header=0; next; }
+	    my @tokens = split /\t/, $line;
+	    next if(scalar(@tokens)!=4);
+	    my $sequence = TreeCppUtil::translateToProt($tokens[3]);
+	    my $result_list = [$tokens[1], $sequence];
+	    push @$sequence_list, $result_list;
+	}
+	
     }
-    return [];
+    
+    my $end_run = time();
+    my $run_time = $end_run - $start_run;
+    print "mg query took $run_time seconds and found ".scalar(@$sequence_list)." sequences.\n";
+    
+    
+    return $sequence_list;
 }
 
 

@@ -49,6 +49,7 @@ sub this {
 
 package Bio::KBase::Tree::TreeCppUtil;
 
+*translateToProt = *Bio::KBase::Tree::TreeCppUtilc::translateToProt;
 
 ############# Class : Bio::KBase::Tree::TreeCppUtil::KBTree ##############
 

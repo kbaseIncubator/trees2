@@ -4,11 +4,14 @@
 
 %{
 #include "kbtree/kbtree.hh"
+std::string translateToProt(const std::string &dna);
 %}
 
+std::string translateToProt(const std::string &dna);
 
 namespace KBTreeLib {
 
+    
     class KBTree {
         public:
             KBTree(const std::string &newickString);

@@ -467,13 +467,6 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 
 		// first things first - get the next character
 		C=newickString.at(k);
-		//cout << k <<endl;
-		//cout <<"char: "<<C<<endl;
-		//cout <<"context: "<< newickString.substr(k,20);
-		string C_as_str;
-		ss << C;
-		ss >> C_as_str;
-		ss.clear();
 
 		// Now handle anything in quotes.  Note how this is a bit deceptive.  We first save the character to
 		// the textToAdd string.  This will be the text that we eventually add to the comment, name, or distance
@@ -482,7 +475,7 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 		// we can simply add textToAdd to the appropriate string.  Note that this also advances k such that we
 		// won't try to parse anything inside the quoted string as a special character
 		textToAdd="";
-		textToAdd+=C_as_str;
+		textToAdd+=C;
 		quotedTextWasFound=false;
 		if ( C==SGL_QUOTE ) { getQuotedText(newickString,k,textToAdd,label,SGL_QUOTE); }
 		if ( C==DBL_QUOTE ) { getQuotedText(newickString,k,textToAdd,label,DBL_QUOTE); }
@@ -1163,6 +1156,116 @@ std::string KBTree::breadthFirstIterGetAllDescendantNames(unsigned int nodeMarke
 	}
 	return namelist;
 }
+
+
+// this is crazy, i know, but we need to convert dna to prot to get prot sequences needed to compute abundance
+// profile for a tree.  doing this in c++ is much faster than say the overhead of bioperl, but this code should
+// really be stashed in some kind of common repo, not hidden in the tree lib!
+
+const unsigned int A=0;
+const unsigned int G=1;
+const unsigned int C=2;
+const unsigned int T=3;
+
+unsigned int idx(const char nucleotide) {
+	if(nucleotide == 'A') return A;
+	if(nucleotide == 'G') return G;
+	if(nucleotide == 'C') return C;
+	if(nucleotide == 'T') return T;
+	return 4;
+}
+
+
+std::string translateToProt(const std::string &dna) {
+	// ... define the genetic code ...
+	string code [5][5][5];
+	// by default we get '? '
+	for(int i=0; i<5; i++) {
+		for(int j=0;j<5;j++) {
+			for(int k=0;k<5;k++) {
+				code[i][j][k]="?";
+			}
+		}
+	}
+	code[A][A][A] = "K";
+	code[A][A][C] = "N";
+	code[A][A][G] = "K";
+	code[A][A][T] = "N";
+	code[A][C][A] = "T";
+	code[A][C][C] = "T";
+	code[A][C][G] = "T";
+	code[A][C][T] = "T";
+	code[A][G][A] = "R";
+	code[A][G][C] = "S";
+	code[A][G][G] = "R";
+	code[A][G][T] = "S";
+	code[A][T][A] = "I";
+	code[A][T][C] = "I";
+	code[A][T][G] = "M";
+	code[A][T][T] = "I";
+	
+	code[C][A][A] = "Q";
+	code[C][A][C] = "H";
+	code[C][A][G] = "Q";
+	code[C][A][T] = "H";
+	code[C][C][A] = "P";
+	code[C][C][C] = "P";
+	code[C][C][G] = "P";
+	code[C][C][T] = "P";
+	code[C][G][A] = "R";
+	code[C][G][C] = "R";
+	code[C][G][G] = "R";
+	code[C][G][T] = "R";
+	code[C][T][A] = "L";
+	code[C][T][C] = "L";
+	code[C][T][G] = "L";
+	code[C][T][T] = "L";
+	
+	code[G][A][A] = "E";
+	code[G][A][C] = "D";
+	code[G][A][G] = "E";
+	code[G][A][T] = "D";
+	code[G][C][A] = "A";
+	code[G][C][C] = "A";
+	code[G][C][G] = "A";
+	code[G][C][T] = "A";
+	code[G][G][A] = "G";
+	code[G][G][C] = "G";
+	code[G][G][G] = "G";
+	code[G][G][T] = "G";
+	code[G][T][A] = "V";
+	code[G][T][C] = "V";
+	code[G][T][G] = "V";
+	code[G][T][T] = "V";
+	
+	code[T][A][A] = "";
+	code[T][A][C] = "Y";
+	code[T][A][G] = "";
+	code[T][A][T] = "Y";
+	code[T][C][A] = "S";
+	code[T][C][C] = "S";
+	code[T][C][G] = "S";
+	code[T][C][T] = "S";
+	code[T][G][A] = "";
+	code[T][G][C] = "C";
+	code[T][G][G] = "W";
+	code[T][G][T] = "C";
+	code[T][T][A] = "L";
+	code[T][T][C] = "F";
+	code[T][T][G] = "L";
+	code[T][T][T] = "F";
+	
+	// ... do the conversion ...
+	string protSeq = "";
+	for ( int i = 0 ; i+2 < dna.length(); i+=3) {
+		protSeq += code[idx(dna[i])][idx(dna[i+1])][idx(dna[i+2])];
+	}
+	
+	return protSeq;
+}
+
+
+
 
 
 

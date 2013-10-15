@@ -9,4 +9,8 @@
 package KBTreeUtil;
 
 public class KBTreeUtil {
+  public static String translateToProt(String dna) {
+    return KBTreeUtilJNI.translateToProt(dna);
+  }
+
 }
