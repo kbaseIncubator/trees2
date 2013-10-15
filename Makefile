@@ -184,8 +184,9 @@ deploy-service-libs:
 	# copy over tree specific libs
 	cp lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/$(SERVICE_NAME)/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	-cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
-	cp lib/Bio/KBase/$(SERVICE_NAME)/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	cp lib/forester_1005.jar $(TARGET)/lib/.
+	#cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.bundle $(TARGET)/lib/.
+	#cp lib/Bio/KBase/$(SERVICE_NAME)/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
+	#cp lib/forester_1005.jar $(TARGET)/lib/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Community.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	echo "deployed service for $(SERVICE)."

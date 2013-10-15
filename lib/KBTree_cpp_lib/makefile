@@ -29,12 +29,17 @@ DEPLOY_RUNTIME ?= /kb/runtime
 UNAME := $(shell uname)
 
 ifeq ($(UNAME),Darwin)
-PERL_CC_OPTIONS := $(shell perl -MExtUtils::Embed -e ccopts)
-PERL_LD_OPTIONS := $(shell perl -MExtUtils::Embed -e ldopts)
-PERL_LIB_CMD := -bundle -o $(OUT_DIR)/perl_interface/KBTreeUtil.bundle
+# not properly working in a mac env right now, so abort.
+$(error trees server code does not currently support mac osx; you should deploy clients only)
+#NOTE: you may have to change this architecture flag on some mac installs!
+PERL_ARCH :=
+PERL_CC_OPTIONS := $(shell /usr/bin/perl -MExtUtils::Embed -e ccopts)
+PERL_LD_OPTIONS := $(shell /usr/bin/perl -MExtUtils::Embed -e ldopts)
+PERL_LIB_CMD := $(PERL_ARCH) -bundle -o $(OUT_DIR)/perl_interface/TreeCppUtil.bundle
 JAVA_HEADER_PATH := -I"$(shell javaconfig Headers)"
 JAVA_LIB_CMD := -framework JavaVM -bundle -o $(OUT_DIR)/java_interface/libKBTreeUtil.jnilib
 else ifeq ($(UNAME),Linux)
+PERL_ARCH := 
 PERL_CC_OPTIONS := $(shell perl -MConfig -e 'print join(" ", @Config{qw(ccflags optimize cccdlflags)}, "-I$$Config{archlib}/CORE")')
 PERL_LD_OPTIONS := $(shell perl -MConfig -e 'print $$Config{lddlflags}')
 PERL_LIB_CMD := -shared -o $(OUT_DIR)/perl_interface/TreeCppUtil.so
@@ -67,9 +72,9 @@ clean-swig:
 perl-lib : $(OUT_DIR)/perl_interface/kbtree_wrap.o $(OUT_DIR)/perl_interface/kbtree.o
 	g++ $(PERL_LIB_CMD) $(OUT_DIR)/perl_interface/kbtree_wrap.o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_LD_OPTIONS)
 $(OUT_DIR)/perl_interface/kbtree_wrap.o : $(SWIG_PERL_WRAP_FILE)
-	g++ -fpic -O3 -c $(SWIG_PERL_WRAP_FILE) $(PERL_CC_OPTIONS) -o $(OUT_DIR)/perl_interface/kbtree_wrap.o
+	g++ $(PERL_ARCH) -fpic -O3 -c $(SWIG_PERL_WRAP_FILE) $(PERL_CC_OPTIONS) -o $(OUT_DIR)/perl_interface/kbtree_wrap.o
 $(OUT_DIR)/perl_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
-	g++ -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_CC_OPTIONS)
+	g++ $(PERL_ARCH) -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/perl_interface/kbtree.o $(PERL_CC_OPTIONS)
 
 # this will always link and compile, even if object files are built
 java-lib : $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
