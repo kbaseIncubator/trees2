@@ -2088,9 +2088,9 @@ sub compute_abundance_profile
     
     ###################### TODO: ABUNDANCE PROFILE IS NOT WORKING!!!  COMMUNITIES API NEEDS FIXING, UNTIL THEN 
     # pass on the call to someone who will actually do the work
-    #my ($abundance_counts,$n_hits,$n_reads) = $self->{comm}->runQiimeUclust($abundance_params);
-    #my $abundance_result = {abundances => $abundance_counts, n_hits=>$n_hits, n_reads=>$n_reads};
-    my $abundance_result = {abundances => {}, n_hits=>0, n_reads=>0};
+    my ($abundance_counts,$n_hits,$n_reads) = $self->{comm}->runQiimeUclust($abundance_params);
+    my $abundance_result = {abundances => $abundance_counts, n_hits=>$n_hits, n_reads=>$n_reads};
+    #my $abundance_result = {abundances => {}, n_hits=>0, n_reads=>0};
     
     #print Dumper($abundance_result)."\n";
     #END compute_abundance_profile

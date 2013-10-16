@@ -100,7 +100,7 @@ sub runQiimeUclust {
     my $unique_mg_seq_list = $self->getUniqueSequenceList($mg_seq_list);
     my $mg_seq_fasta = $self->convertSeqListToFasta($unique_mg_seq_list);
     my $mg_seq_file_name_template = $self->{scratch}.$mgId.'.XXXXXX';
-    my $mgFh = new File::Temp(TEMPLATE=>$mg_seq_file_name_template,SUFFIX=>'.faa',UNLINK=>0);
+    my $mgFh = new File::Temp(TEMPLATE=>$mg_seq_file_name_template,SUFFIX=>'.faa',UNLINK=>1);
     print $mgFh $mg_seq_fasta;
     close $mgFh;
     
@@ -108,7 +108,7 @@ sub runQiimeUclust {
     # step 3 - prep the output file, make the system call, handle errors if the run failed
     print "3) running uclust\n";
     my $uclust_out_file_name_template = $self->{scratch}.$protFamName."-".$mgId.'.XXXXXX';
-    my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>0);
+    my $uclustFh=new File::Temp (TEMPLATE=>$uclust_out_file_name_template,SUFFIX=>'.uc',UNLINK=>1);
     close $uclustFh;
     my $uclustProcOut=`uclust --quiet --amino --libonly --id 0.70 --input $mgFh --lib $isoFh --uc $uclustFh`;
     print $mgFh."\n";
@@ -317,9 +317,46 @@ sub getMgSeqsByProtFam {
 	    if ($is_header) { $is_header=0; next; }
 	    my @tokens = split /\t/, $line;
 	    next if(scalar(@tokens)!=4);
-	    my $sequence = TreeCppUtil::translateToProt($tokens[3]);
-	    my $result_list = [$tokens[1], $sequence];
-	    push @$sequence_list, $result_list;
+	    
+	    # get every reading frame
+	    my $dna_seq = $tokens[3];
+	    
+	    my $seq1 = Bio::KBase::Tree::TreeCppUtil::translateToProt($dna_seq);
+	    my $res1 = [$tokens[1], $seq1];
+	    push @$sequence_list, $res1;
+	    
+	    my $seq2 = Bio::KBase::Tree::TreeCppUtil::translateToProt(substr($dna_seq,1));
+	    my $res2 = [$tokens[1], $seq2];
+	    push @$sequence_list, $res2;
+	    
+	    my $seq3 = Bio::KBase::Tree::TreeCppUtil::translateToProt(substr($dna_seq,2));
+	    my $res3 = [$tokens[1], $seq3];
+	    push @$sequence_list, $res3;
+	    
+	    my $dna_rev = scalar(reverse($dna_seq));
+	    my @dna_rev = split //, $dna_rev;
+	    my @rev_comp;
+	    foreach my $base (@dna_rev) {
+		my $comp = '';
+		if ($base eq 'A') { $comp='T'; }
+		if ($base eq 'T') { $comp='A'; }
+		if ($base eq 'C') { $comp='G'; }
+		if ($base eq 'G') { $comp='C'; }
+		push(@rev_comp,$comp);
+	    }
+	    my $rev_comp = join('',@rev_comp);
+	    
+	    my $seq4 = Bio::KBase::Tree::TreeCppUtil::translateToProt($rev_comp);
+	    my $res4 = [$tokens[1], $seq4];
+	    push @$sequence_list, $res4;
+	    
+	    my $seq5 = Bio::KBase::Tree::TreeCppUtil::translateToProt(substr($rev_comp,1));
+	    my $res5 = [$tokens[1], $seq5];
+	    push @$sequence_list, $res5;
+	    
+	    my $seq6 = Bio::KBase::Tree::TreeCppUtil::translateToProt(substr($rev_comp,2));
+	    my $res6 = [$tokens[1], $seq6];
+	    push @$sequence_list, $res6;
 	}
 	
     }
