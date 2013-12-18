@@ -8,9 +8,10 @@ plant_gene_tree_exch.pl - transforms plant compara genetree alignment data into 
 
 =head1 SYNOPSIS
 
- plant_gene_tree_exch.pl [--? --m] --i --j
+ plant_gene_tree_exch.pl [--? --m] --i --j --k
    --i <input compara gene tree sequences' alignment file>
    --j <input compara newick gene tree file>
+   --k <input KBase id file>
 
 =head1 DESCRIPTION
 
@@ -30,6 +31,11 @@ and transforms it into the exchange format required by the KBase trees.
 
         Required parameter to input plant genetree file from Gramene in newick format
          (e.g. Compara.gene_trees.20.newick) which is based on ensembl compara pipeline.
+
+=item B<--k>
+	Required parameter to input KBase IDs for gene trees. The input file
+	must be a single column of data where each line contains a unique KBase
+	id (a positive integer) that had been issued by the KBase ID server.
 
 =item B<--help or -? or -h>
 
@@ -52,7 +58,7 @@ Fri Sep 6 14:15:09 EST 2013
 =head1 USAGE EXAMPLE
 
 How to use plant_gene_tree_exch.pl
- perl plant_gene_tree_exch.pl --i=Compara.gene_trees.emf --j=Compara.gene_trees.20.newick
+ perl plant_gene_tree_exch.pl --i=Compara.gene_trees.emf --j=Compara.gene_trees.20.newick --k=kbid.in
  perl plant_gene_tree_exch.pl --m # use this option only to read the documentation
 
 =cut
@@ -74,19 +80,28 @@ my $help;
 my $man;
 my %opts = ("help" => \$help, "man" => \$man);
 Getopt::Long::Configure("bundling", "auto_abbrev");
-GetOptions(\%opts, "help|?|h", "man|m", "i=s", "j=s");
+GetOptions(\%opts, "help|?|h", "man|m", "i=s", "j=s", "k=s");
 pod2usage(1) if $help;
 pod2usage(-verbose => 2) if $man;
 my $inFile = $opts{'i'} || die pod2usage(1);
 my $inFile2 = $opts{'j'} || die pod2usage(1); # file in newick tree file format
-
+my $kbidFile = $opts{'k'} || die pod2usage(1);
 #------------------------------------------------------------------------------#
 # Start: plant_gene_tree_exch.pl Main Logic                                    #
 #------------------------------------------------------------------------------#
 
+open(IN, "<$kbidFile");
+my @kbid = ();
+while(<IN>) {
+	chomp;
+	push(@kbid,$_);
+}
+close(IN);
+
 open(A, ">Alignment.tab");
 open(AR, ">AlignmentRow.tab");
 open(AA, ">AlignmentAttribute.tab");
+open(AN, ">ContainsAlignedNucleotides.tab");
 open(T, ">Tree.tab");
 open(TA, ">TreeAttribute.tab");
 
@@ -111,24 +126,16 @@ if(!defined($treedir)) {
 
 open(F2, "<$inFile2");
 my %idmap = ();
+my %stableId = ();
 while(<F2>) {
 	chomp;
 	if(/tree_stable_id:(.*) root_id/) {
-		my $id = $1;
+		my $id = shift @kbid;                # positive integer part of the KBase id
 		my $tree = <F2>;
 		# Fields for Tree.tab file
-		# kb-tree-id	 M	 unique kbase id reserved for the tree from ID server: 'kb|tree.XXXXX'
-		# kb-aln-id	 M	 the kbase id of the alignment from which this tree was built
-		# status	 M	 string indicating if the tree is "active", "superseded" or "bad"
-		# data-type	 M	 lowercase string indicating the type of data this tree is built from; we set this to "sequence_alignment" for all alignment-based trees, but we may support "taxonomy", "gene_content" trees and more in the future
-		# timestamp	 M	 the time at which this tree was loaded into KBase. Other timestamps can be added to TreeAttribute; the time format is an integer indicating seconds since epoch
-		# method	 R	 string that either maps to another object that captures workflows, or is simple alignment method name, e.g. "MOPipeline"
-	 	# parameters	 R	 free form string that might be a hash to provide additional tree parameters e.g., the program option values used
-		# protocol	 O	 human readable description of the tree, if needed
-		# source-db	 M	 the database where this tree originated, eg MO, SEED
-		# source-db-tree-id	 M	 the id of this tree in the original database
-		my $kbTreeId = $id;                  # Required; unique kbase id reserved for the alignment from ID server
-		my $kbAlnId = $id;                   # Required
+		my $kbTreeId = "kb|tree.".$id;       # Required; unique kbase id reserved for the alignment from ID server
+		my $kbAlnId = "kb|aln.".$id;         # Required
+		$stableId{$kbAlnId} = $1;            # $1=Ensembl-Tree-StableID e.g. EPlGT00140000000068
 		my $status = "active";               # Required
 		my $dataType = "sequence_alignment"; # Required
 		my $ts = time();                     # Required# get the timestamp in seconds since epoch
@@ -136,19 +143,19 @@ while(<F2>) {
 		my $params = "";                     # Recommended
 		my $protocol = "";                   # Optional
 		my $srcDb = "Gramene";               # Required
-		my $srcDbAlnId = $id;                # Required
-		print T "kb_tree.$kbTreeId\tkb_aln.$kbAlnId\t$status\t$dataType\t$ts\t$method\t$params\t$protocol\t$srcDb\t$srcDbAlnId\n";
+		my $srcDbAlnId = $1;                 # Required
+		print T "$kbTreeId\t$kbAlnId\t$status\t$dataType\t$ts\t$method\t$params\t$protocol\t$srcDb\t$srcDbAlnId\n";
 		
-		my $fn = "$treedir/$id.tree";
+		my $fn = "$treedir/$kbTreeId.newick";
 		open(O, ">$fn");
 		print O $tree;
 		close(O);
 		
-		print TA "kb_tree.$kbTreeId\trooted\tOutgroup\n";
-		print TA "kb_tree.$kbTreeId\tbranch_length\tArbitrary units\n";
-		print TA "kb_tree.$kbTreeId\tstyle\tPhylogram\n";
-		print TA "kb_tree.$kbTreeId\tFelsenstein 1985\n";
-		print TA "kb_tree.$kbTreeId\tcopyright\t.\n";
+		print TA "$kbTreeId\trooted\tOutgroup\n";
+		print TA "$kbTreeId\tbranch_length\tArbitrary units\n";
+		print TA "$kbTreeId\tstyle\tPhylogram\n";
+		print TA "$kbTreeId\tbootstrap_type\tFelsenstein 1985\n";
+		#print TA "$kbTreeId\tcopyright\tNone\n";
 		
 		chomp($tree);
 		$tree =~ s/\(//g;
@@ -156,7 +163,7 @@ while(<F2>) {
 		my @a = split(/,/, $tree);
 		foreach my $val (@a) {
 			$val =~ s/:.*//g;
-			$idmap{$val} = $id;
+			$idmap{$val} = $kbAlnId;
 		}
 	}
 }
@@ -204,9 +211,9 @@ while(<IN>) {
 		if($l =~ m/^SEQ/) {
 			# SEQ oryza_brachyantha OB03G46150.1 3 28096381 28098204 -1 OB03G46150 OB03G46150
 			my @arr = split(/\s/,$l);
-			my $rowId = $arr[2];
+			my $rowId = $arr[2]; # external Gene ID
 			if(!defined($kbAlnId)) {
-				$kbAlnId = $idmap{$rowId};
+				$kbAlnId = $idmap{$rowId}; # This is KBase alignment id (e.g. kb|aln.1111222)
 				if(!defined($kbAlnId)) {
 					print STDOUT "$l\n$rowId exists in alignment but not in tree file\n";
 				}
@@ -234,8 +241,8 @@ while(<IN>) {
 			$nCols++;
 		}
 	}
-	$srcDbAlnId = $kbAlnId;
-	print A "kb_aln.$kbAlnId\t$nRows\t$nCols\t$status\t$isConcat\t$seqType\t$ts\t$method\t$params\t$protocol\t$srcDb\t$srcDbAlnId\n";
+	$srcDbAlnId = $stableId{$kbAlnId};
+	print A "$kbAlnId\t$nRows\t$nCols\t$status\t$isConcat\t$seqType\t$ts\t$method\t$params\t$protocol\t$srcDb\t$srcDbAlnId\n";
 	my $fn = "$fastadir/$kbAlnId.fasta";
 	open(O, ">$fn");
 	foreach my $k (sort {$a <=> $b} (keys(%rMap))) {
@@ -256,10 +263,11 @@ while(<IN>) {
 		$rowNum = $k+1;
 		$seq =~ s/-//g;
 		$md5 = md5_hex($seq);
-		print AR "kb_aln.$kbAlnId\t$rowNum\t$rowId\t$rowDesc\t$nComp\t$sPos\t$ePos\t$md5\n";
-		print AA "kb_aln.$kbAlnId\tseeded_by_src\tGramene\n"; # The database source of a gene family, e.g.PFAM
-		print AA "kb_aln.$kbAlnId\tseeded_by_id\t$rowId\n";  # The id to locate the gene family or model from an external database, e.g. PF02574
-		print AA "kb_aln.$kbAlnId\tcopyright\t.\n";
+		print AR "$kbAlnId\t$rowNum\t$rowId\t$rowDesc\t$nComp\t$sPos\t$ePos\t$md5\n";
+		print AN "$kbAlnId\t$rowNum\t1\t$md5\t1\t$seqLen\t$seqLen\t$sPos\t$ePos\t.\n";
+		print AA "$kbAlnId\tseeded_by_src\tGramene\n"; # The database source of a gene family, e.g.PFAM
+		print AA "$kbAlnId\tseeded_by_id\t$rowId\n";  # The id to locate the gene family or model from an external database, e.g. PF02574
+		#print AA "$kbAlnId\tcopyright\tNone\n";
 	}
 	close(O);
 }
