@@ -1,4 +1,4 @@
-#group-name	tree	Phylogenetic Trees & Alignments
+#group-name	tree	Phylogenetic Trees and Alignments
 tree-get-tree	tree
 tree-create-url-map	tree
 tree-find-tree-ids	tree
