@@ -597,4 +597,5 @@ module Tree
     funcdef draw_html_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);
     
 
+    funcdef contruct_tree(string genome_ref) returns (string tree);
 };
