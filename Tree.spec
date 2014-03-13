@@ -598,48 +598,18 @@ module Tree
     
 
     /* *********************************************************************************************** */
-    /* DATA TYPES AND METHODS FOR SPECIES TREE CONSTRUCTION / INSERTION */
+    /* METHODS REQUIRED BACKGROUND JOB STARTING */
     /* *********************************************************************************************** */
 
-    /* A convenience type representing a genome id reference. This might be a kbase_id (in the case of 
-    a CDM genome) or, more likely, a workspace reference of the structure "ws/obj/ver"
-    */
-    typedef string genome_ref;
-
-    /* A string representation of the scientific name of a species.
-    */
-    typedef string scientific_name;
-
-    /* A tuple that gives very basic information about a single genome in a SpeciesTree - enough to decorate 
-    the nodes with the species name, and fetch more genome information from the KBase datastores.
-    */
-    typedef tuple<genome_ref ref, scientific_name name> genome_info;
-
-    /* The structure of a tree itself.
-
-        tree - the Newick string representing the tree itself
-        id_map - maps from internal tree node ids to workspace references for each genome
-        alignment_ref - (optional) the reference to the alignment from which the tree was built
-        cogs - the list of NCBI COG ids that were used to build the tree
+    /* Input data type for construct_species_tree method 
+	out_tree_id - optional ref of SpeciesTree type
     */
     typedef structure {
-        newick_tree species_tree;
-        mapping<node_name, genome_info> id_map;
-        string alignment_ref;
-        list<cog_id> cogs;
-    } SpeciesTree;
+	list<genome_ref> new_genomes;
+	string out_workspace;
+	string out_tree_id;
+    } ConstructSpeciesTreeParams;
 
-    /* An id for a cluster of orthologous groups (COG). A species tree is built by aligning genomes
-    based on several of these. */
-    typedef string cog_id;
-
-    /* Build a species tree out of a set of given genome references.
-    */
-    funcdef build_species_tree(list<genome_ref> genomes, list<cog_id> cogs) returns (SpeciesTree);
-
-    /* Insert genome into species tree. This inserts a new genome (typically a user genome from their
-    workspace) into an existing species tree, based on its alignments and cogs.
-    */
-    funcdef add_genome_to_species_tree(SpeciesTree tree, genome_ref genome) returns (SpeciesTree);
-
+    /* Construct species tree included new genomes defined by user */
+    funcdef contruct_species_tree(ConstructSpeciesTreeParams input) returns (string job_id);
 };
