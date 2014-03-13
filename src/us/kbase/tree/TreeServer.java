@@ -1,11 +1,28 @@
 package us.kbase.tree;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
+import us.kbase.common.service.UnauthorizedException;
 
 //BEGIN_HEADER
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedHashMap;
+
+import us.kbase.auth.AuthToken;
+import us.kbase.auth.TokenFormatException;
+import us.kbase.common.taskqueue.JobStatuses;
+import us.kbase.common.taskqueue.TaskQueue;
+import us.kbase.common.taskqueue.TaskQueueConfig;
+import us.kbase.userandjobstate.InitProgress;
+import us.kbase.userandjobstate.Results;
+import us.kbase.userandjobstate.UserAndJobStateClient;
 //END_HEADER
 
 /**
@@ -27,6 +44,80 @@ public class TreeServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
 
     //BEGIN_CLASS_HEADER
+    private static TaskQueue taskHolder = null;
+    
+	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
+    private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
+
+    static {
+    	String KB_SERVNAME = "KB_SERVICE_NAME";
+		String serviceName = System.getProperty(KB_SERVNAME) == null ?
+				System.getenv(KB_SERVNAME) : System.getProperty(KB_SERVNAME);
+		if (serviceName == null)
+			System.setProperty(KB_SERVNAME, "trees");
+    }
+    
+    private synchronized TaskQueue getTaskHolder() throws Exception {
+    	if (taskHolder == null) {
+    		int threadCount = 1;
+    		File queueDbDir = new File(".");
+    		String wsUrl = defaultWsUrl;
+    		String jssUrl = defaultJssUrl;
+    		Map<String, String> allConfigProps = new LinkedHashMap<String, String>(super.config);
+    		if (allConfigProps.containsKey("thread.count"))
+    			threadCount = Integer.parseInt(allConfigProps.get("thread.count"));
+    		if (allConfigProps.containsKey("queue.db.dir"))
+    			queueDbDir = new File(allConfigProps.get("queue.db.dir"));
+    		if (allConfigProps.containsKey("workspace.srv.url"))
+    			wsUrl = allConfigProps.get("workspace.srv.url");
+    		if (allConfigProps.containsKey("jobstatus.srv.url"))
+    			jssUrl = allConfigProps.get("jobstatus.srv.url");
+    		for (Object key : allConfigProps.keySet())
+    			allConfigProps.put(key.toString(), allConfigProps.get(key.toString()));
+    		final String finalWsUrl = wsUrl;
+    		final String finalJssUrl = jssUrl;
+    		JobStatuses jobStatuses = new JobStatuses() {
+				@Override
+				public String createAndStartJob(String token, String status, String desc,
+						String initProgressPtype, String estComplete) throws Exception {
+    				return createJobClient(finalJssUrl, token).createAndStartJob(token, status, desc, 
+    						new InitProgress().withPtype(initProgressPtype), estComplete);
+				}
+				@Override
+				public void updateJob(String job, String token, String status,
+						String estComplete) throws Exception {
+    				createJobClient(finalJssUrl, token).updateJob(job, token, status, estComplete);
+				}
+				@Override
+				public void completeJob(String job, String token, String status,
+						String error, String wsUrl, String outRef) throws Exception {
+    				createJobClient(finalJssUrl, token).completeJob(job, token, status, error, 
+    						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(Arrays.asList(outRef)));
+				}
+			};
+			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, allConfigProps));
+    	}
+    	return taskHolder;
+    }
+    
+	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
+		try {
+			UserAndJobStateClient ret = new UserAndJobStateClient(new URL(jobSrvUrl), new AuthToken(token));
+			ret.setAuthAllowedForHttp(true);
+			return ret;
+		} catch (TokenFormatException e) {
+			throw new JsonClientException(e.getMessage(), e);
+		} catch (UnauthorizedException e) {
+			throw new JsonClientException(e.getMessage(), e);
+		}
+	}
+	
+	private TreeClient fwd() throws Exception {
+		String forwardUrl = super.config.get("forward.url");
+		if (forwardUrl == null)
+			throw new IllegalStateException("Parameter forward.url is not defined in configuration");
+		return new TreeClient(new URL(forwardUrl));
+	}
     //END_CLASS_HEADER
 
     public TreeServer() throws Exception {
@@ -50,6 +141,7 @@ public class TreeServer extends JsonServerServlet {
     public String replaceNodeNames(String tree, Map<String,String> replacements) throws Exception {
         String returnVal = null;
         //BEGIN replace_node_names
+        returnVal = fwd().replaceNodeNames(tree, replacements);
         //END replace_node_names
         return returnVal;
     }
@@ -70,6 +162,7 @@ public class TreeServer extends JsonServerServlet {
     public String removeNodeNamesAndSimplify(String tree, List<String> removalList) throws Exception {
         String returnVal = null;
         //BEGIN remove_node_names_and_simplify
+        returnVal = fwd().removeNodeNamesAndSimplify(tree, removalList);
         //END remove_node_names_and_simplify
         return returnVal;
     }
@@ -91,6 +184,7 @@ public class TreeServer extends JsonServerServlet {
     public String mergeZeroDistanceLeaves(String tree) throws Exception {
         String returnVal = null;
         //BEGIN merge_zero_distance_leaves
+        returnVal = fwd().mergeZeroDistanceLeaves(tree);
         //END merge_zero_distance_leaves
         return returnVal;
     }
@@ -107,6 +201,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> extractLeafNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_leaf_node_names
+        returnVal = fwd().extractLeafNodeNames(tree);
         //END extract_leaf_node_names
         return returnVal;
     }
@@ -125,6 +220,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> extractNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_node_names
+        returnVal = fwd().extractNodeNames(tree);
         //END extract_node_names
         return returnVal;
     }
@@ -141,6 +237,7 @@ public class TreeServer extends JsonServerServlet {
     public Long getNodeCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_node_count
+        returnVal = fwd().getNodeCount(tree);
         //END get_node_count
         return returnVal;
     }
@@ -159,6 +256,7 @@ public class TreeServer extends JsonServerServlet {
     public Long getLeafCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_leaf_count
+        returnVal = fwd().getLeafCount(tree);
         //END get_leaf_count
         return returnVal;
     }
@@ -206,6 +304,7 @@ public class TreeServer extends JsonServerServlet {
     public String getTree(String treeId, Map<String,String> options) throws Exception {
         String returnVal = null;
         //BEGIN get_tree
+        returnVal = fwd().getTree(treeId, options);
         //END get_tree
         return returnVal;
     }
@@ -241,6 +340,7 @@ public class TreeServer extends JsonServerServlet {
     public String getAlignment(String alignmentId, Map<String,String> options) throws Exception {
         String returnVal = null;
         //BEGIN get_alignment
+        returnVal = fwd().getAlignment(alignmentId, options);
         //END get_alignment
         return returnVal;
     }
@@ -261,6 +361,7 @@ public class TreeServer extends JsonServerServlet {
     public Map<String,TreeMetaData> getTreeData(List<String> treeIds) throws Exception {
         Map<String,TreeMetaData> returnVal = null;
         //BEGIN get_tree_data
+        returnVal = fwd().getTreeData(treeIds);
         //END get_tree_data
         return returnVal;
     }
@@ -281,6 +382,7 @@ public class TreeServer extends JsonServerServlet {
     public Map<String,AlignmentMetaData> getAlignmentData(List<String> alignmentIds) throws Exception {
         Map<String,AlignmentMetaData> returnVal = null;
         //BEGIN get_alignment_data
+        returnVal = fwd().getAlignmentData(alignmentIds);
         //END get_alignment_data
         return returnVal;
     }
@@ -298,6 +400,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> getTreeIdsByFeature(List<String> featureIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_tree_ids_by_feature
+        returnVal = fwd().getTreeIdsByFeature(featureIds);
         //END get_tree_ids_by_feature
         return returnVal;
     }
@@ -315,6 +418,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> getTreeIdsByProteinSequence(List<String> proteinSequenceIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_tree_ids_by_protein_sequence
+        returnVal = fwd().getTreeIdsByProteinSequence(proteinSequenceIds);
         //END get_tree_ids_by_protein_sequence
         return returnVal;
     }
@@ -332,6 +436,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> getAlignmentIdsByFeature(List<String> featureIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_alignment_ids_by_feature
+        returnVal = fwd().getAlignmentIdsByFeature(featureIds);
         //END get_alignment_ids_by_feature
         return returnVal;
     }
@@ -349,6 +454,7 @@ public class TreeServer extends JsonServerServlet {
     public List<String> getAlignmentIdsByProteinSequence(List<String> proteinSequenceIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_alignment_ids_by_protein_sequence
+        returnVal = fwd().getAlignmentIdsByProteinSequence(proteinSequenceIds);
         //END get_alignment_ids_by_protein_sequence
         return returnVal;
     }
@@ -372,6 +478,7 @@ public class TreeServer extends JsonServerServlet {
     public List<List<String>> getTreeIdsBySourceIdPattern(String pattern) throws Exception {
         List<List<String>> returnVal = null;
         //BEGIN get_tree_ids_by_source_id_pattern
+        returnVal = fwd().getTreeIdsBySourceIdPattern(pattern);
         //END get_tree_ids_by_source_id_pattern
         return returnVal;
     }
@@ -389,6 +496,7 @@ public class TreeServer extends JsonServerServlet {
     public Map<String,String> getLeafToProteinMap(String treeId) throws Exception {
         Map<String,String> returnVal = null;
         //BEGIN get_leaf_to_protein_map
+        returnVal = fwd().getLeafToProteinMap(treeId);
         //END get_leaf_to_protein_map
         return returnVal;
     }
@@ -406,6 +514,7 @@ public class TreeServer extends JsonServerServlet {
     public Map<String,String> getLeafToFeatureMap(String treeId) throws Exception {
         Map<String,String> returnVal = null;
         //BEGIN get_leaf_to_feature_map
+        returnVal = fwd().getLeafToFeatureMap(treeId);
         //END get_leaf_to_feature_map
         return returnVal;
     }
@@ -429,6 +538,7 @@ public class TreeServer extends JsonServerServlet {
     public AbundanceResult computeAbundanceProfile(AbundanceParams abundanceParams) throws Exception {
         AbundanceResult returnVal = null;
         //BEGIN compute_abundance_profile
+        returnVal = fwd().computeAbundanceProfile(abundanceParams);
         //END compute_abundance_profile
         return returnVal;
     }
@@ -452,6 +562,7 @@ public class TreeServer extends JsonServerServlet {
     public Map<String,Map<String,Double>> filterAbundanceProfile(Map<String,Map<String,Double>> abundanceData, FilterParams filterParams) throws Exception {
         Map<String,Map<String,Double>> returnVal = null;
         //BEGIN filter_abundance_profile
+        returnVal = fwd().filterAbundanceProfile(abundanceData, filterParams);
         //END filter_abundance_profile
         return returnVal;
     }
@@ -470,22 +581,25 @@ public class TreeServer extends JsonServerServlet {
     public String drawHtmlTree(String tree, Map<String,String> displayOptions) throws Exception {
         String returnVal = null;
         //BEGIN draw_html_tree
+        returnVal = fwd().drawHtmlTree(tree, displayOptions);
         //END draw_html_tree
         return returnVal;
     }
 
     /**
-     * <p>Original spec-file function name: contruct_tree</p>
+     * <p>Original spec-file function name: contruct_species_tree</p>
      * <pre>
+     * Construct species tree included new genomes defined by user
      * </pre>
-     * @param   genomeRef   instance of String
-     * @return   parameter "tree" of String
+     * @param   input   instance of type {@link us.kbase.tree.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
+     * @return   parameter "job_id" of String
      */
-    @JsonServerMethod(rpc = "Tree.contruct_tree")
-    public String contructTree(String genomeRef) throws Exception {
+    @JsonServerMethod(rpc = "Tree.contruct_species_tree")
+    public String contructSpeciesTree(ConstructSpeciesTreeParams input) throws Exception {
         String returnVal = null;
-        //BEGIN contruct_tree
-        //END contruct_tree
+        //BEGIN contruct_species_tree
+        returnVal = fwd().contructSpeciesTree(input);
+        //END contruct_species_tree
         return returnVal;
     }
 

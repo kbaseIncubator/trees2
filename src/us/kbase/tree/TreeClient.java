@@ -528,19 +528,20 @@ public class TreeClient {
     }
 
     /**
-     * <p>Original spec-file function name: contruct_tree</p>
+     * <p>Original spec-file function name: contruct_species_tree</p>
      * <pre>
+     * Construct species tree included new genomes defined by user
      * </pre>
-     * @param   genomeRef   instance of String
-     * @return   parameter "tree" of String
+     * @param   input   instance of type {@link us.kbase.tree.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
+     * @return   parameter "job_id" of String
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public String contructTree(String genomeRef) throws IOException, JsonClientException {
+    public String contructSpeciesTree(ConstructSpeciesTreeParams input) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
-        args.add(genomeRef);
+        args.add(input);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.contruct_tree", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("Tree.contruct_species_tree", args, retType, true, false);
         return res.get(0);
     }
 }
