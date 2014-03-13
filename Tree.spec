@@ -89,6 +89,35 @@ module Tree
     /* String in HTML format, used in the KBase Tree library for returning rendered trees. */
     typedef string html_file;
     
+
+
+    /* A convenience type representing a genome id reference. This might be a kbase_id (in the case of 
+    a CDM genome) or, more likely, a workspace reference of the structure "ws/obj/ver"
+    */
+    typedef string genome_ref;
+
+    /* A string representation of the scientific name of a species.
+    */
+    typedef string scientific_name;
+
+    /* A tuple that gives very basic information about a single genome in a SpeciesTree - enough to decorate 
+    the nodes with the species name, and fetch more genome information from the KBase datastores.
+    */
+    typedef tuple<genome_ref ref, scientific_name name> genome_info;
+
+    /* The structure of a tree itself.
+
+        tree - the Newick string representing the tree itself
+        id_map - maps from internal tree node ids to workspace references for each genome
+        alignment_ref - (optional) the reference to the alignment from which the tree was built
+    */
+    typedef structure {
+        newick_tree species_tree;
+        mapping<node_name, genome_info> id_map;
+        string alignment_ref;
+    } SpeciesTree;
+
+
     
     /* Meta data associated with a tree.
     
