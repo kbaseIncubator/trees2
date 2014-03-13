@@ -31,7 +31,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	
 	@Override
 	public void run(String token, ConstructSpeciesTreeParams inputData,
-			TaskQueueConfig config) throws Exception {
+			String jobId, String outRef) throws Exception {
 		// TODO Auto-generated method stub
 		
 	}
