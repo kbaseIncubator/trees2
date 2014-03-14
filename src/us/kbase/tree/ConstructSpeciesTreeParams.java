@@ -15,8 +15,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: ConstructSpeciesTreeParams</p>
  * <pre>
- * Input data type for construct_species_tree method 
- * out_tree_id - optional ref of SpeciesTree type
+ * Input data type for construct_species_tree method.
+ *         new_genomes - (required) the list of genome references to use in constructing a tree
+ *         out_workspace - (required) the workspace to deposit the completed tree
+ *         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
  * </pre>
  * 
  */

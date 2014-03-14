@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
 import us.kbase.auth.AuthToken;
+import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.common.taskqueue.TaskRunner;
@@ -36,7 +38,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	private String wsUrl;
 	
 	public static void main(String[] args) throws Exception {
-		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(new File("temp"), new File("data"), null);
+		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(new File("temp_files"), new File("data"), null);
 		System.out.println(stb.makeTreeForBasicCogs());
 	}
 	
@@ -52,10 +54,13 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	}
 	
 	private SpeciesTreeBuilder init(File tempDir, File dataDir, String wsUrl) {
+		System.out.println(getClass().getName() + ": tempDir=" + tempDir + ", dataDir=" + dataDir + ", ws=" + wsUrl);
 		this.tempDir = tempDir;
 		if (!tempDir.exists())
 			tempDir.mkdir();
 		this.dataDir = dataDir;
+		if (!dataDir.exists())
+			throw new IllegalStateException("Directory " + dataDir + " doesn't exist");
 		this.wsUrl = wsUrl;
 		return this;
 	}
@@ -64,10 +69,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		String tempDirPath = configParams.get(param);
 		if (tempDirPath == null)
 			throw new IllegalStateException("Parameter " + param + " is not defined in configuration");
-		File ret = new File(tempDirPath);
-		if (!ret.exists())
-			throw new IllegalStateException("Directory " + ret + " doesn't exist");
-		return ret;
+		return new File(tempDirPath);
 	}
 
 	@Override
@@ -87,13 +89,15 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	public void run(String token, ConstructSpeciesTreeParams inputData,
 			String jobId, String outRef) throws Exception {
 		String treeText = makeTreeForBasicCogs();
-		SpeciesTree tree = new SpeciesTree().withSpeciesTree(treeText);
+		SpeciesTree tree = new SpeciesTree().withSpeciesTree(treeText)
+				.withAlignmentRef("").withCogs(loadCogsCodes())
+				.withIdMap(Collections.<String, Tuple2 <String, String>>emptyMap());
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree);
 	}
 	
 	private void saveResult(String ws, String id, String token, SpeciesTree res) throws Exception {
-		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res)).withType("Tree.SpeciesTree");
+		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res)).withType("KBaseTrees.SpeciesTree");
 		try {
 			long objid = Long.parseLong(id);
 			data.withObjid(objid);
@@ -101,8 +105,10 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 			data.withName(id);
 		}
 		WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(token));
+		client.setAuthAllowedForHttp(true);
 		client.saveObjects(new SaveObjectsParams().withWorkspace(ws).withObjects(
 				Arrays.asList(data)));
+		System.out.println("Tree data was saved into " + ws + "/" + id);
 	}
 
 	
@@ -139,7 +145,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 			try {
 				Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
-						input.getAbsolutePath()));
+						"-fastest", input.getAbsolutePath()));
 				errBaos = new ByteArrayOutputStream();
 				cp = new CorrectProcess(p, result, "", errBaos, "");
 				p.waitFor();

@@ -13,7 +13,7 @@ Matt Henderson, LBL (mhenderson@lbl.gov)
 Dylan Chivian, LBL (dcchivian@lbl.gov)
 
 */
-module Tree
+module KBaseTrees
 {
     /* *********************************************************************************************** */
     /* ALIGNMENT AND TREE DATA TYPES */

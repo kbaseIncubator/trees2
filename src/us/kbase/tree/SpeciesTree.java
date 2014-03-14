@@ -2,6 +2,7 @@
 package us.kbase.tree;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -19,6 +20,7 @@ import us.kbase.common.service.Tuple2;
  *         tree - the Newick string representing the tree itself
  *         id_map - maps from internal tree node ids to workspace references for each genome
  *         alignment_ref - (optional) the reference to the alignment from which the tree was built
+ *         cogs - the list of NCBI COG ids that were used to build the tree
  * </pre>
  * 
  */
@@ -27,7 +29,8 @@ import us.kbase.common.service.Tuple2;
 @JsonPropertyOrder({
     "species_tree",
     "id_map",
-    "alignment_ref"
+    "alignment_ref",
+    "cogs"
 })
 public class SpeciesTree {
 
@@ -37,6 +40,8 @@ public class SpeciesTree {
     private Map<String, Tuple2 <String, String>> idMap;
     @JsonProperty("alignment_ref")
     private java.lang.String alignmentRef;
+    @JsonProperty("cogs")
+    private List<String> cogs;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("species_tree")
@@ -84,6 +89,21 @@ public class SpeciesTree {
         return this;
     }
 
+    @JsonProperty("cogs")
+    public List<String> getCogs() {
+        return cogs;
+    }
+
+    @JsonProperty("cogs")
+    public void setCogs(List<String> cogs) {
+        this.cogs = cogs;
+    }
+
+    public SpeciesTree withCogs(List<String> cogs) {
+        this.cogs = cogs;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -96,7 +116,7 @@ public class SpeciesTree {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((("SpeciesTree"+" [speciesTree=")+ speciesTree)+", idMap=")+ idMap)+", alignmentRef=")+ alignmentRef)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("SpeciesTree"+" [speciesTree=")+ speciesTree)+", idMap=")+ idMap)+", alignmentRef=")+ alignmentRef)+", cogs=")+ cogs)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

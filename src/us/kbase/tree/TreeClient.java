@@ -7,8 +7,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
+import us.kbase.common.service.UnauthorizedException;
 
 /**
  * <p>Original spec-file module name: Tree</p>
@@ -32,9 +34,25 @@ public class TreeClient {
         caller = new JsonClientCaller(url);
     }
 
+    public TreeClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, token);
+    }
+
+    public TreeClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password);
+    }
+
 	public void setConnectionReadTimeOut(Integer milliseconds) {
 		this.caller.setConnectionReadTimeOut(milliseconds);
 	}
+
+    public boolean isAuthAllowedForHttp() {
+        return caller.isAuthAllowedForHttp();
+    }
+
+    public void setAuthAllowedForHttp(boolean isAuthAllowedForHttp) {
+        caller.setAuthAllowedForHttp(isAuthAllowedForHttp);
+    }
 
 	public void _setFileForNextRpcResponse(File f) {
 		caller.setFileForNextRpcResponse(f);
@@ -528,20 +546,20 @@ public class TreeClient {
     }
 
     /**
-     * <p>Original spec-file function name: contruct_species_tree</p>
+     * <p>Original spec-file function name: construct_species_tree</p>
      * <pre>
-     * Construct species tree included new genomes defined by user
+     * Build a species tree out of a set of given genome references.
      * </pre>
      * @param   input   instance of type {@link us.kbase.tree.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
-     * @return   parameter "job_id" of String
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public String contructSpeciesTree(ConstructSpeciesTreeParams input) throws IOException, JsonClientException {
+    public String constructSpeciesTree(ConstructSpeciesTreeParams input) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(input);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.contruct_species_tree", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("Tree.construct_species_tree", args, retType, true, true);
         return res.get(0);
     }
 }

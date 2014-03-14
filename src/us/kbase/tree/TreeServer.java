@@ -1,22 +1,24 @@
 package us.kbase.tree;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import us.kbase.common.service.JsonClientException;
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
-import us.kbase.common.service.UnauthorizedException;
 
 //BEGIN_HEADER
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Properties;
 
-import us.kbase.auth.AuthToken;
 import us.kbase.auth.TokenFormatException;
+import us.kbase.common.service.JsonClientException;
+import us.kbase.common.service.UnauthorizedException;
 import us.kbase.common.taskqueue.JobStatuses;
 import us.kbase.common.taskqueue.TaskQueue;
 import us.kbase.common.taskqueue.TaskQueueConfig;
@@ -50,14 +52,27 @@ public class TreeServer extends JsonServerServlet {
     private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
 
     static {
+    	// Setup service name
     	String KB_SERVNAME = "KB_SERVICE_NAME";
-		String serviceName = System.getProperty(KB_SERVNAME) == null ?
-				System.getenv(KB_SERVNAME) : System.getProperty(KB_SERVNAME);
-		if (serviceName == null)
-			System.setProperty(KB_SERVNAME, "trees");
+    	System.setProperty(KB_SERVNAME, "trees");
+    	System.out.println(TreeServer.class.getName() + ": Service name was defined: trees");
+    	// Setup deployment configuration path
+		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
+		InputStream is = TreeServer.class.getResourceAsStream("config_path.properties");
+		try {
+			Properties props = new Properties();
+			props.load(is);
+			String configPath = props.getProperty("config_path");
+			System.setProperty(KB_DEP, configPath);
+			System.out.println(TreeServer.class.getName() + ": Deployment config path was defined: " + configPath);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			try { is.close(); } catch (Exception ignore) {}
+		}
     }
     
-    private synchronized TaskQueue getTaskHolder() throws Exception {
+    private synchronized TaskQueue getTaskQueue() throws Exception {
     	if (taskHolder == null) {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
@@ -95,7 +110,8 @@ public class TreeServer extends JsonServerServlet {
     						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(Arrays.asList(outRef)));
 				}
 			};
-			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, allConfigProps));
+			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, 
+					allConfigProps)).registerRunner(new SpeciesTreeBuilder());
     	}
     	return taskHolder;
     }
@@ -587,19 +603,20 @@ public class TreeServer extends JsonServerServlet {
     }
 
     /**
-     * <p>Original spec-file function name: contruct_species_tree</p>
+     * <p>Original spec-file function name: construct_species_tree</p>
      * <pre>
-     * Construct species tree included new genomes defined by user
+     * Build a species tree out of a set of given genome references.
      * </pre>
      * @param   input   instance of type {@link us.kbase.tree.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
-     * @return   parameter "job_id" of String
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
      */
-    @JsonServerMethod(rpc = "Tree.contruct_species_tree")
-    public String contructSpeciesTree(ConstructSpeciesTreeParams input) throws Exception {
+    @JsonServerMethod(rpc = "Tree.construct_species_tree")
+    public String constructSpeciesTree(ConstructSpeciesTreeParams input, AuthToken authPart) throws Exception {
         String returnVal = null;
-        //BEGIN contruct_species_tree
-        returnVal = fwd().contructSpeciesTree(input);
-        //END contruct_species_tree
+        //BEGIN construct_species_tree
+        TaskQueue tq = getTaskQueue();
+        returnVal = tq.addTask(input, authPart.toString());
+        //END construct_species_tree
         return returnVal;
     }
 
