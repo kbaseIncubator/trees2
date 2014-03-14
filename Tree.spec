@@ -601,57 +601,7 @@ module Tree
     /* DATA TYPES AND METHODS FOR SPECIES TREE CONSTRUCTION / INSERTION */
     /* *********************************************************************************************** */
 
-    /* A convenience type representing a genome id reference. This might be a kbase_id (in the case of 
-    a CDM genome) or, more likely, a workspace reference of the structure "ws/obj/ver"
-    */
-    typedef string genome_ref;
-
-    /* A string representation of the scientific name of a species.
-    */
-    typedef string scientific_name;
-
-    /* A tuple that gives very basic information about a single genome in a SpeciesTree - enough to decorate 
-    the nodes with the species name, and fetch more genome information from the KBase datastores.
-    */
-    typedef tuple<genome_ref ref, scientific_name name> genome_info;
-
-    /* An id for a cluster of orthologous groups (COG). A species tree is built by aligning genomes
-    based on several of these. */
-    typedef string cog_id;
-
-    /* The structure of a tree itself.
-
-        tree - the Newick string representing the tree itself
-        id_map - maps from internal tree node ids to workspace references for each genome
-        alignment_ref - (optional) the reference to the alignment from which the tree was built
-        cogs - the list of NCBI COG ids that were used to build the tree
-    */
-    typedef structure {
-        newick_tree species_tree;
-        mapping<node_name, genome_info> id_map;
-        string alignment_ref;
-        list<cog_id> cogs;
-    } SpeciesTree;
-
-    /* Input data type for construct_species_tree method.
-
-        new_genomes - (required) the list of genome references to use in constructing a tree
-        out_workspace - (required) the workspace to deposit the completed tree
-        out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
-    */
-    typedef structure {
-        list<genome_ref> new_genomes;
-        string out_workspace;
-        string out_tree_id;
-    } ConstructSpeciesTreeParams;
-
-    /* A string representing a job id for manipulating trees. This is an id for a job that is
-    registered with the User and Job State service.
-    */
-    typedef string job_id;
-
-    /* Build a species tree out of a set of given genome references.
-    */
-    funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
+    /*  Implemented now in KBaseTrees.spec --- this spec file is out of date for the perl service only */
+ 
 
 };
