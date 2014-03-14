@@ -31,7 +31,6 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 default: all
 
 all: compile-typespec  build-docs
-# additional targets that should be added soon: build-dev-container-script-wrappers  COMMANDS
 
 compile-typespec:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
@@ -72,8 +71,6 @@ COMMANDS: COMMANDS.json
 		--jsonCommandsFile COMMANDS.json \
 		--irisCommandsFile COMMANDS \
 		--devContainerToolsDir $(TOOLS_DIR)
-
-
 
 
 
@@ -192,46 +189,48 @@ deploy-service-libs:
 	echo "deployed service for $(SERVICE)."
 
 # creates start/stop/reboot scripts and copies them to the deployment target
-deploy-service-start_scripts:
+deploy-service-start_scripts: build-perl-service-start-stop-scripts
+	mkdir -pv $(SERVICE_DIR)
+	mkdir -pv $(SERVICE_DIR)/log
+	cp service/*_perl_service $(SERVICE_DIR)/
+
+#####
+# Temporary 
+PERL_SERVICE_PORT = 50000
+
+build-perl-service-start-stop-scripts:
 	# First create the start script (should be a better way to do this...)
 	echo '#!/bin/sh' > ./start_service
-	echo "echo starting $(SERVICE) service." >> ./start_service
-	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_service
-	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_service
-	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./start_service
-	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./start_service
-	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_service
-	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_service
-	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_service
-	echo "  $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./start_service
-	echo "echo $(SERVICE_NAME) service is listening on port $(SERVICE_PORT).\n" >> ./start_service
+	echo "echo starting $(SERVICE) service." >> ./start_perl_service
+	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_perl_service
+	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_perl_service
+	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./start_perl_service
+	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./start_perl_service
+	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_perl_service
+	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
+	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
+	echo "  $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./start_perl_service
+	echo "echo $(SERVICE_NAME) service is listening on port $(PERL_SERVICE_PORT).\n" >> ./start_perl_service
 	# Second, create a debug start script that is not daemonized
-	echo '#!/bin/sh' > ./debug_start_service
-	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_service
-	echo 'export STARMAN_DEBUG=1' >> ./debug_start_service
-	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./debug_start_service
-	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./debug_start_service
-	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(SERVICE_PORT) --workers 1 \\" >> ./debug_start_service
-	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_service
+	echo '#!/bin/sh' > ./debug_start_perl_service
+	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_perl_service
+	echo 'export STARMAN_DEBUG=1' >> ./debug_start_perl_service
+	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./debug_start_perl_service
+	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./debug_start_perl_service
+	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --workers 1 \\" >> ./debug_start_perl_service
+	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_perl_service
 	# Third create the stop script
 	echo '#!/bin/sh' > ./stop_service
-	echo "echo trying to stop $(SERVICE) service." >> ./stop_service
-	echo "pid_file=$(PID_FILE)" >> ./stop_service
-	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_service
-	echo "\techo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"\n\texit 1\nfi" >> ./stop_service
-	echo "pid=\$$(cat \$$pid_file)\nkill \$$pid\n" >> ./stop_service
-	# Finally create a script to reboot the service by stopping, redeploying the service, and starting again
-	echo '#!/bin/sh' > ./reboot_service
-	echo '# auto-generated script to stop the service, redeploy service implementation, and start the servce' >> ./reboot_service
-	echo "./stop_service\ncd $(ROOT_DEV_MODULE_DIR)\nmake deploy-service-libs\ncd -\n./start_service" >> ./reboot_service
-	# Actually run the deployment of these scripts
-	chmod +x start_service stop_service reboot_service debug_start_service
-	mkdir -p $(SERVICE_DIR)
-	mkdir -p $(SERVICE_DIR)/log
-	cp start_service $(SERVICE_DIR)/
-	cp debug_start_service $(SERVICE_DIR)/
-	cp stop_service $(SERVICE_DIR)/
-	cp reboot_service $(SERVICE_DIR)/
+	echo "echo trying to stop $(SERVICE) service." >> ./stop_perl_service
+	echo "pid_file=$(PID_FILE)" >> ./stop_perl_service
+	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_perl_service
+	echo "\techo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"\n\texit 1\nfi" >> ./stop_perl_service
+	echo "pid=\$$(cat \$$pid_file)\nkill \$$pid\n" >> ./stop_perl_service
+	chmod +x start_perl_service stop_perl_service debug_start_perl_service
+	mkdir -pv service
+	mv -f start_perl_service service/start_perl_service
+	mv -f debug_start_perl_service service/debug_start_perl_service
+	mv -f stop_perl_service service/stop_perl_service
 
 
 # this undeploy target is a custom hack for Trees
