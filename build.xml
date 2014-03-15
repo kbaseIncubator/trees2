@@ -11,6 +11,7 @@
   <property name="war.file" value="TreeService.war"/>
   <property name="war" value="war"/>
   <property name="war.lib" value="${war}/lib"/>
+  <property name="prop.file.path" value="us/kbase/kbasetrees/config_path.properties"/>
 
   <property name="jarsdir" value=""/>
   <property name="deploycfg" value=""/>
@@ -58,7 +59,7 @@
          <equals arg1="${deploycfg}" arg2=""/>
        </condition>
     </fail>
-    <echo file="${classes}/us/kbase/tree/config_path.properties">config_path=${deploycfg}</echo>
+    <echo file="${classes}/${prop.file.path}">config_path=${deploycfg}</echo>
     <!-- make the war file for the server-->
     <mkdir dir="${war.lib}"/>
     <copy todir="${war.lib}/" flatten="true">

@@ -1,8 +1,7 @@
-package us.kbase.tree;
+package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
-
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
@@ -22,13 +21,15 @@ import us.kbase.common.service.UnauthorizedException;
 import us.kbase.common.taskqueue.JobStatuses;
 import us.kbase.common.taskqueue.TaskQueue;
 import us.kbase.common.taskqueue.TaskQueueConfig;
+import us.kbase.kbasetrees.SpeciesTreeBuilder;
+import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 //END_HEADER
 
 /**
- * <p>Original spec-file module name: Tree</p>
+ * <p>Original spec-file module name: KBaseTrees</p>
  * <pre>
  * Phylogenetic Tree and Multiple Sequence Alignment Services
  * This service provides a set of methods for querying, manipulating, and analyzing multiple
@@ -42,7 +43,7 @@ import us.kbase.userandjobstate.UserAndJobStateClient;
  * Dylan Chivian, LBL (dcchivian@lbl.gov)
  * </pre>
  */
-public class TreeServer extends JsonServerServlet {
+public class KBaseTreesServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
 
     //BEGIN_CLASS_HEADER
@@ -55,16 +56,16 @@ public class TreeServer extends JsonServerServlet {
     	// Setup service name
     	String KB_SERVNAME = "KB_SERVICE_NAME";
     	System.setProperty(KB_SERVNAME, "trees");
-    	System.out.println(TreeServer.class.getName() + ": Service name was defined: trees");
+    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: trees");
     	// Setup deployment configuration path
 		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
-		InputStream is = TreeServer.class.getResourceAsStream("config_path.properties");
+		InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
 		try {
 			Properties props = new Properties();
 			props.load(is);
 			String configPath = props.getProperty("config_path");
 			System.setProperty(KB_DEP, configPath);
-			System.out.println(TreeServer.class.getName() + ": Deployment config path was defined: " + configPath);
+			System.out.println(KBaseTreesServer.class.getName() + ": Deployment config path was defined: " + configPath);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
@@ -136,8 +137,8 @@ public class TreeServer extends JsonServerServlet {
 	}
     //END_CLASS_HEADER
 
-    public TreeServer() throws Exception {
-        super("Tree");
+    public KBaseTreesServer() throws Exception {
+        super("KBaseTrees");
         //BEGIN_CONSTRUCTOR
         //END_CONSTRUCTOR
     }
@@ -153,7 +154,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   replacements   instance of mapping from original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).) to original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
      * @return   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
-    @JsonServerMethod(rpc = "Tree.replace_node_names")
+    @JsonServerMethod(rpc = "KBaseTrees.replace_node_names")
     public String replaceNodeNames(String tree, Map<String,String> replacements) throws Exception {
         String returnVal = null;
         //BEGIN replace_node_names
@@ -174,7 +175,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   removalList   instance of list of original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
      * @return   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
-    @JsonServerMethod(rpc = "Tree.remove_node_names_and_simplify")
+    @JsonServerMethod(rpc = "KBaseTrees.remove_node_names_and_simplify")
     public String removeNodeNamesAndSimplify(String tree, List<String> removalList) throws Exception {
         String returnVal = null;
         //BEGIN remove_node_names_and_simplify
@@ -196,7 +197,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      * @return   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
-    @JsonServerMethod(rpc = "Tree.merge_zero_distance_leaves")
+    @JsonServerMethod(rpc = "KBaseTrees.merge_zero_distance_leaves")
     public String mergeZeroDistanceLeaves(String tree) throws Exception {
         String returnVal = null;
         //BEGIN merge_zero_distance_leaves
@@ -213,7 +214,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      * @return   instance of list of original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
      */
-    @JsonServerMethod(rpc = "Tree.extract_leaf_node_names")
+    @JsonServerMethod(rpc = "KBaseTrees.extract_leaf_node_names")
     public List<String> extractLeafNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_leaf_node_names
@@ -232,7 +233,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      * @return   instance of list of original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
      */
-    @JsonServerMethod(rpc = "Tree.extract_node_names")
+    @JsonServerMethod(rpc = "KBaseTrees.extract_node_names")
     public List<String> extractNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_node_names
@@ -249,7 +250,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      * @return   instance of Long
      */
-    @JsonServerMethod(rpc = "Tree.get_node_count")
+    @JsonServerMethod(rpc = "KBaseTrees.get_node_count")
     public Long getNodeCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_node_count
@@ -268,7 +269,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      * @return   instance of Long
      */
-    @JsonServerMethod(rpc = "Tree.get_leaf_count")
+    @JsonServerMethod(rpc = "KBaseTrees.get_leaf_count")
     public Long getLeafCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_leaf_count
@@ -316,7 +317,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   options   instance of mapping from String to String
      * @return   instance of original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
-    @JsonServerMethod(rpc = "Tree.get_tree")
+    @JsonServerMethod(rpc = "KBaseTrees.get_tree")
     public String getTree(String treeId, Map<String,String> options) throws Exception {
         String returnVal = null;
         //BEGIN get_tree
@@ -352,7 +353,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   options   instance of mapping from String to String
      * @return   instance of original type "alignment" (String representation of a sequence alignment, the format of which may be different depending on input options for retrieving the alignment.)
      */
-    @JsonServerMethod(rpc = "Tree.get_alignment")
+    @JsonServerMethod(rpc = "KBaseTrees.get_alignment")
     public String getAlignment(String alignmentId, Map<String,String> options) throws Exception {
         String returnVal = null;
         //BEGIN get_alignment
@@ -371,9 +372,9 @@ public class TreeServer extends JsonServerServlet {
      * CDS for just the field you need using the CDMI.
      * </pre>
      * @param   treeIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.TreeMetaData TreeMetaData}
+     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.kbasetrees.TreeMetaData TreeMetaData}
      */
-    @JsonServerMethod(rpc = "Tree.get_tree_data")
+    @JsonServerMethod(rpc = "KBaseTrees.get_tree_data")
     public Map<String,TreeMetaData> getTreeData(List<String> treeIds) throws Exception {
         Map<String,TreeMetaData> returnVal = null;
         //BEGIN get_tree_data
@@ -392,9 +393,9 @@ public class TreeServer extends JsonServerServlet {
      * CDS for just the field you need using the CDMI.
      * </pre>
      * @param   alignmentIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.AlignmentMetaData AlignmentMetaData}
+     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.kbasetrees.AlignmentMetaData AlignmentMetaData}
      */
-    @JsonServerMethod(rpc = "Tree.get_alignment_data")
+    @JsonServerMethod(rpc = "KBaseTrees.get_alignment_data")
     public Map<String,AlignmentMetaData> getAlignmentData(List<String> alignmentIds) throws Exception {
         Map<String,AlignmentMetaData> returnVal = null;
         //BEGIN get_alignment_data
@@ -412,7 +413,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   featureIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_tree_ids_by_feature")
+    @JsonServerMethod(rpc = "KBaseTrees.get_tree_ids_by_feature")
     public List<String> getTreeIdsByFeature(List<String> featureIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_tree_ids_by_feature
@@ -430,7 +431,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   proteinSequenceIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_tree_ids_by_protein_sequence")
+    @JsonServerMethod(rpc = "KBaseTrees.get_tree_ids_by_protein_sequence")
     public List<String> getTreeIdsByProteinSequence(List<String> proteinSequenceIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_tree_ids_by_protein_sequence
@@ -448,7 +449,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   featureIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_alignment_ids_by_feature")
+    @JsonServerMethod(rpc = "KBaseTrees.get_alignment_ids_by_feature")
     public List<String> getAlignmentIdsByFeature(List<String> featureIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_alignment_ids_by_feature
@@ -466,7 +467,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   proteinSequenceIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_alignment_ids_by_protein_sequence")
+    @JsonServerMethod(rpc = "KBaseTrees.get_alignment_ids_by_protein_sequence")
     public List<String> getAlignmentIdsByProteinSequence(List<String> proteinSequenceIds) throws Exception {
         List<String> returnVal = null;
         //BEGIN get_alignment_ids_by_protein_sequence
@@ -490,7 +491,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   pattern   instance of String
      * @return   instance of list of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_tree_ids_by_source_id_pattern")
+    @JsonServerMethod(rpc = "KBaseTrees.get_tree_ids_by_source_id_pattern")
     public List<List<String>> getTreeIdsBySourceIdPattern(String pattern) throws Exception {
         List<List<String>> returnVal = null;
         //BEGIN get_tree_ids_by_source_id_pattern
@@ -508,7 +509,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   treeId   instance of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_leaf_to_protein_map")
+    @JsonServerMethod(rpc = "KBaseTrees.get_leaf_to_protein_map")
     public Map<String,String> getLeafToProteinMap(String treeId) throws Exception {
         Map<String,String> returnVal = null;
         //BEGIN get_leaf_to_protein_map
@@ -526,7 +527,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   treeId   instance of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
      */
-    @JsonServerMethod(rpc = "Tree.get_leaf_to_feature_map")
+    @JsonServerMethod(rpc = "KBaseTrees.get_leaf_to_feature_map")
     public Map<String,String> getLeafToFeatureMap(String treeId) throws Exception {
         Map<String,String> returnVal = null;
         //BEGIN get_leaf_to_feature_map
@@ -547,10 +548,10 @@ public class TreeServer extends JsonServerServlet {
      * for additional details on specifying the input parameters and handling the results.
      * [1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
      * </pre>
-     * @param   abundanceParams   instance of type {@link us.kbase.tree.AbundanceParams AbundanceParams}
-     * @return   parameter "abundance_result" of type {@link us.kbase.tree.AbundanceResult AbundanceResult}
+     * @param   abundanceParams   instance of type {@link us.kbase.kbasetrees.AbundanceParams AbundanceParams}
+     * @return   parameter "abundance_result" of type {@link us.kbase.kbasetrees.AbundanceResult AbundanceResult}
      */
-    @JsonServerMethod(rpc = "Tree.compute_abundance_profile")
+    @JsonServerMethod(rpc = "KBaseTrees.compute_abundance_profile")
     public AbundanceResult computeAbundanceProfile(AbundanceParams abundanceParams) throws Exception {
         AbundanceResult returnVal = null;
         //BEGIN compute_abundance_profile
@@ -571,10 +572,10 @@ public class TreeServer extends JsonServerServlet {
      * - if a value is not a valid number, it is ignored
      * </pre>
      * @param   abundanceData   instance of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
-     * @param   filterParams   instance of type {@link us.kbase.tree.FilterParams FilterParams}
+     * @param   filterParams   instance of type {@link us.kbase.kbasetrees.FilterParams FilterParams}
      * @return   parameter "abundance_data_processed" of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
      */
-    @JsonServerMethod(rpc = "Tree.filter_abundance_profile")
+    @JsonServerMethod(rpc = "KBaseTrees.filter_abundance_profile")
     public Map<String,Map<String,Double>> filterAbundanceProfile(Map<String,Map<String,Double>> abundanceData, FilterParams filterParams) throws Exception {
         Map<String,Map<String,Double>> returnVal = null;
         //BEGIN filter_abundance_profile
@@ -593,7 +594,7 @@ public class TreeServer extends JsonServerServlet {
      * @param   displayOptions   instance of mapping from String to String
      * @return   instance of original type "html_file" (String in HTML format, used in the KBase Tree library for returning rendered trees.)
      */
-    @JsonServerMethod(rpc = "Tree.draw_html_tree")
+    @JsonServerMethod(rpc = "KBaseTrees.draw_html_tree")
     public String drawHtmlTree(String tree, Map<String,String> displayOptions) throws Exception {
         String returnVal = null;
         //BEGIN draw_html_tree
@@ -607,10 +608,10 @@ public class TreeServer extends JsonServerServlet {
      * <pre>
      * Build a species tree out of a set of given genome references.
      * </pre>
-     * @param   input   instance of type {@link us.kbase.tree.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
+     * @param   input   instance of type {@link us.kbase.kbasetrees.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
      * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
      */
-    @JsonServerMethod(rpc = "Tree.construct_species_tree")
+    @JsonServerMethod(rpc = "KBaseTrees.construct_species_tree")
     public String constructSpeciesTree(ConstructSpeciesTreeParams input, AuthToken authPart) throws Exception {
         String returnVal = null;
         //BEGIN construct_species_tree
@@ -625,6 +626,6 @@ public class TreeServer extends JsonServerServlet {
             System.out.println("Usage: <program> <server_port>");
             return;
         }
-        new TreeServer().startupServer(Integer.parseInt(args[0]));
+        new KBaseTreesServer().startupServer(Integer.parseInt(args[0]));
     }
 }

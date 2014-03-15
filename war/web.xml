@@ -2,7 +2,7 @@
 <web-app>
     <servlet>
         <servlet-name>RootServlet</servlet-name>
-        <servlet-class>us.kbase.tree.TreeServer</servlet-class>
+        <servlet-class>us.kbase.kbasetrees.KBaseTreesServer</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>RootServlet</servlet-name>

@@ -1,5 +1,5 @@
 
-package us.kbase.tree;
+package us.kbase.kbasetrees;
 
 import java.util.HashMap;
 import java.util.Map;

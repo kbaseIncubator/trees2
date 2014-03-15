@@ -1,4 +1,4 @@
-package us.kbase.tree.test;
+package us.kbase.kbasetrees.test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,9 +12,9 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import us.kbase.common.service.Tuple7;
-import us.kbase.tree.ConstructSpeciesTreeParams;
-import us.kbase.tree.TreeClient;
-import us.kbase.tree.TreeServer;
+import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
+import us.kbase.kbasetrees.KBaseTreesClient;
+import us.kbase.kbasetrees.KBaseTreesServer;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.workspace.GetModuleInfoParams;
 import us.kbase.workspace.ListModuleVersionsParams;
@@ -24,7 +24,7 @@ import us.kbase.workspace.WorkspaceClient;
 public class TreeServerPlaying {
 	private static String ws2url = "http://140.221.84.209:7058/";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
-	private static String pwd = "xxxxx";
+	private static String pwd = "2qz3gm7c";
 
 	public static void main(String[] args) throws Exception {
 		test();
@@ -36,9 +36,9 @@ public class TreeServerPlaying {
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		context.setContextPath("/");
 		jettyServer.setHandler(context);
-		context.addServlet(new ServletHolder(new TreeServer()),"/*");
+		context.addServlet(new ServletHolder(new KBaseTreesServer()),"/*");
 		jettyServer.start();
-		TreeClient cl = new TreeClient(new URL("http://localhost:" + port), "rsutormin", pwd);
+		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://localhost:" + port), "rsutormin", pwd);
 		cl.setAuthAllowedForHttp(true);
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace("rsutormin")
 				.withNewGenomes(Collections.<String>emptyList()));

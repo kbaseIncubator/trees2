@@ -1,4 +1,4 @@
-package us.kbase.tree;
+package us.kbase.kbasetrees;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

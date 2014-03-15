@@ -1,4 +1,4 @@
-package us.kbase.tree;
+package us.kbase.kbasetrees;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.File;
@@ -11,14 +11,9 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.UnauthorizedException;
-import us.kbase.kbasetrees.AbundanceParams;
-import us.kbase.kbasetrees.AbundanceResult;
-import us.kbase.kbasetrees.AlignmentMetaData;
-import us.kbase.kbasetrees.FilterParams;
-import us.kbase.kbasetrees.TreeMetaData;
 
 /**
- * <p>Original spec-file module name: Tree</p>
+ * <p>Original spec-file module name: KBaseTrees</p>
  * <pre>
  * Phylogenetic Tree and Multiple Sequence Alignment Services
  * This service provides a set of methods for querying, manipulating, and analyzing multiple
@@ -32,18 +27,18 @@ import us.kbase.kbasetrees.TreeMetaData;
  * Dylan Chivian, LBL (dcchivian@lbl.gov)
  * </pre>
  */
-public class TreeClient {
+public class KBaseTreesClient {
     private JsonClientCaller caller;
 
-    public TreeClient(URL url) {
+    public KBaseTreesClient(URL url) {
         caller = new JsonClientCaller(url);
     }
 
-    public TreeClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+    public KBaseTreesClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, token);
     }
 
-    public TreeClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+    public KBaseTreesClient(URL url, String user, String password) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, user, password);
     }
 
@@ -81,7 +76,7 @@ public class TreeClient {
         args.add(tree);
         args.add(replacements);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.replace_node_names", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.replace_node_names", args, retType, true, false);
         return res.get(0);
     }
 
@@ -104,7 +99,7 @@ public class TreeClient {
         args.add(tree);
         args.add(removalList);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.remove_node_names_and_simplify", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.remove_node_names_and_simplify", args, retType, true, false);
         return res.get(0);
     }
 
@@ -127,7 +122,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.merge_zero_distance_leaves", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.merge_zero_distance_leaves", args, retType, true, false);
         return res.get(0);
     }
 
@@ -145,7 +140,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.extract_leaf_node_names", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_leaf_node_names", args, retType, true, false);
         return res.get(0);
     }
 
@@ -165,7 +160,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.extract_node_names", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_node_names", args, retType, true, false);
         return res.get(0);
     }
 
@@ -183,7 +178,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<Long>> retType = new TypeReference<List<Long>>() {};
-        List<Long> res = caller.jsonrpcCall("Tree.get_node_count", args, retType, true, false);
+        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_node_count", args, retType, true, false);
         return res.get(0);
     }
 
@@ -203,7 +198,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<Long>> retType = new TypeReference<List<Long>>() {};
-        List<Long> res = caller.jsonrpcCall("Tree.get_leaf_count", args, retType, true, false);
+        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_leaf_count", args, retType, true, false);
         return res.get(0);
     }
 
@@ -253,7 +248,7 @@ public class TreeClient {
         args.add(treeId);
         args.add(options);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.get_tree", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.get_tree", args, retType, true, false);
         return res.get(0);
     }
 
@@ -291,7 +286,7 @@ public class TreeClient {
         args.add(alignmentId);
         args.add(options);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.get_alignment", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.get_alignment", args, retType, true, false);
         return res.get(0);
     }
 
@@ -305,7 +300,7 @@ public class TreeClient {
      * CDS for just the field you need using the CDMI.
      * </pre>
      * @param   treeIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.TreeMetaData TreeMetaData}
+     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.kbasetrees.TreeMetaData TreeMetaData}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
@@ -313,7 +308,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(treeIds);
         TypeReference<List<Map<String,TreeMetaData>>> retType = new TypeReference<List<Map<String,TreeMetaData>>>() {};
-        List<Map<String,TreeMetaData>> res = caller.jsonrpcCall("Tree.get_tree_data", args, retType, true, false);
+        List<Map<String,TreeMetaData>> res = caller.jsonrpcCall("KBaseTrees.get_tree_data", args, retType, true, false);
         return res.get(0);
     }
 
@@ -327,7 +322,7 @@ public class TreeClient {
      * CDS for just the field you need using the CDMI.
      * </pre>
      * @param   alignmentIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.AlignmentMetaData AlignmentMetaData}
+     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.kbasetrees.AlignmentMetaData AlignmentMetaData}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
@@ -335,7 +330,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(alignmentIds);
         TypeReference<List<Map<String,AlignmentMetaData>>> retType = new TypeReference<List<Map<String,AlignmentMetaData>>>() {};
-        List<Map<String,AlignmentMetaData>> res = caller.jsonrpcCall("Tree.get_alignment_data", args, retType, true, false);
+        List<Map<String,AlignmentMetaData>> res = caller.jsonrpcCall("KBaseTrees.get_alignment_data", args, retType, true, false);
         return res.get(0);
     }
 
@@ -354,7 +349,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(featureIds);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.get_tree_ids_by_feature", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.get_tree_ids_by_feature", args, retType, true, false);
         return res.get(0);
     }
 
@@ -373,7 +368,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(proteinSequenceIds);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.get_tree_ids_by_protein_sequence", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.get_tree_ids_by_protein_sequence", args, retType, true, false);
         return res.get(0);
     }
 
@@ -392,7 +387,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(featureIds);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.get_alignment_ids_by_feature", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.get_alignment_ids_by_feature", args, retType, true, false);
         return res.get(0);
     }
 
@@ -411,7 +406,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(proteinSequenceIds);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("Tree.get_alignment_ids_by_protein_sequence", args, retType, true, false);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.get_alignment_ids_by_protein_sequence", args, retType, true, false);
         return res.get(0);
     }
 
@@ -436,7 +431,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(pattern);
         TypeReference<List<List<List<String>>>> retType = new TypeReference<List<List<List<String>>>>() {};
-        List<List<List<String>>> res = caller.jsonrpcCall("Tree.get_tree_ids_by_source_id_pattern", args, retType, true, false);
+        List<List<List<String>>> res = caller.jsonrpcCall("KBaseTrees.get_tree_ids_by_source_id_pattern", args, retType, true, false);
         return res.get(0);
     }
 
@@ -455,7 +450,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(treeId);
         TypeReference<List<Map<String,String>>> retType = new TypeReference<List<Map<String,String>>>() {};
-        List<Map<String,String>> res = caller.jsonrpcCall("Tree.get_leaf_to_protein_map", args, retType, true, false);
+        List<Map<String,String>> res = caller.jsonrpcCall("KBaseTrees.get_leaf_to_protein_map", args, retType, true, false);
         return res.get(0);
     }
 
@@ -474,7 +469,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(treeId);
         TypeReference<List<Map<String,String>>> retType = new TypeReference<List<Map<String,String>>>() {};
-        List<Map<String,String>> res = caller.jsonrpcCall("Tree.get_leaf_to_feature_map", args, retType, true, false);
+        List<Map<String,String>> res = caller.jsonrpcCall("KBaseTrees.get_leaf_to_feature_map", args, retType, true, false);
         return res.get(0);
     }
 
@@ -490,8 +485,8 @@ public class TreeClient {
      * for additional details on specifying the input parameters and handling the results.
      * [1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
      * </pre>
-     * @param   abundanceParams   instance of type {@link us.kbase.tree.AbundanceParams AbundanceParams}
-     * @return   parameter "abundance_result" of type {@link us.kbase.tree.AbundanceResult AbundanceResult}
+     * @param   abundanceParams   instance of type {@link us.kbase.kbasetrees.AbundanceParams AbundanceParams}
+     * @return   parameter "abundance_result" of type {@link us.kbase.kbasetrees.AbundanceResult AbundanceResult}
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
@@ -499,7 +494,7 @@ public class TreeClient {
         List<Object> args = new ArrayList<Object>();
         args.add(abundanceParams);
         TypeReference<List<AbundanceResult>> retType = new TypeReference<List<AbundanceResult>>() {};
-        List<AbundanceResult> res = caller.jsonrpcCall("Tree.compute_abundance_profile", args, retType, true, false);
+        List<AbundanceResult> res = caller.jsonrpcCall("KBaseTrees.compute_abundance_profile", args, retType, true, false);
         return res.get(0);
     }
 
@@ -515,7 +510,7 @@ public class TreeClient {
      * - if a value is not a valid number, it is ignored
      * </pre>
      * @param   abundanceData   instance of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
-     * @param   filterParams   instance of type {@link us.kbase.tree.FilterParams FilterParams}
+     * @param   filterParams   instance of type {@link us.kbase.kbasetrees.FilterParams FilterParams}
      * @return   parameter "abundance_data_processed" of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
@@ -525,7 +520,7 @@ public class TreeClient {
         args.add(abundanceData);
         args.add(filterParams);
         TypeReference<List<Map<String,Map<String,Double>>>> retType = new TypeReference<List<Map<String,Map<String,Double>>>>() {};
-        List<Map<String,Map<String,Double>>> res = caller.jsonrpcCall("Tree.filter_abundance_profile", args, retType, true, false);
+        List<Map<String,Map<String,Double>>> res = caller.jsonrpcCall("KBaseTrees.filter_abundance_profile", args, retType, true, false);
         return res.get(0);
     }
 
@@ -546,7 +541,25 @@ public class TreeClient {
         args.add(tree);
         args.add(displayOptions);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("Tree.draw_html_tree", args, retType, true, false);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.draw_html_tree", args, retType, true, false);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: construct_species_tree</p>
+     * <pre>
+     * Build a species tree out of a set of given genome references.
+     * </pre>
+     * @param   input   instance of type {@link us.kbase.kbasetrees.ConstructSpeciesTreeParams ConstructSpeciesTreeParams}
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String constructSpeciesTree(ConstructSpeciesTreeParams input) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(input);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_species_tree", args, retType, true, true);
         return res.get(0);
     }
 }
