@@ -38,8 +38,9 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	private String wsUrl;
 	
 	public static void main(String[] args) throws Exception {
-		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(new File("temp_files"), new File("data"), null);
-		System.out.println(stb.makeTreeForBasicCogs());
+		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
+				new File("temp_files"), new File("data"), null);
+		System.out.println(stb.makeTreeForBasicCogs(true));
 	}
 	
 	@Override
@@ -54,7 +55,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	}
 	
 	private SpeciesTreeBuilder init(File tempDir, File dataDir, String wsUrl) {
-		System.out.println(getClass().getName() + ": tempDir=" + tempDir + ", dataDir=" + dataDir + ", ws=" + wsUrl);
+		System.out.println(getClass().getName() + ": tempDir=" + tempDir + ", " +
+				"dataDir=" + dataDir + ", ws=" + wsUrl);
 		this.tempDir = tempDir;
 		if (!tempDir.exists())
 			tempDir.mkdir();
@@ -88,9 +90,10 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	@Override
 	public void run(String token, ConstructSpeciesTreeParams inputData,
 			String jobId, String outRef) throws Exception {
-		String treeText = makeTreeForBasicCogs();
+		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && inputData.getUseRibosomalS9Only() == 1L;
+		String treeText = makeTreeForBasicCogs(useCog103Only);
 		SpeciesTree tree = new SpeciesTree().withSpeciesTree(treeText)
-				.withAlignmentRef("").withCogs(loadCogsCodes())
+				.withAlignmentRef("").withCogs(loadCogsCodes(useCog103Only))
 				.withIdMap(Collections.<String, Tuple2 <String, String>>emptyMap());
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree);
@@ -112,8 +115,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	}
 
 	
-	public String makeTreeForBasicCogs() throws Exception {
-		Map<String, String> aln = concatCogAlignments();
+	public String makeTreeForBasicCogs(boolean useCog103Only) throws Exception {
+		Map<String, String> aln = concatCogAlignments(useCog103Only);
 		File tempFile = File.createTempFile("aln", ".faa", tempDir);
 		FastaWriter fw = new FastaWriter(tempFile);
 		for (Map.Entry<String, String> entry : aln.entrySet())
@@ -178,7 +181,9 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return new File(dataDir, "cogs");
 	}
 	
-	private List<String> loadCogsCodes() throws IOException {
+	private List<String> loadCogsCodes(boolean useCog103Only) throws IOException {
+		if (useCog103Only)
+			return Arrays.asList("103");
 		File inputList = new File(getCogsDir(), "cog_list.txt");
 		List<String> cogCodes = new ArrayList<String>();
 		BufferedReader br = new BufferedReader(new FileReader(inputList));
@@ -203,14 +208,14 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return aln;
 	}
 	
-	private Map<String, String> concatCogAlignments() throws IOException {
+	private Map<String, String> concatCogAlignments(boolean useCog103Only) throws IOException {
 		Map<String, String> concat = new TreeMap<String, String>();
 		Set<String> commonIdSet = new HashSet<String>();
-		for (String cogCode : loadCogsCodes()) {
+		for (String cogCode : loadCogsCodes(useCog103Only)) {
 			Map<String, String> aln = loadCogAlignment(cogCode);
 			commonIdSet.addAll(aln.keySet());
 		}
-		for (String cogCode : loadCogsCodes()) {
+		for (String cogCode : loadCogsCodes(useCog103Only)) {
 			Map<String, String> aln = loadCogAlignment(cogCode);
 			int alnLen = aln.get(aln.keySet().iterator().next()).length();
 			for (String taxId : commonIdSet) {

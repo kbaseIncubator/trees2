@@ -19,6 +19,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *         new_genomes - (required) the list of genome references to use in constructing a tree
  *         out_workspace - (required) the workspace to deposit the completed tree
  *         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
+ *         use_ribosomal_s9_only - optional parameter, 1 means only one protein family (Ribosomal S9) is used for 
+ *             tree construction rather than all 49 improtant families
  * </pre>
  * 
  */
@@ -27,7 +29,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "new_genomes",
     "out_workspace",
-    "out_tree_id"
+    "out_tree_id",
+    "use_ribosomal_s9_only"
 })
 public class ConstructSpeciesTreeParams {
 
@@ -37,6 +40,8 @@ public class ConstructSpeciesTreeParams {
     private java.lang.String outWorkspace;
     @JsonProperty("out_tree_id")
     private java.lang.String outTreeId;
+    @JsonProperty("use_ribosomal_s9_only")
+    private Long useRibosomalS9Only;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("new_genomes")
@@ -84,6 +89,21 @@ public class ConstructSpeciesTreeParams {
         return this;
     }
 
+    @JsonProperty("use_ribosomal_s9_only")
+    public Long getUseRibosomalS9Only() {
+        return useRibosomalS9Only;
+    }
+
+    @JsonProperty("use_ribosomal_s9_only")
+    public void setUseRibosomalS9Only(Long useRibosomalS9Only) {
+        this.useRibosomalS9Only = useRibosomalS9Only;
+    }
+
+    public ConstructSpeciesTreeParams withUseRibosomalS9Only(Long useRibosomalS9Only) {
+        this.useRibosomalS9Only = useRibosomalS9Only;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -96,7 +116,7 @@ public class ConstructSpeciesTreeParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((("ConstructSpeciesTreeParams"+" [newGenomes=")+ newGenomes)+", outWorkspace=")+ outWorkspace)+", outTreeId=")+ outTreeId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("ConstructSpeciesTreeParams"+" [newGenomes=")+ newGenomes)+", outWorkspace=")+ outWorkspace)+", outTreeId=")+ outTreeId)+", useRibosomalS9Only=")+ useRibosomalS9Only)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

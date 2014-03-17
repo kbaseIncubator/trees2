@@ -638,11 +638,14 @@ module KBaseTrees
         new_genomes - (required) the list of genome references to use in constructing a tree
         out_workspace - (required) the workspace to deposit the completed tree
         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
+        use_ribosomal_s9_only - optional parameter, 1 means only one protein family (Ribosomal S9) is used for 
+            tree construction rather than all 49 improtant families
     */
     typedef structure {
         list<genome_ref> new_genomes;
         string out_workspace;
         string out_tree_id;
+        int use_ribosomal_s9_only;
     } ConstructSpeciesTreeParams;
 
     /* A string representing a job id for manipulating trees. This is an id for a job that is
