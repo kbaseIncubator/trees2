@@ -1,10 +1,15 @@
 ##################################################################################
-# configurable variables which can be updated
+# Service name variables for the new Java-based service and the old Perl-based service
 SERVICE = trees
 SERV_SERVICE = trees
-SERVICE_NAME = Tree
-SERVICE_PSGI_FILE = Tree.psgi
+
+SERVICE_NAME = KBaseTrees
 SERVICE_PORT = 7047
+
+PERL_SERVICE_NAME = Tree
+PERL_SERVICE_PSGI_FILE = Tree.psgi
+PERL_SERVICE_PORT = 50000
+
 
 ##################################################################################
 #Additional configuration variables which are pulled from the environment
@@ -30,22 +35,37 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 # default target is all, which compiles the typespec and builds documentation
 default: all
 
-all: compile-typespec  build-docs
+all: compile-typespec compile-perl-typespec build-docs
+	# note: we do not fail here if java compilation does not work
+	-ant compile -Djarsdir=../jars/lib/jars
 
-compile-typespec:
+setup-lib-dir:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
 	mkdir -p lib/javascript/$(SERVICE_NAME)
-	mkdir -p scripts
+
+compile-typespec: setup-lib-dir
 	compile_typespec \
-		--psgi $(SERVICE_PSGI_FILE) \
-		--impl Bio::KBase::$(SERVICE_NAME)::$(SERVICE_NAME)Impl \
-		--service Bio::KBase::$(SERVICE_NAME)::Service \
 		--client Bio::KBase::$(SERVICE_NAME)::Client \
 		--py biokbase/$(SERVICE_NAME)/Client \
 		--js javascript/$(SERVICE_NAME)/Client \
-		--url https://kbase.us/services/tree \
+		--url https://kbase.us/services/trees \
 		$(SERVICE_NAME).spec lib
+	rm -f lib/KBaseTrees*.py
+	rm -f lib/KBaseTrees*.pm
+
+build-java-classes:
+	gen_java_types -s src -S ./KBaseTrees.spec
+
+# compile old perl service so that it can run locally
+compile-perl-typespec: setup-lib-dir
+	compile_typespec \
+		--psgi $(PERL_SERVICE_PSGI_FILE) \
+		--impl Bio::KBase::$(PERL_SERVICE_NAME)::$(PERL_SERVICE_NAME)Impl \
+		--service Bio::KBase::$(PERL_SERVICE_NAME)::Service \
+		$(PERL_SERVICE_NAME).spec lib
 	rm -f lib/Tree*.py
+	rm -f lib/TreeClient.js
+	rm -f lib/TreeClient.pm
 
 build-docs: compile-typespec
 	mkdir -p docs
@@ -143,6 +163,7 @@ deploy-client:
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/biokbase/$(SERVICE_NAME)/* $(TARGET)/lib/biokbase/$(SERVICE_NAME)/.
 	cp lib/javascript/$(SERVICE_NAME)/* $(TARGET)/lib/javascript/$(SERVICE_NAME)/.
+	cp dist/KBaseTrees.jar $(TARGET)/lib/.
 	echo "deployed clients of $(SERVICE)."
 	
 deploy-scripts:
@@ -167,40 +188,52 @@ deploy-docs:
 	mkdir -p $(SERVICE_DIR)/webroot
 	cp docs/*.html $(SERVICE_DIR)/webroot/.
 
-# deploys all libraries and scripts needed to start the service
-deploy-service: cpp-lib deploy-service-libs deploy-service-start_scripts
 
-deploy-service-libs:
-	# copy over the general purpose libs
+# deploys all libraries and scripts needed to start/stop the service
+deploy-service: deploy-java-service deploy-service-start_scripts
+
+prepare-deploy-target:
+	mkdir -p $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(SERVICE_DIR)
-	cp lib/Bio/KBase/$(SERVICE_NAME)/Service.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	cp lib/Bio/KBase/$(SERVICE_NAME)/$(SERVICE_NAME)Impl.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	cp lib/$(SERVICE_PSGI_FILE) $(TARGET)/lib/.
 	cp deploy.cfg $(SERVICE_DIR)/.
-	# copy over tree specific libs
-	cp lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/$(SERVICE_NAME)/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	-cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.so $(TARGET)/lib/.
-	#cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.bundle $(TARGET)/lib/.
-	#cp lib/Bio/KBase/$(SERVICE_NAME)/ForesterParserWrapper.pm $(TARGET)/lib/Bio/KBase/Tree/.
-	#cp lib/forester_1005.jar $(TARGET)/lib/.
-	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	cp lib/Bio/KBase/$(SERVICE_NAME)/Community.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
-	echo "deployed service for $(SERVICE)."
 
-# creates start/stop/reboot scripts and copies them to the deployment target
-deploy-service-start_scripts: build-perl-service-start-stop-scripts
-	mkdir -pv $(SERVICE_DIR)
-	mkdir -pv $(SERVICE_DIR)/log
-	cp service/*_perl_service $(SERVICE_DIR)/
+#deploys the java service only (without start/stop scripts)
+deploy-java-service: deploy-perl-service prepare-deploy-target
+	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg
+	cp dist/KBaseTreesService.war $(SERVICE_DIR)/.
 
-#####
-# Temporary 
-PERL_SERVICE_PORT = 50000
+#deploys the internal perl service only (without start/stop scripts)
+deploy-perl-service: cpp-lib prepare-deploy-target
+	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/Service.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
+	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/$(PERL_SERVICE_NAME)Impl.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
+	cp lib/$(PERL_SERVICE_PSGI_FILE) $(TARGET)/lib/.
+	cp lib/KBTree_cpp_lib/lib/perl_interface/Bio/KBase/$(PERL_SERVICE_NAME)/TreeCppUtil.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
+	cp lib/KBTree_cpp_lib/lib/perl_interface/TreeCppUtil.* $(TARGET)/lib/.
+	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
+	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/Community.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
+
+
+
+
+
+# creates start/stop scripts and copies them to the deployment target
+deploy-service-start_scripts: build-service-start-stop-scripts
+	cp service/* $(SERVICE_DIR)/.
+
+build-service-start-stop-scripts: build-perl-service-start-stop-scripts
+	mkdir -pv service
+	echo '#!/bin/sh' > ./service/start_service
+	echo "./start_perl_service" >> ./service/start_service
+	echo "./glassfish_start_service" >> ./service/start_service
+	echo '#!/bin/sh' > ./service/stop_service
+	echo "./stop_perl_service" >> ./service/stop_service
+	echo "./glassfish_stop_service" >> ./service/stop_service
+	chmod +x service/start_service service/stop_service
 
 build-perl-service-start-stop-scripts:
 	# First create the start script (should be a better way to do this...)
-	echo '#!/bin/sh' > ./start_service
+	echo '#!/bin/sh' > ./start_perl_service
 	echo "echo starting $(SERVICE) service." >> ./start_perl_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./start_perl_service
 	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_perl_service
@@ -220,7 +253,7 @@ build-perl-service-start-stop-scripts:
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --workers 1 \\" >> ./debug_start_perl_service
 	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_perl_service
 	# Third create the stop script
-	echo '#!/bin/sh' > ./stop_service
+	echo '#!/bin/sh' > ./stop_perl_service
 	echo "echo trying to stop $(SERVICE) service." >> ./stop_perl_service
 	echo "pid_file=$(PID_FILE)" >> ./stop_perl_service
 	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_perl_service
@@ -231,6 +264,16 @@ build-perl-service-start-stop-scripts:
 	mv -f start_perl_service service/start_perl_service
 	mv -f debug_start_perl_service service/debug_start_perl_service
 	mv -f stop_perl_service service/stop_perl_service
+
+
+
+
+
+
+
+
+
+
 
 
 # this undeploy target is a custom hack for Trees
