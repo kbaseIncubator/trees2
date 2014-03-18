@@ -4,8 +4,8 @@ use warnings;
 use Getopt::Long;
 use Data::Dumper;
 
-use Bio::KBase::Tree::Client;
-use Bio::KBase::Tree::Util qw(get_tree_client);
+use Bio::KBase::KBaseTrees::Client;
+use Bio::KBase::KBaseTrees::Util qw(get_tree_client);
 
 my $DESCRIPTION =
 "

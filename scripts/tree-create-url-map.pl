@@ -3,8 +3,8 @@ use strict;
 use warnings;
 use Getopt::Long;
 
-use Bio::KBase::Tree::Client;
-use Bio::KBase::Tree::Util qw(getTreeURL);
+use Bio::KBase::KBaseTrees::Client;
+use Bio::KBase::KBaseTrees::Util qw(getTreeURL);
 
 my $DESCRIPTION =
 "
