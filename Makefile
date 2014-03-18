@@ -1,10 +1,12 @@
 ##################################################################################
 # Service name variables for the new Java-based service and the old Perl-based service
 SERVICE = trees
-SERV_SERVICE = trees
 
 SERVICE_NAME = KBaseTrees
 SERVICE_PORT = 7047
+THREADPOOL_SIZE = 20
+MEMORY = 1000
+MAX_MEMORY = 1500
 
 PERL_SERVICE_NAME = Tree
 PERL_SERVICE_PSGI_FILE = Tree.psgi
@@ -16,6 +18,9 @@ PERL_SERVICE_PORT = 50000
 TOP_DIR = ../..
 DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
+
+GLASSFISH_HOME ?= $(DEPLOY_RUNTIME)/glassfish3
+ASADMIN = $(GLASSFISH_HOME)/glassfish/bin/asadmin
 
 #for the reboot_service script, we need to get a path to dev_container/modules/trees.  We can do this  simply
 #by getting the absolute path to this makefile.  Note that old versions of make might not support this line.
@@ -163,7 +168,7 @@ deploy-client:
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/biokbase/$(SERVICE_NAME)/* $(TARGET)/lib/biokbase/$(SERVICE_NAME)/.
 	cp lib/javascript/$(SERVICE_NAME)/* $(TARGET)/lib/javascript/$(SERVICE_NAME)/.
-	cp dist/KBaseTrees.jar $(TARGET)/lib/.
+	-cp dist/KBaseTrees.jar $(TARGET)/lib/.
 	echo "deployed clients of $(SERVICE)."
 	
 deploy-scripts:
@@ -196,6 +201,7 @@ prepare-deploy-target:
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(SERVICE_DIR)
+	mkdir -p $(SERVICE_DIR)/log
 	cp deploy.cfg $(SERVICE_DIR)/.
 
 #deploys the java service only (without start/stop scripts)
@@ -213,10 +219,6 @@ deploy-perl-service: cpp-lib prepare-deploy-target
 	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
 	cp lib/Bio/KBase/$(PERL_SERVICE_NAME)/Community.pm $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)/.
 
-
-
-
-
 # creates start/stop scripts and copies them to the deployment target
 deploy-service-start_scripts: build-service-start-stop-scripts
 	cp service/* $(SERVICE_DIR)/.
@@ -225,10 +227,18 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	mkdir -pv service
 	echo '#!/bin/sh' > ./service/start_service
 	echo "./start_perl_service" >> ./service/start_service
-	echo "./glassfish_start_service" >> ./service/start_service
+	echo "export KB_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deployment.cfg" >> ./service/start_service
+	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
+	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
+	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
+	 --threads $(THREADPOOL_SIZE) --Xms $(MEMORY) --Xmx $(MAX_MEMORY)\
+	 --noparallelgc --properties KB_DEPLOYMENT_CONFIG=\$$KB_DEPLOYMENT_CONFIG"\
+	 >> ./service/start_service
 	echo '#!/bin/sh' > ./service/stop_service
 	echo "./stop_perl_service" >> ./service/stop_service
-	echo "./glassfish_stop_service" >> ./service/stop_service
+	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
+	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
+	 --port $(SERVICE_PORT)" >> ./service/stop_service
 	chmod +x service/start_service service/stop_service
 
 build-perl-service-start-stop-scripts:
@@ -242,7 +252,7 @@ build-perl-service-start-stop-scripts:
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_perl_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
-	echo "  $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./start_perl_service
+	echo "  $(TARGET)/lib/$(PERL_SERVICE_PSGI_FILE)" >> ./start_perl_service
 	echo "echo $(SERVICE_NAME) service is listening on port $(PERL_SERVICE_PORT).\n" >> ./start_perl_service
 	# Second, create a debug start script that is not daemonized
 	echo '#!/bin/sh' > ./debug_start_perl_service
@@ -251,7 +261,7 @@ build-perl-service-start-stop-scripts:
 	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./debug_start_perl_service
 	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./debug_start_perl_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --workers 1 \\" >> ./debug_start_perl_service
-	echo "    $(TARGET)/lib/$(SERVICE_PSGI_FILE)" >> ./debug_start_perl_service
+	echo "    $(TARGET)/lib/$(PERL_SERVICE_PSGI_FILE)" >> ./debug_start_perl_service
 	# Third create the stop script
 	echo '#!/bin/sh' > ./stop_perl_service
 	echo "echo trying to stop $(SERVICE) service." >> ./stop_perl_service
@@ -264,15 +274,6 @@ build-perl-service-start-stop-scripts:
 	mv -f start_perl_service service/start_perl_service
 	mv -f debug_start_perl_service service/debug_start_perl_service
 	mv -f stop_perl_service service/stop_perl_service
-
-
-
-
-
-
-
-
-
 
 
 
@@ -298,15 +299,17 @@ undeploy-script-wrappers:
 
 
 # remove files generated within this directory and dev_container/bin
-clean: clean-dev-container-script-wrappers
+clean:
 	cd lib/KBTree_cpp_lib; make clean DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
 	rm -f lib/Bio/KBase/$(SERVICE_NAME)/Client.pm
-	rm -f lib/Bio/KBase/$(SERVICE_NAME)/Service.pm
-	rm -f lib/$(SERVICE_PSGI_FILE)
+	rm -f lib/$(PERL_SERVICE_PSGI_FILE)
 	rm -rf lib/biokbase
 	rm -rf lib/javascript
 	rm -rf docs
-	rm -f start_service stop_service reboot_service debug_start_service
+	rm -rf dist
+	rm -rf classes
+	rm -f service/start_service service/stop_service
+	rm -f service/start_perl_service service/stop_perl_service service/debug_start_perl_service
 
 clean-dev-container-script-wrappers:
 	$(TOOLS_DIR)/deploy-wrappers \
