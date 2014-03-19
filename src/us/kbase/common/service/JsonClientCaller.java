@@ -126,7 +126,7 @@ public class JsonClientCaller {
 		};
 		writeRequestData(method, arg, os, id);
 		// Set content-length
-		conn.setFixedLengthStreamingMode((int)sizeWrapper[0]);
+		conn.setFixedLengthStreamingMode(sizeWrapper[0]);
 		// Write real data into http output stream
 		writeRequestData(method, arg, new UnclosableOutputStream(conn.getOutputStream()), id);
 		// Read response
