@@ -35,7 +35,7 @@ public class TreeServerPlaying {
 		cl.setAuthAllowedForHttp(true);
 		String workspace = "rsutormin";
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace(workspace)
-				.withNewGenomes(Collections.<String>emptyList()));
+				.withNewGenomes(Collections.<String>emptyList()).withUseRibosomalS9Only(1L));
 		System.out.println("Job id: " + jobId);
 		long time = System.currentTimeMillis();
 		UserAndJobStateClient jscl = createJobClient("rsutormin", pwd);

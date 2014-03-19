@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import us.kbase.auth.AuthToken;
@@ -24,6 +27,7 @@ import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.common.taskqueue.TaskRunner;
+import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
@@ -54,9 +58,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 				queueCfg.getWsUrl());
 	}
 	
-	private SpeciesTreeBuilder init(File tempDir, File dataDir, String wsUrl) {
-		System.out.println(getClass().getName() + ": tempDir=" + tempDir + ", " +
-				"dataDir=" + dataDir + ", ws=" + wsUrl);
+	public SpeciesTreeBuilder init(File tempDir, File dataDir, String wsUrl) {
 		this.tempDir = tempDir;
 		if (!tempDir.exists())
 			tempDir.mkdir();
@@ -118,15 +120,30 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	public String makeTreeForBasicCogs(boolean useCog103Only) throws Exception {
 		Map<String, String> aln = concatCogAlignments(useCog103Only);
 		File tempFile = File.createTempFile("aln", ".faa", tempDir);
-		FastaWriter fw = new FastaWriter(tempFile);
-		for (Map.Entry<String, String> entry : aln.entrySet())
-			fw.write(entry.getKey(), entry.getValue());
-		fw.close();
-		return runFastTree(tempFile);
+		try {
+			FastaWriter fw = new FastaWriter(tempFile);
+			for (Map.Entry<String, String> entry : aln.entrySet())
+				fw.write(entry.getKey(), entry.getValue());
+			fw.close();
+			return runFastTree(tempFile);
+		} finally {
+			try { tempFile.delete(); } catch (Exception ignore) {}
+		}
 	}
 	
 	private File getFastTreeBin() {
-		File bin = new File(dataDir, "bin");
+		return new File(new File(dataDir, "bin"), "FastTree." + getOsSuffix());
+	}
+
+	private File getFormatRpsDbBin() {
+		return new File(new File(dataDir, "bin"), "makeprofiledb." + getOsSuffix());
+	}
+
+	private File getRpsBlastBin() {
+		return new File(new File(dataDir, "bin"), "rpsblast." + getOsSuffix());
+	}
+
+	private String getOsSuffix() {
 		String osName = System.getProperty("os.name").toLowerCase();
 		String suffix;
 		if (osName.contains("linux")) {
@@ -136,7 +153,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		} else {
 			throw new IllegalStateException("Unsupported OS type: " + osName);
 		}
-		return new File(bin, "FastTree." + suffix);
+		return suffix;
 	}
 	
 	private String runFastTree(File input) throws Exception {
@@ -199,9 +216,9 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return cogCodes;
 	}
 	
-	private Map<String, String> loadCogAlignment(String cogCode) throws IOException {
+	public Map<String, String> loadCogAlignment(String cogCode) throws IOException {
 		GZIPInputStream is = new GZIPInputStream(new FileInputStream(
-				new File(getCogsDir(), "COG" + cogCode + ".trim.faa.gz")));
+				new File(getCogsDir(), "COG" + cogCode + ".faa.gz")));
 		FastaReader fr = new FastaReader(new InputStreamReader(is));
 		Map<String, String> aln = fr.readAll();
 		fr.close();
@@ -216,7 +233,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 			commonIdSet.addAll(aln.keySet());
 		}
 		for (String cogCode : loadCogsCodes(useCog103Only)) {
-			Map<String, String> aln = loadCogAlignment(cogCode);
+			Map<String, String> aln = trimAlignment(loadCogAlignment(cogCode));
 			int alnLen = aln.get(aln.keySet().iterator().next()).length();
 			for (String taxId : commonIdSet) {
 				String seq = aln.get(taxId);
@@ -232,5 +249,129 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 			}
 		}
 		return concat;
+	}
+	
+	public File formatRpsDb(List<File> scorematFiles) throws Exception {
+		File tempInputFile = File.createTempFile("rps", ".db", tempDir);
+		PrintWriter pw = new PrintWriter(tempInputFile);
+		for (File f : scorematFiles) {
+			pw.println(f.getAbsolutePath());
+		}
+		pw.close();
+		CorrectProcess cp = null;
+		ByteArrayOutputStream errBaos = null;
+		Exception err = null;
+		String binPath = getFormatRpsDbBin().getAbsolutePath();
+		int procExitValue = -1;
+		try {
+			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
+					"-in", tempInputFile.getAbsolutePath(), "-threshold", "9.82", 
+					"-scale", "100.0", "-dbtype", "rps", "-index", "true"));
+			errBaos = new ByteArrayOutputStream();
+			cp = new CorrectProcess(p, null, "formatrpsdb", errBaos, "");
+			p.waitFor();
+			errBaos.close();
+			procExitValue = p.exitValue();
+		} catch(Exception ex) {
+			try{ 
+				errBaos.close(); 
+			} catch (Exception ignore) {}
+			try{ 
+				if(cp!=null) 
+					cp.destroy(); 
+			} catch (Exception ignore) {}
+			err = ex;
+		}
+		if (errBaos != null) {
+			String err_text = new String(errBaos.toByteArray());
+			if (err_text.length() > 0)
+				err = new Exception("FastTree: " + err_text, err);
+		}
+		if (procExitValue != 0) {
+			if (err == null)
+				err = new IllegalStateException("FastTree exit code: " + procExitValue);
+			throw err;
+		}
+		return tempInputFile;
+	}
+	
+	public File runRpsBlast(File dbFile, File fastaQuery) throws Exception {
+		File tempOutputFile = File.createTempFile("rps", ".tab", tempDir);
+		CorrectProcess cp = null;
+		ByteArrayOutputStream errBaos = null;
+		Exception err = null;
+		String binPath = getRpsBlastBin().getAbsolutePath();
+		int procExitValue = -1;
+		FileOutputStream fos = new FileOutputStream(tempOutputFile);
+		try {
+			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
+					"-db", dbFile.getAbsolutePath(), "-query", fastaQuery.getAbsolutePath(), 
+					"-outfmt", "6 qseqid stitle qstart qseq sstart sseq evalue bitscore pident", 
+					"-evalue", "1e-05"));
+			errBaos = new ByteArrayOutputStream();
+			cp = new CorrectProcess(p, fos, "", errBaos, "");
+			p.waitFor();
+			errBaos.close();
+			procExitValue = p.exitValue();
+		} catch(Exception ex) {
+			try{ 
+				errBaos.close(); 
+			} catch (Exception ignore) {}
+			try{ 
+				if(cp!=null) 
+					cp.destroy(); 
+			} catch (Exception ignore) {}
+			err = ex;
+		} finally {
+			try { fos.close(); } catch (Exception ignore) {}
+		}
+		if (errBaos != null) {
+			String err_text = new String(errBaos.toByteArray());
+			if (err_text.length() > 0)
+				err = new Exception("FastTree: " + err_text, err);
+		}
+		if (procExitValue != 0) {
+			if (err == null)
+				err = new IllegalStateException("FastTree exit code: " + procExitValue);
+			throw err;
+		}
+		return tempOutputFile;
+	}
+	
+	public void processRpsOutput(File results, RpsBlastCallback callback) throws Exception {
+		BufferedReader br = new BufferedReader(new FileReader(results));
+		Pattern tabSep = Pattern.compile(Pattern.quote("\t"));
+		try {
+			while (true) {
+				String l = br.readLine();
+				if (l == null)
+					break;
+				if (l.trim().length() == 0)
+					continue;
+				String[] parts = tabSep.split(l);
+				String subj = parts[1].substring(0, parts[1].indexOf(','));
+				callback.next(parts[0], subj, Integer.parseInt(parts[2]), parts[3], 
+						Integer.parseInt(parts[4]), parts[5], parts[6], 
+						Double.parseDouble(parts[7]), Double.parseDouble(parts[8]));
+			}
+		} finally {
+			br.close();
+		}
+	}
+	
+	public void cleanDbFiles(File dbListFile) {
+		for (File f : dbListFile.getParentFile().listFiles()) {
+			if (f.getName().startsWith(dbListFile.getName()))
+				f.delete();
+		}
+	}
+
+	public static Map<String, String> trimAlignment(Map<String, String> aln) {
+		return AlignUtil.trimAlignment(aln, 0.5);
+	}
+
+	public static interface RpsBlastCallback {
+		public void next(String query, String subj, int qstart, String qseq, int sstart, String sseq, 
+				String evalue, double bitscore, double ident) throws Exception;
 	}
 }
