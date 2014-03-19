@@ -26,6 +26,10 @@ ASADMIN = $(GLASSFISH_HOME)/glassfish/bin/asadmin
 #by getting the absolute path to this makefile.  Note that old versions of make might not support this line.
 ROOT_DEV_MODULE_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
+# mark the commit and tag we are on for tracking deployments
+GITCOMMIT := $(shell git rev-parse --short HEAD)
+TAGS := $(shell git tag --contains $(GITCOMMIT))
+
 # including the common makefile gives us a handle to the service directory.  This is
 # where we will (for now) dump the service log files
 include $(TOP_DIR)/tools/Makefile.common
@@ -115,37 +119,15 @@ test: test-client test-scripts
 test-all: test-service test-client test-scripts
 
 test-client:
-	echo "running client tests"
-	# run each test
-	export TREE_DEPLOYMENT_CONFIG=$(ROOT_DEV_MODULE_DIR)/deploy.cfg; \
-	export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE); \
-	for t in $(CLIENT_TESTS) ; do \
-		if [ -f $$t ] ; then \
-			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
-			if [ $$? -ne 0 ] ; then \
-				exit 1 ; \
-			fi \
-		fi \
-	done
-
+	prove t/perl-tests/testBasicResponses.t
+	prove t/perl-tests/testIntrospectionMethods.t
+	prove t/perl-tests/testQueryMethods.t
 
 test-scripts:
-	echo "running script tests"
-	# run each test
-	export TREE_DEPLOYMENT_CONFIG=$(ROOT_DEV_MODULE_DIR)/deploy.cfg; \
-	export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE); \
-	for t in $(SCRIPT_TESTS) ; do \
-		if [ -f $$t ] ; then \
-			$(DEPLOY_RUNTIME)/bin/perl $$t ; \
-			if [ $$? -ne 0 ] ; then \
-				exit 1 ; \
-			fi \
-		fi \
-	done
+	prove t/perl-tests/testBasicScriptResponses.t
 
-	
 test-service:
-	$(DEPLOY_RUNTIME)/bin/perl t/server-tests/testServerUp.t
+	prove t/perl-tests/testServerUp.t
 
 
 
@@ -203,6 +185,8 @@ prepare-deploy-target:
 	mkdir -p $(SERVICE_DIR)
 	mkdir -p $(SERVICE_DIR)/log
 	cp deploy.cfg $(SERVICE_DIR)/.
+	echo $(GITCOMMIT) > $(SERVICE_DIR)/$(SERVICE).serverdist
+	echo $(TAGS) >> $(SERVICE_DIR)/$(SERVICE).serverdist
 
 #deploys the java service only (without start/stop scripts)
 deploy-java-service: deploy-perl-service prepare-deploy-target
