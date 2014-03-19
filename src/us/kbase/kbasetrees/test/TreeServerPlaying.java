@@ -24,21 +24,23 @@ import us.kbase.workspace.WorkspaceClient;
 public class TreeServerPlaying {
 	private static String ws2url = "http://140.221.84.209:7058/";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
+	private static String userId = "wjriehl";
 	private static String pwd = "xxxxx";
+	private static String wsId = "wjriehl:home";
 
 	public static void main(String[] args) throws Exception {
 		test();
 	}
 	
 	private static void test() throws Exception {
-		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://140.221.85.58:8284/"), "rsutormin", pwd);
+		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://140.221.85.58:8284/"), userId, pwd);
 		cl.setAuthAllowedForHttp(true);
-		String workspace = "rsutormin";
+		String workspace = wsId;
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace(workspace)
 				.withNewGenomes(Collections.<String>emptyList()).withUseRibosomalS9Only(1L));
 		System.out.println("Job id: " + jobId);
 		long time = System.currentTimeMillis();
-		UserAndJobStateClient jscl = createJobClient("rsutormin", pwd);
+		UserAndJobStateClient jscl = createJobClient(userId, pwd);
 		while (true) {
 			Tuple7<String, String, String, Long, String, Long, Long> data = jscl.getJobStatus(jobId);
 			String status = data.getE3();
@@ -48,7 +50,7 @@ public class TreeServerPlaying {
 			if (complete == 1L) {
 				if (wasError == 0L) {
 					String wsRef = jscl.getResults(jobId).getWorkspaceids().get(0);
-					WorkspaceClient wc = createWorkspaceClient("rsutormin", pwd);
+					WorkspaceClient wc = createWorkspaceClient(userId, pwd);
 					SpeciesTree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withRef(wsRef)))
 							.get(0).getData().asClassInstance(SpeciesTree.class);
 					System.out.println("Tree: " + tree.getSpeciesTree());
@@ -66,7 +68,7 @@ public class TreeServerPlaying {
 		return ret;
 	}
 
-	private static WorkspaceClient createWorkspaceClient(String user, String password)
+	public static WorkspaceClient createWorkspaceClient(String user, String password)
 			throws UnauthorizedException, IOException, MalformedURLException {
 		WorkspaceClient wc = new WorkspaceClient(new URL(ws2url), user, password);
 		wc.setAuthAllowedForHttp(true);

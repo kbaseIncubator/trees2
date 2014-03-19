@@ -8,7 +8,8 @@
   <property name="src" location="src"/>
   <property name="dist" location="dist"/>
   <property name="classes" location="classes"/>
-  <property name="war.file" value="TreeService.war"/>
+  <property name="jar.file" value="KBaseTrees.jar"/>
+  <property name="war.file" value="KBaseTreesService.war"/>
   <property name="war" value="war"/>
   <property name="war.lib" value="${war}/lib"/>
   <property name="prop.file.path" value="us/kbase/kbasetrees/config_path.properties"/>
@@ -29,7 +30,7 @@
     <include name="jackson/jackson-databind-2.2.3.jar"/>
     <include name="kbase/kbase-common-1394838813-5087b65.jar"/>
   </fileset>
-
+  
   <path id="compile.classpath">
     <fileset refid="serverlib"/>
   </path>
@@ -50,6 +51,19 @@
     <javac destdir="${classes}" includeantruntime="false" target="1.6" source="1.6" debug="true" classpathref="compile.classpath">
       <src path="${src}"/>
     </javac>
+    <!-- Copy resource files-->
+    <copy todir="${classes}">
+      <fileset dir="${src}">
+        <patternset>
+          <include name="**/*.properties"/>
+          <include name="**/*.spec"/>
+          <include name="**/*.instance.*"/>
+          <include name="**/*.instance"/>
+        </patternset>
+      </fileset>
+    </copy>
+    <!-- Make main jar file (includes dependencies, might want to make a stripped down version)-->
+    <jar destfile="${dist}/${jar.file}" basedir="${classes}"/>
   </target>
 
   <target name="war" depends="compile" description="build the WAR file. Assumes compile has been run">

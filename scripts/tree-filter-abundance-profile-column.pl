@@ -6,8 +6,8 @@ use Getopt::Long;
 use Data::Dumper;
 use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 
-use Bio::KBase::Tree::Client;
-use Bio::KBase::Tree::Util qw(get_tree_client);
+use Bio::KBase::KBaseTrees::Client;
+use Bio::KBase::KBaseTrees::Util qw(get_tree_client);
 
 my $DESCRIPTION =
 "
