@@ -63,17 +63,10 @@ ok($out=~m/\[leaf_count\]/g,'tree-get-tree with real treeId and -m flag returns 
 
 #######################################################
 # [tree-get-leaf-nodes] script tests
-$out = `echo '' | tree-get-leaf-nodes`;
-$exit_code = ($? >> 8);
-ok($exit_code!=0,'tree-get-leaf-nodes with no parameters returns error exit code that is not 0');
-ok($out,'tree-get-tree with no parameters returns a message');
-
 $out = `tree-get-leaf-nodes "(a,b,c,d,e,f,g)root;"`;
 $exit_code = ($? >> 8);
 ok($exit_code==0,'tree-get-leaf-nodes with a tree returned with error code 0');
 ok($out eq "a\nb\nc\nd\ne\nf\ng\n",'tree-get-leaf-nodes with a tree returns proper output');
-print $out."\n";
-print $exit_code."\n";
 
 #######################################################
 # [tree-find-tree-ids] script tests
