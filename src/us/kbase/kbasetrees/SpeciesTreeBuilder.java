@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import us.kbase.auth.AuthToken;
+import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
 import us.kbase.common.taskqueue.TaskQueueConfig;
@@ -31,6 +32,10 @@ import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
+import us.kbase.kbasegenomes.Feature;
+import us.kbase.kbasegenomes.Genome;
+import us.kbase.workspace.ObjectData;
+import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.WorkspaceClient;
@@ -39,7 +44,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	
 	private File tempDir;
 	private File dataDir;
-	private String wsUrl;
+	private ObjectStorage storage;
 	
 	public static void main(String[] args) throws Exception {
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
@@ -55,17 +60,38 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	@Override
 	public void init(TaskQueueConfig queueCfg, Map<String, String> configParams) {
 		init(getDirParam(configParams, "temp.dir"), getDirParam(configParams, "data.dir"),
-				queueCfg.getWsUrl());
+				createDefaultObjectStorage(queueCfg.getWsUrl()));
 	}
 	
-	public SpeciesTreeBuilder init(File tempDir, File dataDir, String wsUrl) {
+	public static ObjectStorage createDefaultObjectStorage(final String wsUrl) {
+		return new ObjectStorage() {
+			
+			@Override
+			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
+					String authToken, SaveObjectsParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
+				client.setAuthAllowedForHttp(true);
+				return client.saveObjects(params);
+			}
+			
+			@Override
+			public List<ObjectData> getObjects(String authToken,
+					List<ObjectIdentity> objectIds) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
+				client.setAuthAllowedForHttp(true);
+				return client.getObjects(objectIds);
+			}
+		};
+	}
+	
+	public SpeciesTreeBuilder init(File tempDir, File dataDir, ObjectStorage ws) {
 		this.tempDir = tempDir;
 		if (!tempDir.exists())
 			tempDir.mkdir();
 		this.dataDir = dataDir;
 		if (!dataDir.exists())
 			throw new IllegalStateException("Directory " + dataDir + " doesn't exist");
-		this.wsUrl = wsUrl;
+		this.storage = ws;
 		return this;
 	}
 
@@ -109,9 +135,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		} catch (NumberFormatException ex) {
 			data.withName(id);
 		}
-		WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(token));
-		client.setAuthAllowedForHttp(true);
-		client.saveObjects(new SaveObjectsParams().withWorkspace(ws).withObjects(
+		storage.saveObjects(token, new SaveObjectsParams().withWorkspace(ws).withObjects(
 				Arrays.asList(data)));
 		System.out.println("Tree data was saved into " + ws + "/" + id);
 	}
@@ -218,7 +242,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	
 	public Map<String, String> loadCogAlignment(String cogCode) throws IOException {
 		GZIPInputStream is = new GZIPInputStream(new FileInputStream(
-				new File(getCogsDir(), "COG" + cogCode + ".faa.gz")));
+				new File(getCogsDir(), "COG" + cogCode + ".trim.faa.gz")));
 		FastaReader fr = new FastaReader(new InputStreamReader(is));
 		Map<String, String> aln = fr.readAll();
 		fr.close();
@@ -366,10 +390,56 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		}
 	}
 
-	public static Map<String, String> trimAlignment(Map<String, String> aln) {
-		return AlignUtil.trimAlignment(aln, 0.5);
+	public Map<String, String> trimAlignment(Map<String, String> aln) {
+		return AlignUtil.trimAlignment(aln, 0.95);
 	}
 
+	private List<File> listScoreMatrixFiles(boolean useCog103Only) throws IOException {
+		List<File> ret = new ArrayList<File>();
+		for (String cog : loadCogsCodes(useCog103Only))
+			ret.add(new File(getCogsDir(), "rps.COG" + cog + ".smp"));
+		return ret;
+	}
+	
+	/*private Map<String, String> loadGenomeProteins(String token, String genomeRef, boolean useCog103Only) throws Exception {
+		Genome genome = storage.getObjects(token, 
+				Arrays.asList(new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
+		String genomeName = genome.getScientificName();
+		File fastaFile = File.createTempFile("proteome", "fasta", tempDir);
+		FastaWriter fw = new FastaWriter(fastaFile);
+		try {
+			for (Feature feat : genome.getFeatures()) {
+				String protName = feat.getId();
+				String seq = feat.getProteinTranslation();
+				if (seq == null || seq.length() == 0)
+					continue;
+				fw.write(protName, seq);
+			}
+		} finally {
+			try { fw.close(); } catch (Exception ignore) {}
+		}
+		File dbFile = formatRpsDb(Arrays.asList(smpF));
+		File tabFile = runRpsBlast(dbFile, fastaFile);
+		stb.cleanDbFiles(dbFile);
+		stb.processRpsOutput(tabFile, new SpeciesTreeBuilder.RpsBlastCallback() {
+			@Override
+			public void next(String query, String subj, int qstart, String qseq,
+					int sstart, String sseq, String evalue, double bitscore,
+					double ident) throws Exception {
+				int queryTaxId = Integer.parseInt(query);
+				if (taxSubst.containsKey(queryTaxId))
+					queryTaxId = taxSubst.get(queryTaxId);
+				if (!taxMap.containsKey(queryTaxId))
+					return;
+				if (outAln.containsKey(queryTaxId))
+					return;
+				String ret = AlignUtil.removeGapsFromSubject(consensusLen, qseq, sstart - 1, sseq);
+				outAln.put(queryTaxId, ret);
+			}
+		});
+		tabFile.delete();
+	}*/
+	
 	public static interface RpsBlastCallback {
 		public void next(String query, String subj, int qstart, String qseq, int sstart, String sseq, 
 				String evalue, double bitscore, double ident) throws Exception;

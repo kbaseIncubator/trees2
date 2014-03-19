@@ -128,7 +128,7 @@ public class JsonClientCaller {
 		// Set content-length
 		conn.setFixedLengthStreamingMode((int)sizeWrapper[0]);
 		// Write real data into http output stream
-		writeRequestData(method, arg, conn.getOutputStream(), id);
+		writeRequestData(method, arg, new UnclosableOutputStream(conn.getOutputStream()), id);
 		// Read response
 		int code = conn.getResponseCode();
 		conn.getResponseMessage();
@@ -342,6 +342,49 @@ public class JsonClientCaller {
 			if (isClosed)
 				return 0;
 			return inner.skip(n);
+		}
+	}
+	
+	private static class UnclosableOutputStream extends OutputStream {
+		OutputStream inner;
+		boolean isClosed = false;
+		
+		public UnclosableOutputStream(OutputStream inner) {
+			this.inner = inner;
+		}
+		
+		@Override
+		public void write(int b) throws IOException {
+			if (isClosed)
+				return;
+			inner.write(b);
+		}
+		
+		@Override
+		public void close() throws IOException {
+			if (isClosed)
+				return;
+			flush();
+			isClosed = true;
+		}
+		
+		@Override
+		public void flush() throws IOException {
+			inner.flush();
+		}
+		
+		@Override
+		public void write(byte[] b) throws IOException {
+			if (isClosed)
+				return;
+			inner.write(b);
+		}
+		
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			if (isClosed)
+				return;
+			inner.write(b, off, len);
 		}
 	}
 }
