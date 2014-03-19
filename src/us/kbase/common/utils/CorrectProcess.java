@@ -64,56 +64,56 @@ public class CorrectProcess extends Process {
 	public static String[] arr(String... items) {
 		return items;
 	}
-}
-
-class ProcessStreamHolder extends Thread {
-	InputStream is;
-	String type;
-	OutputStream os;
-	boolean must_stop = false;
-	boolean was_used = false;
-
-	public ProcessStreamHolder(InputStream is) {
-		this(is,"");
-	}
-	public ProcessStreamHolder(InputStream is, String type) {
-		this(is, type, null);
-	}
-	public ProcessStreamHolder(InputStream is, OutputStream redirect) {
-		this(is,"",redirect);
-	}
-	public ProcessStreamHolder(InputStream is, String type, OutputStream redirect) {
-		this.is = is;
-		this.type = type;
-		this.os = redirect;
-	}
-
-	public void run() {
-		try {
-			PrintStream pw = System.out;
-			if((os!=null)&&(os!=System.out)) pw = new PrintStream(os);
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			while(true) {
-				if(this.must_stop)break;
-				String line = br.readLine();
-				if(line==null)break;
-				pw.println(type+line);
-				pw.flush();
-				this.was_used = true;
-			}
-			if(pw!=System.out) pw.close();
-			else pw.flush();
-			br.close();
-		}catch (IOException ex) {
-			ex.printStackTrace();
-		}
-	}
-
-	public void stopThread() {
-		this.must_stop = true;
-	}
 	
-	public boolean wasUsed() {
-		return this.was_used;
+	public static class ProcessStreamHolder extends Thread {
+		protected InputStream is;
+		protected String type;
+		protected OutputStream os;
+		protected boolean must_stop = false;
+		protected boolean was_used = false;
+
+		public ProcessStreamHolder(InputStream is) {
+			this(is,"");
+		}
+		public ProcessStreamHolder(InputStream is, String type) {
+			this(is, type, null);
+		}
+		public ProcessStreamHolder(InputStream is, OutputStream redirect) {
+			this(is,"",redirect);
+		}
+		public ProcessStreamHolder(InputStream is, String type, OutputStream redirect) {
+			this.is = is;
+			this.type = type;
+			this.os = redirect;
+		}
+
+		public void run() {
+			try {
+				PrintStream pw = System.out;
+				if((os!=null)&&(os!=System.out)) pw = new PrintStream(os);
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				while(true) {
+					if(this.must_stop)break;
+					String line = br.readLine();
+					if(line==null)break;
+					pw.println(type+line);
+					pw.flush();
+					this.was_used = true;
+				}
+				if(pw!=System.out) pw.close();
+				else pw.flush();
+				br.close();
+			}catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+
+		public void stopThread() {
+			this.must_stop = true;
+		}
+		
+		public boolean wasUsed() {
+			return this.was_used;
+		}
 	}
 }
