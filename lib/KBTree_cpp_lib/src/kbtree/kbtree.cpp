@@ -231,6 +231,7 @@ void KBTree::initializeFromNewick(const std::string &newickString) {
 	this->tr = new tree <KBNode> ();
 	// create and add the root node
 	if(verbose) { cout<<"KBTREE-- initializing tree from newick string"<<endl; }
+	//trim(newickString);
 	tr->set_head(KBNode());
 	this->nodeCount++;
 	// Recursive parse can encounter stack overflow if tree is large, thus we have switched to non-recursive parse
@@ -238,6 +239,7 @@ void KBTree::initializeFromNewick(const std::string &newickString) {
 	//tree<KBNode>::iterator rootIter = tr->begin();
 	parseNewickNonRecursive(newickString);
 	//parseNewick(newickString,curserPosition,rootIter);
+	if(verbose) { cout<<"KBTREE-- newick parse is complete"<<endl; }
 }
 
 
@@ -246,64 +248,6 @@ void printPos(const std::string &newickString, unsigned int &k) {
 	cout<<"|"<<endl;
 	cout<<newickString<<endl;
 }
-
-
-// DO NOT USE!!  Replaced by parseNewickNonRecursive, which is more effecient and will not run into stack overflow problems
-void KBTree::parseNewick(const std::string &newickString, unsigned int &k, tree<KBNode>::iterator &currentNode) {
-
-	// ditch leading white space first
-	passLeadingWhiteSpace(newickString, k);
-	if( k >= newickString.length() ) return;
-
-	// if we get to an open parenthesis, then create a child and recurse down
-	if( newickString.at(k)==OPEN_PARAN ) {
-		//cout<<"OPEN"<<endl;printPos(newickString,k);
-		// note here that the begin iterator points to the first child of the current node
-		tree<KBNode>::iterator newChild = tr->insert(currentNode.begin(),KBNode());
-		this->nodeCount++;
-		k=k++;
-		if( k >= newickString.length() ) { cerr<<"syntax error in tree at position:"<<k<<endl; exit(1); }
-		if(newickString.at(k)!=CLOSE_PARAN) {
-			parseNewick(newickString,k,newChild);
-		}
-	}
-
-	// If we get here, then we are ready to label it
-	getNextLabel(newickString,k,(*currentNode));
-	// if it is an internal node and has a name and we are assuming that internal node names are bootstrap values,
-	// then update the parsing. (note that this is the case for most MO trees)
-	if(this->assumeBootstrapNames && currentNode.number_of_children()>0 && (*currentNode).getName().size()>0) {
-		try {
-			(*currentNode).bootstrapValue = convertToDouble((*currentNode).name);
-			(*currentNode).name="";
-		} catch (...) {
-			this->assumeBootstrapNames = false;
-			cerr<<"assuming that internal nodes are NOT bootstrap values"<<endl;
-		}
-	}
-
-	// if we get to a close parenthesis, then go on to the next position in the string
-	// and return back up the hierarchy
-	if( k >= newickString.length() ) { return; }
-	if (newickString.at(k)==CLOSE_PARAN) {
-		//cout<<"CLOSE"<<endl;printPos(newickString,k);
-		k++;
-		return;
-	}
-
-	//again make sure we can go further
-	if( k >= newickString.length() ) return;
-
-	// If we get to a comma, then the current node has some siblings, so recurse on the sibling node
-	if (newickString.at(k)==COMMA) {
-		//cout<<"COMMA"<<endl;printPos(newickString,k);
-		tree<KBNode>::iterator newSibling = tr->insert_after(currentNode,KBNode());
-		this->nodeCount++;
-		k++;
-		parseNewick(newickString,k,newSibling);
-	}
-}
-
 
 
 void KBTree::parseNewickNonRecursive(const std::string &newickString)
@@ -326,7 +270,7 @@ void KBTree::parseNewickNonRecursive(const std::string &newickString)
 			// ditch leading white space first by advancing the cursor, if this gets us to the end then break
 			passLeadingWhiteSpace(newickString, cursor);
 			if( cursor >= newickString.length() ) break;
-
+			
 			// if we get to an open parenthesis, then create a child and recurse down
 			if( newickString.at(cursor)==OPEN_PARAN ) {
 				// note here that the begin iterator points to the first child of the current node
@@ -555,12 +499,11 @@ bool KBTree::getNextLabel(const std::string &newickString, unsigned int &k, KBNo
 
 void KBTree::passLeadingWhiteSpace(const std::string &newickString, unsigned int &k)
 {
-	char C=newickString.at(k);
-	while( k<newickString.size() ) {
+	for(;k<newickString.size();k++) {
+		char C=newickString.at(k);
 		if( C!=' ' && C!='\t' && C!='\n' && C!='\r' ) {
 			break;
 		}
-		C=newickString.at(++k);
 	}
 }
 
