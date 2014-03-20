@@ -29,10 +29,16 @@
     <include name="jackson/jackson-core-2.2.3.jar"/>
     <include name="jackson/jackson-databind-2.2.3.jar"/>
     <include name="kbase/kbase-common-1394838813-5087b65.jar"/>
+    <include name="junit/junit-4.9.jar"/>
   </fileset>
-  
+
   <path id="compile.classpath">
     <fileset refid="serverlib"/>
+  </path>
+
+  <path id="test.classpath">
+    <path refid="compile.classpath"/>
+    <pathelement path="${classes}"/>
   </path>
 
   <target name="init" description="make directories">
@@ -85,6 +91,15 @@
     </war>
     <delete dir="${war.lib}"/>
     <delete dir="${classes}"/>
+  </target>
+
+  <target name="test" depends="compile" description="Testing tree service">
+    <junit fork="yes" maxmemory="3G" failureproperty="test.failed">
+      <classpath refid="test.classpath"/>
+      <formatter type="plain" usefile="false" />
+      <test name="us.kbase.kbasetrees.test.TempMikesProblem"/>
+    </junit>
+    <fail message="Test failure detected, check test results." if="test.failed" />
   </target>
 
   <target name="clean" description="clean up" >
