@@ -3,6 +3,8 @@
 
 #use FindBin;
 #use lib "$FindBin::Bin/../../lib/perl_interface";
+use lib "../../lib/perl_interface";
+use lib "lib/perl_interface";
 use Bio::KBase::Tree::TreeCppUtil;
 
 print "Testing KBTreeUtil Interface\n";

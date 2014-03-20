@@ -119,15 +119,15 @@ test: test-client test-scripts
 test-all: test-service test-client test-scripts
 
 test-client:
-	perl t/perl-tests/testBasicResponses.t
-	perl t/perl-tests/testIntrospectionMethods.t
-	perl t/perl-tests/testQueryMethods.t
+	prove t/perl-tests/testBasicResponses.t
+	prove t/perl-tests/testIntrospectionMethods.t
+	prove t/perl-tests/testQueryMethods.t
 
 test-scripts:
-	perl t/perl-tests/testBasicScriptResponses.t
+	prove t/perl-tests/testBasicScriptResponses.t
 
 test-service:
-	perl t/perl-tests/testServerUp.t
+	prove t/perl-tests/testServerUp.t
 
 
 
