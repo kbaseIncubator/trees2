@@ -14,13 +14,18 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
@@ -46,11 +51,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	private File dataDir;
 	private ObjectStorage storage;
 	
-	public static void main(String[] args) throws Exception {
-		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
-				new File("temp_files"), new File("data"), null);
-		System.out.println(stb.makeTreeForBasicCogs(true));
-	}
+	private static String MAX_EVALUE = "1e-05";
+	private static int MIN_COVERAGE = 50;
 	
 	@Override
 	public Class<ConstructSpeciesTreeParams> getInputDataType() {
@@ -119,10 +121,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	public void run(String token, ConstructSpeciesTreeParams inputData,
 			String jobId, String outRef) throws Exception {
 		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && inputData.getUseRibosomalS9Only() == 1L;
-		String treeText = makeTreeForBasicCogs(useCog103Only);
-		SpeciesTree tree = new SpeciesTree().withSpeciesTree(treeText)
-				.withAlignmentRef("").withCogs(loadCogsCodes(useCog103Only))
-				.withIdMap(Collections.<String, Tuple2 <String, String>>emptyMap());
+		SpeciesTree tree = placeUserGenomes(token, inputData.getNewGenomes(), useCog103Only);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree);
 	}
@@ -137,12 +136,14 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		}
 		storage.saveObjects(token, new SaveObjectsParams().withWorkspace(ws).withObjects(
 				Arrays.asList(data)));
-		System.out.println("Tree data was saved into " + ws + "/" + id);
 	}
 
 	
 	public String makeTreeForBasicCogs(boolean useCog103Only) throws Exception {
-		Map<String, String> aln = concatCogAlignments(useCog103Only);
+		return makeTree(concatCogAlignments(useCog103Only));
+	}
+	
+	private String makeTree(Map<String, String> aln) throws Exception {
 		File tempFile = File.createTempFile("aln", ".faa", tempDir);
 		try {
 			FastaWriter fw = new FastaWriter(tempFile);
@@ -222,7 +223,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return new File(dataDir, "cogs");
 	}
 	
-	private List<String> loadCogsCodes(boolean useCog103Only) throws IOException {
+	public List<String> loadCogsCodes(boolean useCog103Only) throws IOException {
 		if (useCog103Only)
 			return Arrays.asList("103");
 		File inputList = new File(getCogsDir(), "cog_list.txt");
@@ -250,14 +251,21 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	}
 	
 	private Map<String, String> concatCogAlignments(boolean useCog103Only) throws IOException {
+		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
+		for (String cogCode : loadCogsCodes(useCog103Only)) 
+			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
+		return concatCogAlignments(cogAlignments);
+	}
+	
+	private Map<String, String> concatCogAlignments(Map<String, Map<String, String>> alignments) throws IOException {
 		Map<String, String> concat = new TreeMap<String, String>();
 		Set<String> commonIdSet = new HashSet<String>();
-		for (String cogCode : loadCogsCodes(useCog103Only)) {
-			Map<String, String> aln = loadCogAlignment(cogCode);
+		for (String cogCode : alignments.keySet()) {
+			Map<String, String> aln = alignments.get(cogCode);
 			commonIdSet.addAll(aln.keySet());
 		}
-		for (String cogCode : loadCogsCodes(useCog103Only)) {
-			Map<String, String> aln = trimAlignment(loadCogAlignment(cogCode));
+		for (String cogCode : alignments.keySet()) {
+			Map<String, String> aln = trimAlignment(alignments.get(cogCode));
 			int alnLen = aln.get(aln.keySet().iterator().next()).length();
 			for (String taxId : commonIdSet) {
 				String seq = aln.get(taxId);
@@ -331,7 +339,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
 					"-db", dbFile.getAbsolutePath(), "-query", fastaQuery.getAbsolutePath(), 
 					"-outfmt", "6 qseqid stitle qstart qseq sstart sseq evalue bitscore pident", 
-					"-evalue", "1e-05"));
+					"-evalue", MAX_EVALUE));
 			errBaos = new ByteArrayOutputStream();
 			cp = new CorrectProcess(p, fos, "", errBaos, "");
 			p.waitFor();
@@ -401,44 +409,115 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return ret;
 	}
 	
-	/*private Map<String, String> loadGenomeProteins(String token, String genomeRef, boolean useCog103Only) throws Exception {
+	public SpeciesTree placeUserGenomes(String token, List<String> genomeRefList, 
+			boolean useCog103Only) throws Exception {
+		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
+		for (String cogCode : loadCogsCodes(useCog103Only)) 
+			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
+		List<GenomeToCogsAlignment> userData = new ArrayList<GenomeToCogsAlignment>();
+		for (String genomeRef : genomeRefList) 
+			userData.add(alignGenomeProteins(token, genomeRef, useCog103Only, cogAlignments));
+		Map<String, Tuple2<String, String>> tax2kbase = new ObjectMapper().readValue(
+				new File(getCogsDir(), "tax2kbase.json"), new TypeReference<Map<String, Tuple2<String, String>>>() {});
+		for (String cogCode : cogAlignments.keySet()) {
+			for (GenomeToCogsAlignment genomeRes : userData) {
+				List<ProteinToCogAlignemt> alns = genomeRes.getCogToProteins().get(cogCode);
+				if (alns == null) {
+					System.out.println(getClass().getName() + ": cogs=" + genomeRes.getCogToProteins().keySet());
+				}
+				if (alns.size() == 0)
+					continue;
+				String alignedSeq = alns.get(0).getTrimmedFeatureSeq();
+				String genomeRef = genomeRes.getGenomeRef();
+				cogAlignments.get(cogCode).put(genomeRef, alignedSeq);
+				if (!tax2kbase.containsKey(genomeRef))
+					tax2kbase.put(genomeRef, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
+			}
+		}
+		String treeText = makeTree(concatCogAlignments(cogAlignments));
+		return new SpeciesTree().withSpeciesTree(treeText)
+				.withAlignmentRef("").withCogs(loadCogsCodes(useCog103Only))
+				.withIdMap(tax2kbase);
+	}
+	
+	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, boolean useCog103Only,
+			final Map<String, Map<String, String>> cogAlignments) throws Exception {
 		Genome genome = storage.getObjects(token, 
 				Arrays.asList(new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
 		String genomeName = genome.getScientificName();
-		File fastaFile = File.createTempFile("proteome", "fasta", tempDir);
-		FastaWriter fw = new FastaWriter(fastaFile);
+		File fastaFile = File.createTempFile("proteome", ".fasta", tempDir);
+		File dbFile = null;
+		File tabFile = null;
 		try {
-			for (Feature feat : genome.getFeatures()) {
-				String protName = feat.getId();
-				String seq = feat.getProteinTranslation();
-				if (seq == null || seq.length() == 0)
-					continue;
-				fw.write(protName, seq);
+			FastaWriter fw = new FastaWriter(fastaFile);
+			try {
+				for (Feature feat : genome.getFeatures()) {
+					String protName = feat.getId();
+					String seq = feat.getProteinTranslation();
+					if (seq == null || seq.length() == 0)
+						continue;
+					fw.write(protName, seq);
+				}
+			} finally {
+				try { fw.close(); } catch (Exception ignore) {}
 			}
+			dbFile = formatRpsDb(listScoreMatrixFiles(useCog103Only));
+			tabFile = runRpsBlast(dbFile, fastaFile);
+			final Map<String, List<ProteinToCogAlignemt>> cog2proteins = 
+					new LinkedHashMap<String, List<ProteinToCogAlignemt>>();
+			processRpsOutput(tabFile, new SpeciesTreeBuilder.RpsBlastCallback() {
+				@Override
+				public void next(String query, String subject, int qstart, String qseq,
+						int sstart, String sseq, String evalue, double bitscore,
+						double ident) throws Exception {
+					if (!subject.startsWith("COG"))
+						throw new IllegalStateException("Unexpected subject name in prs blast result: " + subject);
+					String cogCode = "" + Integer.parseInt(subject.substring(3));
+					Map<String, String> cogAln = cogAlignments.get(cogCode);
+					int alnLen = cogAln.get(cogAln.keySet().iterator().next()).length();
+					String alignedSeq = AlignUtil.removeGapsFromSubject(alnLen, qseq, sstart - 1, sseq);
+					int coverage = 100 - AlignUtil.getGapPercent(alignedSeq);
+					if (coverage < MIN_COVERAGE)
+						return;
+					List<ProteinToCogAlignemt> protList = cog2proteins.get(cogCode);
+					if (protList == null) {
+						protList = new ArrayList<ProteinToCogAlignemt>();
+						cog2proteins.put(cogCode, protList);
+					}
+					ProteinToCogAlignemt result = new ProteinToCogAlignemt();
+					result.setTrimmedFeatureSeq(alignedSeq);
+					result.setBitscore(bitscore);
+					result.setCogCode(cogCode);
+					result.setAlignedCogConsensus(sseq);
+					result.setCoverage(coverage);
+					result.setEvalue(Double.parseDouble(evalue));
+					result.setFeatureId(query);
+					result.setAlignedFeatureSeq(qseq);
+					result.setIdentity(ident);
+					protList.add(result);
+				}
+			});
+			for (List<ProteinToCogAlignemt> results : cog2proteins.values())
+				if (results.size() > 1)
+					Collections.sort(results, new Comparator<ProteinToCogAlignemt>() {
+						@Override
+						public int compare(ProteinToCogAlignemt o1, ProteinToCogAlignemt o2) {
+							return Double.valueOf(o1.getEvalue()).compareTo(o2.getEvalue());
+						}
+					});
+			GenomeToCogsAlignment ret = new GenomeToCogsAlignment();
+			ret.setGenomeRef(genomeRef);
+			ret.setGenomeName(genomeName);
+			ret.setCogToProteins(cog2proteins);
+			return ret;
 		} finally {
-			try { fw.close(); } catch (Exception ignore) {}
+			try { fastaFile.delete(); } catch (Exception ignore) {}
+			if (dbFile != null)
+				try { cleanDbFiles(dbFile); } catch (Exception ignore) {}
+			if (tabFile != null)
+				try { tabFile.delete(); } catch (Exception ignore) {}
 		}
-		File dbFile = formatRpsDb(Arrays.asList(smpF));
-		File tabFile = runRpsBlast(dbFile, fastaFile);
-		stb.cleanDbFiles(dbFile);
-		stb.processRpsOutput(tabFile, new SpeciesTreeBuilder.RpsBlastCallback() {
-			@Override
-			public void next(String query, String subj, int qstart, String qseq,
-					int sstart, String sseq, String evalue, double bitscore,
-					double ident) throws Exception {
-				int queryTaxId = Integer.parseInt(query);
-				if (taxSubst.containsKey(queryTaxId))
-					queryTaxId = taxSubst.get(queryTaxId);
-				if (!taxMap.containsKey(queryTaxId))
-					return;
-				if (outAln.containsKey(queryTaxId))
-					return;
-				String ret = AlignUtil.removeGapsFromSubject(consensusLen, qseq, sstart - 1, sseq);
-				outAln.put(queryTaxId, ret);
-			}
-		});
-		tabFile.delete();
-	}*/
+	}
 	
 	public static interface RpsBlastCallback {
 		public void next(String query, String subj, int qstart, String qseq, int sstart, String sseq, 

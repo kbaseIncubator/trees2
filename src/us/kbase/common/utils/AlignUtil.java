@@ -70,4 +70,12 @@ public class AlignUtil {
 		}
 		return ret;
 	}
+	
+	public static int getGapPercent(String seq) {
+		int gapCount = 0;
+		for (int i = 0; i < seq.length(); i++)
+			if (seq.charAt(i) == '-')
+				gapCount++;
+		return gapCount * 100 / seq.length();
+	}
 }
