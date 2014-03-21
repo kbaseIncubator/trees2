@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UnauthorizedException;
@@ -24,9 +24,9 @@ import us.kbase.workspace.WorkspaceClient;
 public class TreeServerPlaying {
 	private static String ws2url = "http://140.221.84.209:7058/";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
-	private static String userId = "wjriehl";
-	private static String pwd = "xxxxx";
-	private static String wsId = "wjriehl:home";
+	private static String userId = "nardevuser1";
+	private static String pwd = "nardevuser2";
+	private static String wsId = "nardevuser1:home";
 
 	public static void main(String[] args) throws Exception {
 		test();
@@ -36,8 +36,15 @@ public class TreeServerPlaying {
 		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://140.221.85.58:8284/"), userId, pwd);
 		cl.setAuthAllowedForHttp(true);
 		String workspace = wsId;
+		List<String> genomeRefs = Arrays.asList(new String[] {
+				wsId + "/Shewanella_ANA_3_uid58347.genome",
+				wsId + "/Shewanella_MR_7_uid58343.genome", 
+				wsId + "/Shewanella_MR_4_uid58345.genome",
+				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
+				//wsId + "/Shewanella_W3_18_1_uid58341.genome"
+		});
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace(workspace)
-				.withNewGenomes(Collections.<String>emptyList()).withUseRibosomalS9Only(1L));
+				.withNewGenomes(genomeRefs).withOutTreeId("SpeciesTree1").withUseRibosomalS9Only(1L));
 		System.out.println("Job id: " + jobId);
 		long time = System.currentTimeMillis();
 		UserAndJobStateClient jscl = createJobClient(userId, pwd);
@@ -53,7 +60,9 @@ public class TreeServerPlaying {
 					WorkspaceClient wc = createWorkspaceClient(userId, pwd);
 					SpeciesTree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withRef(wsRef)))
 							.get(0).getData().asClassInstance(SpeciesTree.class);
+					System.out.println("COGs: " + tree.getCogs());
 					System.out.println("Tree: " + tree.getSpeciesTree());
+					System.out.println("Labels: " + tree.getIdMap());
 				}
 				break;
 			}

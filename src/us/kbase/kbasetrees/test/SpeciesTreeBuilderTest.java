@@ -3,7 +3,6 @@ package us.kbase.kbasetrees.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
-import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
@@ -37,7 +35,6 @@ public class SpeciesTreeBuilderTest {
 		String ref = "Shewanella_ANA_3_uid58347.genome";
 		String genomeName = "Shewanella_ANA_3_uid58347";
 		SpeciesTree tree = build(ref, genomeName, features);
-		System.out.println(tree.getSpeciesTree());
 		Assert.assertEquals(new ArrayList<String>(Arrays.asList("103")), tree.getCogs());
 		Assert.assertTrue(tree.getSpeciesTree().contains("user1"));
 		Assert.assertEquals(ref, tree.getIdMap().get("user1").getE1());
