@@ -33,16 +33,15 @@ public class SpeciesTreeBuilderTest {
 		String pwd = "nardevuser2";
 		String wsId = "nardevuser1:home";
 		List<String> genomeRefs = Arrays.asList(new String[] {
-//				wsId + "/Shewanella_ANA_3_uid58347.genome",
-//				wsId + "/Shewanella_MR_7_uid58343.genome", 
-//				wsId + "/Shewanella_MR_4_uid58345.genome",
-//				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
-				wsId + "/Shewanella_W3_18_1_uid58341.genome"
+				wsId + "/Shewanella_ANA_3_uid58347.genome",
+				wsId + "/Shewanella_MR_7_uid58343.genome", 
+				wsId + "/Shewanella_MR_4_uid58345.genome",
+				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
 		});
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
 				new File("temp_files"), new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
 		String token = AuthService.login(userId, pwd).getTokenString();
-		SpeciesTree tree = stb.placeUserGenomes(token, genomeRefs, false);
+		SpeciesTree tree = stb.placeUserGenomes(token, genomeRefs, true);
 		System.out.println(tree.getSpeciesTree());
 	}
 	

@@ -216,7 +216,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 				err = new IllegalStateException("FastTree exit code: " + procExitValue);
 			throw err;
 		}
-		return new String(result.toByteArray(), Charset.forName("UTF-8"));
+		return new String(result.toByteArray(), Charset.forName("UTF-8")).trim();
 	}
 	
 	private File getCogsDir() {
