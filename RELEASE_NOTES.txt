@@ -4,9 +4,27 @@ This KBase service provides helper methods for performing data access, manipulat
 and visualization of multiple sequence alignments (MSAs) and phylogenetic trees.
 
 
+VERSION: 1.0.0 (TBA)
+------------------------------------------
+This is a major refactor of the Tree service, which has now migrated to a more
+stable Java-based server.  Old methods are either ported to the new Java code
+or are relayed to the original perl functionality.  We anticipate that all
+methods will eventually be ported into the Java-based server.  The module name
+has also changed to KBaseTrees (to reflect the format of KBase module names in
+the Workspace).  Thus old deployments that use the old Tree clients will no
+longer work.  You should migrate to the new KBaseTrees set of clients.
+
+The original service specification file (Tree.spec) is also now deprecated and 
+no new functions or changes will be added.  The replacement API specification
+file is named KBaseTrees.spec.  The CLI has not changed, but must be redeployed
+to use the new KBaseTrees client library.
+
+NEW FEATURES:
+- added method for constructing species trees with user genomes
 
 
-VERSION: 0.91
+
+VERSION: 0.91 (never released to production)
 ------------------------------------------
 NEW FEATURES:
 - none
