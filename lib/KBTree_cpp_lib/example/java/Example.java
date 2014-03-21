@@ -2,8 +2,8 @@
 //
 // for problems compiling this code, see http://www.swig.org/Doc1.3/Java.html#dynamic_linking_problems
 
-import KBTreeUtil.KBTree;
-import KBTreeUtil.KBTreeUtil;
+import us.kbase.kbasetrees.cpputil.KBTree;
+import us.kbase.kbasetrees.cpputil.KBTreeUtil;
 
 public class Example {
     public static void main(String argv[]) {

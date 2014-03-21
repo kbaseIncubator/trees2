@@ -230,7 +230,7 @@ std::string translateToProt(const std::string &dna);
 extern "C" {
 #endif
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_translateToProt(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_translateToProt(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   jstring jresult = 0 ;
   std::string *arg1 = 0 ;
   std::string result;
@@ -252,7 +252,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_translateToProt(JNIEnv 
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jstring jarg1) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jstring jarg1) {
   jlong jresult = 0 ;
   std::string *arg1 = 0 ;
   KBTreeLib::KBTree *result = 0 ;
@@ -274,7 +274,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_10(JN
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2) {
   jlong jresult = 0 ;
   std::string *arg1 = 0 ;
   bool arg2 ;
@@ -298,7 +298,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_11(JN
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_12(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2, jboolean jarg3) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_12(JNIEnv *jenv, jclass jcls, jstring jarg1, jboolean jarg2, jboolean jarg3) {
   jlong jresult = 0 ;
   std::string *arg1 = 0 ;
   bool arg2 ;
@@ -324,7 +324,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_new_1KBTree_1_1SWIG_12(JN
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
   (void)jenv;
@@ -334,7 +334,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_delete_1KBTree(JNIEnv *jen
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -349,7 +349,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWI
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagLabel(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1setOutputFlagLabel(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   bool arg2 ;
   
@@ -362,7 +362,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagLabel
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagDistances(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1setOutputFlagDistances(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   bool arg2 ;
   
@@ -375,7 +375,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagDista
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagComments(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1setOutputFlagComments(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   bool arg2 ;
   
@@ -388,7 +388,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagComme
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagBootstrapValuesAsLabels(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1setOutputFlagBootstrapValuesAsLabels(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   bool arg2 ;
   
@@ -401,7 +401,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1setOutputFlagBoots
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -418,7 +418,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1toNewick_1_1SWI
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT jboolean JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   jboolean jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;
@@ -443,7 +443,7 @@ SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToF
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jlong jarg3) {
+SWIGEXPORT jboolean JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1writeNewickToFile_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jlong jarg3) {
   jboolean jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;
@@ -470,7 +470,7 @@ SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1writeNewickToF
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1removeNodesByNameAndSimplify(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1removeNodesByNameAndSimplify(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;
   
@@ -491,7 +491,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1removeNodesByNameA
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1mergeZeroDistLeaves(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1mergeZeroDistLeaves(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
   (void)jenv;
@@ -502,7 +502,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1mergeZeroDistLeave
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1replaceNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;
   
@@ -523,7 +523,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNames(J
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNamesOrMakeBlank(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1replaceNodeNamesOrMakeBlank(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string *arg2 = 0 ;
   
@@ -544,7 +544,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1replaceNodeNamesOr
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1stripReservedCharsFromLabels(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1stripReservedCharsFromLabels(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
   (void)jenv;
@@ -555,7 +555,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1stripReservedChars
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
   (void)jenv;
@@ -566,7 +566,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTree(JNIEnv *
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printSimpleTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1printSimpleTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -581,7 +581,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printSimpleTree
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1printTreeToString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -596,7 +596,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1printTreeToStri
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getNodeCount(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1getNodeCount(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int result;
@@ -611,7 +611,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getNodeCount(JNIE
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getLeafCount(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1getLeafCount(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int result;
@@ -626,7 +626,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getLeafCount(JNIE
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getAllLeafNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1getAllLeafNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -641,7 +641,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getAllLeafNames
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getAllNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1getAllNodeNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -656,7 +656,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1getAllNodeNames
 }
 
 
-SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1resetBreadthFirstIterToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT void JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1resetBreadthFirstIterToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   
   (void)jenv;
@@ -667,7 +667,7 @@ SWIGEXPORT void JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1resetBreadthFirstI
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterNext(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jboolean JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterNext(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jboolean jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   bool result;
@@ -682,7 +682,7 @@ SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIt
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetName_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetName_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -697,7 +697,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   std::string result;
@@ -712,7 +712,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterMarkNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jlong JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterMarkNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jlong jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int result;
@@ -727,7 +727,7 @@ SWIGEXPORT jlong JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterM
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterSetToNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jboolean JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterSetToNode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jboolean jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -744,7 +744,7 @@ SWIGEXPORT jboolean JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIt
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetName_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetName_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -761,7 +761,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetPathToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetPathToRoot(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -778,7 +778,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetParentName_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -795,7 +795,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetAllChildrenNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetAllChildrenNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;
@@ -812,7 +812,7 @@ SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIte
 }
 
 
-SWIGEXPORT jstring JNICALL Java_KBTreeUtil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetAllDescendantNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+SWIGEXPORT jstring JNICALL Java_us_kbase_kbasetrees_cpputil_KBTreeUtilJNI_KBTree_1breadthFirstIterGetAllDescendantNames(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   jstring jresult = 0 ;
   KBTreeLib::KBTree *arg1 = (KBTreeLib::KBTree *) 0 ;
   unsigned int arg2 ;

@@ -6,7 +6,7 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-package KBTreeUtil;
+package us.kbase.kbasetrees.cpputil;
 
 public class KBTreeUtilJNI {
   public final static native String translateToProt(String jarg1);

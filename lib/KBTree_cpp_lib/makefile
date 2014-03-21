@@ -23,6 +23,9 @@ SWIG_JAVA_WRAP_FILE := $(SRC_PATH)/kbtree_java_wrap.cxx
 # NEEDED TO GET PATHS TO THE CORRECT JAVA INSTALL DIRECTORY - NOTE THAT WE ONLY SUPPORT COMPILING
 # WITHIN THE KBASE ENVIRONMENT...
 DEPLOY_RUNTIME ?= /kb/runtime
+LOCAL_JAVA_SRC_DEPLOY_TARGET ?= ../../src
+LOCAL_JAVA_LIB_DEPLOY_TARGET ?= ../../lib
+
 
 # DETERMINE IF WE ARE MAC OR LINUX (this is clearly a hack, a better option would
 # be to actually write a configure script)
@@ -59,13 +62,13 @@ swig:
 	mkdir -p $(OUT_DIR)/perl_interface/Bio/KBase/Tree
 	swig -c++ -perl5 -module "Bio::KBase::Tree::TreeCppUtil" -outdir $(OUT_DIR)/perl_interface/ -o $(SWIG_PERL_WRAP_FILE) $(SWIG_FILE)
 	mv $(OUT_DIR)/perl_interface/TreeCppUtil.pm $(OUT_DIR)/perl_interface/Bio/KBase/Tree/TreeCppUtil.pm
-	swig -c++ -java -outdir $(OUT_DIR)/java_interface/KBTreeUtil -package KBTreeUtil -o $(SWIG_JAVA_WRAP_FILE) $(SWIG_FILE)
+	swig -c++ -java -outdir $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil -package us.kbase.kbasetrees.cpputil -o $(SWIG_JAVA_WRAP_FILE) $(SWIG_FILE)
 
 clean-swig:
 	rm -f $(SWIG_PERL_WRAP_FILE)
 	rm -f $(SWIG_JAVA_WRAP_FILE)
 	rm -f $(OUT_DIR)/perl_interface/*.pm
-	rm -f $(OUT_DIR)/java_interface/KBTreeUtil/*.java
+	rm -f $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/*.java
 
 
 # this will always link, even if object files are built
@@ -79,15 +82,22 @@ $(OUT_DIR)/perl_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
 # this will always link and compile, even if object files are built
 java-lib : $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
 	g++ $(JAVA_LIB_CMD) $(OUT_DIR)/java_interface/kbtree_wrap.o $(OUT_DIR)/java_interface/kbtree.o
-	javac $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtilJNI.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTree.java $(OUT_DIR)/java_interface/KBTreeUtil/KBTreeUtil.java
+	javac $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/KBTreeUtilJNI.java $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/KBTree.java $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/KBTreeUtil.java
 $(OUT_DIR)/java_interface/kbtree_wrap.o : $(SWIG_JAVA_WRAP_FILE)
 	g++ -fpic -O3 -c $(SWIG_JAVA_WRAP_FILE) $(JAVA_HEADER_PATH) -o $(OUT_DIR)/java_interface/kbtree_wrap.o -fno-strict-aliasing
 $(OUT_DIR)/java_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
 	g++ -fpic -O3 -c $(SRC_PATH)/kbtree/kbtree.cpp -o $(OUT_DIR)/java_interface/kbtree.o -fno-strict-aliasing
 
-
+# copies java src and compiled libraries to the proper location
+deploy-java :
+	mkdir -p $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil
+	cp lib/java_interface/us/kbase/kbasetrees/cpputil/*.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
+	# copy the shared object library if in linux
+	-cp lib/java_interface/*.so $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
+	# copy the shared object library if on mac
+	-cp lib/java_interface/*.jnilib $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
 
 clean:
-	rm -f $(OUT_DIR)/java_interface/*.jnilib $(OUT_DIR)/java_interface/*.o $(OUT_DIR)/java_interface/KBTreeUtil/*.class 
+	rm -f $(OUT_DIR)/java_interface/*.jnilib $(OUT_DIR)/java_interface/*.o $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/*.class 
 	rm -f $(OUT_DIR)/java_interface/*.so
 	rm -f $(OUT_DIR)/perl_interface/*.o $(OUT_DIR)/perl_interface/*.bundle $(OUT_DIR)/perl_interface/*.so
