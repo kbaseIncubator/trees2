@@ -12,8 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Properties;
+
+import org.ini4j.Ini;
 
 import us.kbase.auth.TokenFormatException;
 import us.kbase.common.service.JsonClientException;
@@ -51,12 +52,13 @@ public class KBaseTreesServer extends JsonServerServlet {
     
 	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
     private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
+    private static final String specServiceName = "trees";
 
     static {
     	// Setup service name
     	String KB_SERVNAME = "KB_SERVICE_NAME";
-    	System.setProperty(KB_SERVNAME, "trees");
-    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: trees");
+    	System.setProperty(KB_SERVNAME, specServiceName);
+    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: " + specServiceName);
     	// Setup deployment configuration path
 		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
 		InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
@@ -73,13 +75,14 @@ public class KBaseTreesServer extends JsonServerServlet {
 		}
     }
     
-    private synchronized TaskQueue getTaskQueue() throws Exception {
+    public static synchronized TaskQueue getTaskQueue() throws Exception {
     	if (taskHolder == null) {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
     		String wsUrl = defaultWsUrl;
     		String jssUrl = defaultJssUrl;
-    		Map<String, String> allConfigProps = new LinkedHashMap<String, String>(super.config);
+    		
+    		Map<String, String> allConfigProps = loadConfig();
     		if (allConfigProps.containsKey("thread.count"))
     			threadCount = Integer.parseInt(allConfigProps.get("thread.count"));
     		if (allConfigProps.containsKey("queue.db.dir"))
@@ -115,6 +118,10 @@ public class KBaseTreesServer extends JsonServerServlet {
 					allConfigProps)).registerRunner(new SpeciesTreeBuilder());
     	}
     	return taskHolder;
+    }
+    
+    private static Map<String, String> loadConfig() throws Exception {
+		return new Ini(new File(System.getProperty("KB_DEPLOYMENT_CONFIG"))).get(specServiceName);
     }
     
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
