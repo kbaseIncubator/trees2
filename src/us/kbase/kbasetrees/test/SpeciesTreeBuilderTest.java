@@ -11,6 +11,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import us.kbase.auth.AuthService;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.FastaReader;
@@ -25,6 +26,25 @@ import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
 
 public class SpeciesTreeBuilderTest {
+	
+	public static void main(String[] args) throws Exception {
+		String ws2url = "http://140.221.84.209:7058/";
+		String userId = "nardevuser1";
+		String pwd = "nardevuser2";
+		String wsId = "nardevuser1:home";
+		List<String> genomeRefs = Arrays.asList(new String[] {
+//				wsId + "/Shewanella_ANA_3_uid58347.genome",
+//				wsId + "/Shewanella_MR_7_uid58343.genome", 
+//				wsId + "/Shewanella_MR_4_uid58345.genome",
+//				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
+				wsId + "/Shewanella_W3_18_1_uid58341.genome"
+		});
+		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
+				new File("temp_files"), new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
+		String token = AuthService.login(userId, pwd).getTokenString();
+		SpeciesTree tree = stb.placeUserGenomes(token, genomeRefs, false);
+		System.out.println(tree.getSpeciesTree());
+	}
 	
 	@Test
 	public void testOneGenome() throws Exception {

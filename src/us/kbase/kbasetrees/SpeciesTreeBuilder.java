@@ -415,19 +415,23 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		for (String cogCode : loadCogsCodes(useCog103Only)) 
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
 		List<GenomeToCogsAlignment> userData = new ArrayList<GenomeToCogsAlignment>();
-		for (String genomeRef : genomeRefList) 
-			userData.add(alignGenomeProteins(token, genomeRef, useCog103Only, cogAlignments));
+		for (String genomeRef : genomeRefList) {
+			try {
+				userData.add(alignGenomeProteins(token, genomeRef, useCog103Only, cogAlignments));
+			} catch (Exception ex) {
+				throw new IllegalStateException("Error processing genome " + genomeRef + " (" + ex.getMessage() + ")", ex);
+			}
+		}
 		Map<String, Tuple2<String, String>> tax2kbase = new ObjectMapper().readValue(
 				new File(getCogsDir(), "tax2kbase.json"), new TypeReference<Map<String, Tuple2<String, String>>>() {});
 		for (String cogCode : cogAlignments.keySet()) {
 			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
 				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
 				List<ProteinToCogAlignemt> alns = genomeRes.getCogToProteins().get(cogCode);
-				if (alns == null) {
-					System.out.println(getClass().getName() + ": cogs=" + genomeRes.getCogToProteins().keySet());
-				}
-				if (alns.size() == 0)
+				if (alns == null || alns.isEmpty()) {
+					//System.out.println(getClass().getName() + ": no cog " + cogCode + " for genome " + genomeRes.getGenomeRef());
 					continue;
+				}
 				String alignedSeq = alns.get(0).getTrimmedFeatureSeq();
 				String genomeRef = genomeRes.getGenomeRef();
 				String nodeName = "user" + (genomePos + 1);
@@ -452,6 +456,7 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		File tabFile = null;
 		try {
 			FastaWriter fw = new FastaWriter(fastaFile);
+			int protCount = 0;
 			try {
 				for (int pos = 0; pos < genome.getFeatures().size(); pos++) {
 					Feature feat = genome.getFeatures().get(pos);
@@ -459,10 +464,13 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 					if (seq == null || seq.isEmpty())
 						continue;
 					fw.write("" + pos, seq);
+					protCount++;
 				}
 			} finally {
 				try { fw.close(); } catch (Exception ignore) {}
 			}
+			if (protCount == 0)
+				throw new IllegalStateException("No protein translations");
 			dbFile = formatRpsDb(listScoreMatrixFiles(useCog103Only));
 			tabFile = runRpsBlast(dbFile, fastaFile);
 			final Map<String, List<ProteinToCogAlignemt>> cog2proteins = 
@@ -500,6 +508,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 					protList.add(result);
 				}
 			});
+			if (cog2proteins.isEmpty())
+				throw new IllegalStateException("No one protein family member found");
 			for (List<ProteinToCogAlignemt> results : cog2proteins.values())
 				if (results.size() > 1)
 					Collections.sort(results, new Comparator<ProteinToCogAlignemt>() {
