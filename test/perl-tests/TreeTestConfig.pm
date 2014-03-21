@@ -14,8 +14,8 @@ our @EXPORT_OK = qw(getURL);
 
 # CHANGE THE HOST AND PORT CONFIGURATION HERE
 
-#my $URL  = "http://kbase.us/services/trees";
-my $URL  = "http://localhost:7047";
+#my $URL  = "https://kbase.us/services/trees";
+my $URL  = "http://127.0.0.1:7047";
 
 sub getURL   { return $URL; }
 
