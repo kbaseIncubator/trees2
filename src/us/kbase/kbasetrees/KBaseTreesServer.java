@@ -135,7 +135,7 @@ public class KBaseTreesServer extends JsonServerServlet {
 			throw new IllegalStateException("Parameter forward.url is not defined in configuration");
 		TreeClient ret = null;
 		Exception err = null;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 2; i++) {
 			try {
 				TreeClient cl = new TreeClient(new URL(forwardUrl));
 				cl.extractLeafNodeNames("(k);");
