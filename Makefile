@@ -199,9 +199,9 @@ prepare-deploy-target:
 
 #deploys the java service only (without start/stop scripts)
 deploy-java-service: cpp-lib deploy-perl-service prepare-deploy-target
-	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg
+	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg -Dcpplibdir=$(TARGET)/lib/
 	cp dist/KBaseTreesService.war $(SERVICE_DIR)/.
-	cp lib/libKBTreeCppUtil.* $(TARGET)/lib/.
+	cp lib/libKBTreeUtil.* $(TARGET)/lib/.
 
 #deploys the internal perl service only (without start/stop scripts)
 deploy-perl-service: cpp-lib prepare-deploy-target
