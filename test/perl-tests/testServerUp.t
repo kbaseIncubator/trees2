@@ -9,8 +9,7 @@
 use strict;
 use warnings;
 use Data::Dumper;
-use lib "lib";
-use lib "t/perl-tests";
+use lib "test/perl-tests";
 
 use TreeTestConfig qw(getURL);
 

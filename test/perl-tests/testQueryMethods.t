@@ -16,8 +16,7 @@ use warnings;
 use Test::More tests => 3;
 use Data::Dumper;
 
-use lib "lib";
-use lib "t/perl-tests";
+use lib "test/perl-tests";
 use TreeTestConfig qw(getURL);
 
 # MAKE SURE WE LOCALLY HAVE JSON RPC LIBS INSTALLED

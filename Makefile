@@ -6,7 +6,7 @@ SERVICE_NAME = KBaseTrees
 SERVICE_PORT = 7047
 THREADPOOL_SIZE = 20
 MEMORY = 1000
-MAX_MEMORY = 1500
+MAX_MEMORY = 4000
 
 PERL_SERVICE_NAME = Tree
 PERL_SERVICE_PSGI_FILE = Tree.psgi
@@ -34,6 +34,7 @@ TAGS := $(shell git tag --contains $(GITCOMMIT))
 # where we will (for now) dump the service log files
 include $(TOP_DIR)/tools/Makefile.common
 $(SERVICE_DIR) ?= /kb/deployment/services/$(SERVICE)
+
 PID_FILE = $(SERVICE_DIR)/service.pid
 ACCESS_LOG_FILE = $(SERVICE_DIR)/log/access.log
 ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
@@ -103,31 +104,22 @@ COMMANDS: COMMANDS.json
 
 
 
-
-
-# You can change these if you are putting your tests somewhere
-# else or if you are not using the standard .t suffix
-CLIENT_TESTS = $(wildcard t/client-tests/*.t)
-SCRIPT_TESTS = $(wildcard t/script-tests/*.t)
-
-
 ##################################################################################
 # here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-service)
-test: test-client test-scripts
-	echo "running client and script tests"
+test: test-all
 
-test-all: test-service test-client test-scripts
+test-all:  test-service test-client test-scripts
 
 test-client:
-	prove t/perl-tests/testBasicResponses.t
-	prove t/perl-tests/testIntrospectionMethods.t
-	prove t/perl-tests/testQueryMethods.t
+	prove test/perl-tests/testBasicResponses.t  || (echo "NOTE: Tests require the Tree service is running at localhost:7047" && false)
+	prove test/perl-tests/testIntrospectionMethods.t
+	prove test/perl-tests/testQueryMethods.t
 
 test-scripts:
-	prove t/perl-tests/testBasicScriptResponses.t
+	prove test/perl-tests/testBasicScriptResponses.t || (echo "NOTE: Tests require the Tree service is running at localhost:7047" && false)
 
 test-service:
-	prove t/perl-tests/testServerUp.t
+	prove test/perl-tests/testServerUp.t || (echo "NOTE: Tests require the Tree service is running at localhost:7047" && false)
 
 
 
