@@ -92,10 +92,7 @@ $(OUT_DIR)/java_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
 deploy-java :
 	mkdir -p $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil
 	cp lib/java_interface/us/kbase/kbasetrees/cpputil/*.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
-	# copy the shared object library if in linux
-	-cp lib/java_interface/*.so $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
-	# copy the shared object library if on mac
-	-cp lib/java_interface/*.jnilib $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
+	cp lib/java_interface/libKBTreeUtil.* $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
 
 clean:
 	rm -f $(OUT_DIR)/java_interface/*.jnilib $(OUT_DIR)/java_interface/*.o $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/*.class 
