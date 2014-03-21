@@ -420,7 +420,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		Map<String, Tuple2<String, String>> tax2kbase = new ObjectMapper().readValue(
 				new File(getCogsDir(), "tax2kbase.json"), new TypeReference<Map<String, Tuple2<String, String>>>() {});
 		for (String cogCode : cogAlignments.keySet()) {
-			for (GenomeToCogsAlignment genomeRes : userData) {
+			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
+				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
 				List<ProteinToCogAlignemt> alns = genomeRes.getCogToProteins().get(cogCode);
 				if (alns == null) {
 					System.out.println(getClass().getName() + ": cogs=" + genomeRes.getCogToProteins().keySet());
@@ -429,9 +430,10 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 					continue;
 				String alignedSeq = alns.get(0).getTrimmedFeatureSeq();
 				String genomeRef = genomeRes.getGenomeRef();
-				cogAlignments.get(cogCode).put(genomeRef, alignedSeq);
-				if (!tax2kbase.containsKey(genomeRef))
-					tax2kbase.put(genomeRef, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
+				String nodeName = "user" + (genomePos + 1);
+				cogAlignments.get(cogCode).put(nodeName, alignedSeq);
+				if (!tax2kbase.containsKey(nodeName))
+					tax2kbase.put(nodeName, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
 			}
 		}
 		String treeText = makeTree(concatCogAlignments(cogAlignments));
@@ -442,8 +444,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	
 	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, boolean useCog103Only,
 			final Map<String, Map<String, String>> cogAlignments) throws Exception {
-		Genome genome = storage.getObjects(token, 
-				Arrays.asList(new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
+		final Genome genome = storage.getObjects(token, Arrays.asList(
+				new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
 		String genomeName = genome.getScientificName();
 		File fastaFile = File.createTempFile("proteome", ".fasta", tempDir);
 		File dbFile = null;
@@ -451,12 +453,12 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		try {
 			FastaWriter fw = new FastaWriter(fastaFile);
 			try {
-				for (Feature feat : genome.getFeatures()) {
-					String protName = feat.getId();
+				for (int pos = 0; pos < genome.getFeatures().size(); pos++) {
+					Feature feat = genome.getFeatures().get(pos);
 					String seq = feat.getProteinTranslation();
-					if (seq == null || seq.length() == 0)
+					if (seq == null || seq.isEmpty())
 						continue;
-					fw.write(protName, seq);
+					fw.write("" + pos, seq);
 				}
 			} finally {
 				try { fw.close(); } catch (Exception ignore) {}
@@ -491,7 +493,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 					result.setAlignedCogConsensus(sseq);
 					result.setCoverage(coverage);
 					result.setEvalue(Double.parseDouble(evalue));
-					result.setFeatureId(query);
+					int featurePos = Integer.parseInt(query);
+					result.setFeatureId(genome.getFeatures().get(featurePos).getId());
 					result.setAlignedFeatureSeq(qseq);
 					result.setIdentity(ident);
 					protList.add(result);

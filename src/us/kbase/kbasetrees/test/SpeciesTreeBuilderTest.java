@@ -3,6 +3,8 @@ package us.kbase.kbasetrees.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ import org.junit.Test;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
+import us.kbase.common.utils.FastaReader;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
@@ -26,10 +29,30 @@ import us.kbase.workspace.SaveObjectsParams;
 public class SpeciesTreeBuilderTest {
 	
 	@Test
-	public void testTreeConstruction() throws Exception {
+	public void testOneGenome() throws Exception {
+		FastaReader fr = new FastaReader(new File("data/test", "Shewanella_ANA_3_uid58347.fasta"));
 		List<Feature> features = new ArrayList<Feature>();
-		final Genome tempGenome = new Genome().withScientificName("Super genome")
-				.withFeatures(features);
+		for (Map.Entry<String, String> entry : fr.readAll().entrySet())
+			features.add(new Feature().withId(entry.getKey()).withProteinTranslation(entry.getValue()));
+		String ref = "Shewanella_ANA_3_uid58347.genome";
+		String genomeName = "Shewanella_ANA_3_uid58347";
+		SpeciesTree tree = build(ref, genomeName, features);
+		System.out.println(tree.getSpeciesTree());
+		Assert.assertEquals(new ArrayList<String>(Arrays.asList("103")), tree.getCogs());
+		Assert.assertTrue(tree.getSpeciesTree().contains("user1"));
+		Assert.assertEquals(ref, tree.getIdMap().get("user1").getE1());
+		Assert.assertEquals(genomeName, tree.getIdMap().get("user1").getE2());
+	}
+	
+	private static SpeciesTree build(String genomeRef, String genomeName, 
+			List<Feature> features) throws Exception {
+		Map<String, Genome> ref2genome = new LinkedHashMap<String, Genome>();
+		ref2genome.put(genomeRef, new Genome().withScientificName(genomeName)
+				.withFeatures(features));
+		return build(ref2genome);
+	}
+	
+	private static SpeciesTree build(final Map<String, Genome> ref2genome) throws Exception {
 		final SpeciesTree[] treeWrap = new SpeciesTree[] { null };
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
 				new File("temp_files"), new File("data"), new ObjectStorage() {
@@ -42,22 +65,13 @@ public class SpeciesTreeBuilderTest {
 					@Override
 					public List<ObjectData> getObjects(String authToken,
 							List<ObjectIdentity> objectIds) throws Exception {
-						return Arrays.asList(new ObjectData().withData(new UObject(tempGenome)));
+						Genome genome = ref2genome.get(objectIds.get(0).getRef());
+						return Arrays.asList(new ObjectData().withData(new UObject(genome)));
 					}
 				});
-		for (String cog : stb.loadCogsCodes(false)) {
-			Map<String, String> aln = stb.loadCogAlignment(cog);
-			String seq = aln.get("354");
-			if (seq == null)
-				continue;
-			seq = AlignUtil.removeGaps(seq);
-			features.add(new Feature().withId("Copy-of-" + cog).withProteinTranslation(seq));
-		}
-		stb.run("token", new ConstructSpeciesTreeParams().withNewGenomes(Arrays.asList("aRef"))
+
+		stb.run("token", new ConstructSpeciesTreeParams().withNewGenomes(new ArrayList<String>(ref2genome.keySet()))
 				.withUseRibosomalS9Only(1L).withOutWorkspace("ws"), "", "ws/123");
-		SpeciesTree tree = treeWrap[0];
-		Assert.assertEquals(new ArrayList<String>(Arrays.asList("103")), tree.getCogs());
-		Assert.assertTrue(tree.getSpeciesTree().contains("aRef"));
-		Assert.assertEquals("Super genome", tree.getIdMap().get("aRef").getE2());
+		return treeWrap[0];
 	}
 }
