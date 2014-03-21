@@ -44,7 +44,7 @@ public class TreeServerPlaying {
 				//wsId + "/Shewanella_W3_18_1_uid58341.genome"
 		});
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace(workspace)
-				.withNewGenomes(genomeRefs).withOutTreeId("SpeciesTree1").withUseRibosomalS9Only(1L));
+				.withNewGenomes(genomeRefs).withOutTreeId("SpeciesTree1").withUseRibosomalS9Only(0L));
 		System.out.println("Job id: " + jobId);
 		long time = System.currentTimeMillis();
 		UserAndJobStateClient jscl = createJobClient(userId, pwd);
@@ -66,7 +66,7 @@ public class TreeServerPlaying {
 				}
 				break;
 			}
-			Thread.sleep(5000);
+			Thread.sleep(60000);
 		}
 		System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms.");
 	}
