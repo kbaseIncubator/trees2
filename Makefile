@@ -45,7 +45,7 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 # default target is all, which compiles the typespec and builds documentation
 default: all
 
-all: compile-typespec compile-perl-typespec build-docs
+all: compile-typespec compile-perl-typespec build-docs deploy-scripts-to-dev-container
 	# note: we do not fail here if java compilation does not work
 	-ant compile -Djarsdir=../jars/lib/jars
 
@@ -87,6 +87,8 @@ cpp-lib:
 	cd lib/KBTree_cpp_lib; make all DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
 
 
+## NOTE: next two targets assume you have the api-mods-aug2013 branch of dev container, which
+## has not been officially accepted....
 # creates script wrappers in dev_container/bin without copying scripts (this is
 # how compile_typespec and kb_seed scripts are put on the path after ‘make’
 build-dev-container-script-wrappers:
@@ -145,6 +147,11 @@ deploy-client:
 	-cp dist/KBaseTrees.jar $(TARGET)/lib/.
 	echo "deployed clients of $(SERVICE)."
 	
+## perl script directory and local dev container bin directory
+BIN_DIR = $(TOP_DIR)/bin
+SRC_PERL = $(wildcard scripts/*.pl)
+BIN_PERL = $(addprefix $(BIN_DIR)/,$(basename $(notdir $(SRC_PERL))))
+
 deploy-scripts:
 	export KB_TOP=$(TARGET); \
 	export KB_RUNTIME=$(DEPLOY_RUNTIME); \
@@ -156,7 +163,14 @@ deploy-scripts:
 		cp $$src $(TARGET)/plbin ; \
 		$(WRAP_PERL_SCRIPT) "$(TARGET)/plbin/$$basefile" $(TARGET)/bin/$$base ; \
 	done
-	
+
+deploy-scripts-to-dev-container: $(BIN_PERL)
+
+$(BIN_DIR)/%: scripts/%.pl $(TOP_DIR)/user-env.sh
+	$(WRAP_PERL_SCRIPT) '$$KB_TOP/modules/$(CURRENT_DIR)/$<' $@
+
+## NOTE: next target assume you have the api-mods-aug2013 branch of dev container, which
+## has not been officially accepted....
 deploy-scripts-nice:
 	$(TOOLS_DIR)/deploy-wrappers \
 		--jsonCommandsFile COMMANDS.json \
