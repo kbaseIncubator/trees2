@@ -2,19 +2,22 @@ package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
+
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
+
+
 
 //BEGIN_HEADER
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Properties;
-
-import org.ini4j.Ini;
 
 import us.kbase.auth.TokenFormatException;
 import us.kbase.common.service.JsonClientException;
@@ -27,6 +30,7 @@ import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
+import us.kbase.kbasetrees.cpputil.KBTree;
 //END_HEADER
 
 /**
@@ -52,13 +56,12 @@ public class KBaseTreesServer extends JsonServerServlet {
     
 	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
     private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
-    private static final String specServiceName = "trees";
 
     static {
     	// Setup service name
     	String KB_SERVNAME = "KB_SERVICE_NAME";
-    	System.setProperty(KB_SERVNAME, specServiceName);
-    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: " + specServiceName);
+    	System.setProperty(KB_SERVNAME, "trees");
+    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: trees");
     	// Setup deployment configuration path
 		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
 		InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
@@ -73,16 +76,28 @@ public class KBaseTreesServer extends JsonServerServlet {
 		} finally {
 			try { is.close(); } catch (Exception ignore) {}
 		}
+		// Load the C++ tree library
+		String libPath = System.getProperty("java.library.path");
+		System.out.println("Library Path (must contain the shared c++ lib): java.library.path="+libPath);
+		
+		// we need to check if it is loaded already, if so then just continue...
+		try {
+			System.loadLibrary("KBTreeUtil");
+		} catch (java.lang.UnsatisfiedLinkError e) {
+			// the only valid error is if the library is already loaded, otherwise we throw it again
+			if(!e.getMessage().contains("already loaded in another classloader")) {
+				throw e;
+			}
+		}
     }
     
-    public static synchronized TaskQueue getTaskQueue() throws Exception {
+    private synchronized TaskQueue getTaskQueue() throws Exception {
     	if (taskHolder == null) {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
     		String wsUrl = defaultWsUrl;
     		String jssUrl = defaultJssUrl;
-    		
-    		Map<String, String> allConfigProps = loadConfig();
+    		Map<String, String> allConfigProps = new LinkedHashMap<String, String>(super.config);
     		if (allConfigProps.containsKey("thread.count"))
     			threadCount = Integer.parseInt(allConfigProps.get("thread.count"));
     		if (allConfigProps.containsKey("queue.db.dir"))
@@ -120,10 +135,6 @@ public class KBaseTreesServer extends JsonServerServlet {
     	return taskHolder;
     }
     
-    private static Map<String, String> loadConfig() throws Exception {
-		return new Ini(new File(System.getProperty("KB_DEPLOYMENT_CONFIG"))).get(specServiceName);
-    }
-    
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
 		try {
 			UserAndJobStateClient ret = new UserAndJobStateClient(new URL(jobSrvUrl), new AuthToken(token));
@@ -142,7 +153,7 @@ public class KBaseTreesServer extends JsonServerServlet {
 			throw new IllegalStateException("Parameter forward.url is not defined in configuration");
 		TreeClient ret = null;
 		Exception err = null;
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			try {
 				TreeClient cl = new TreeClient(new URL(forwardUrl));
 				cl.extractLeafNodeNames("(k);");
@@ -239,7 +250,10 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> extractLeafNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_leaf_node_names
-        returnVal = fwd().extractLeafNodeNames(tree);
+        KBTree t = new KBTree(tree);
+        returnVal = new ArrayList<String>(Arrays.asList(t.getAllLeafNames().split(";")));
+        returnVal.add("gotsit");
+        //returnVal = fwd().extractLeafNodeNames(tree);
         //END extract_leaf_node_names
         return returnVal;
     }

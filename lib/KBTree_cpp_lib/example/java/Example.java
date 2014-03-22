@@ -6,8 +6,11 @@ import us.kbase.kbasetrees.cpputil.KBTree;
 import us.kbase.kbasetrees.cpputil.KBTreeUtil;
 
 public class Example {
-    public static void main(String argv[]) {
+	static {
         System.loadLibrary("KBTreeUtil");
+    }
+	
+    public static void main(String argv[]) {
         String treeString = "((A,C)D,)E;";
         KBTree t = new KBTree(treeString,false);
         t.printTree();
@@ -17,7 +20,6 @@ public class Example {
         System.out.println("node count="+t.toNewick());
         
         String s = "GCCCGACGCTGAAGCAGGCGATGGAGGCGATCAGGCATGAGCTCGAGGAACGGCTGAAGGAGCTGGTCGCGGAAGGGCGGCTGCTGGAGGCGCAGCGG";
-        
         
         System.out.println("'"+KBTreeUtil.translateToProt(s)+"'");
     }
