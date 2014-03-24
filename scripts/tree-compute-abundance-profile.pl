@@ -58,6 +58,9 @@ DESCRIPTION
                         set this flag to specify the minimum acceptable length of a match to
                         consider a hit; default value is set to 20
                         
+      --url [URL]
+                        set the KBaseTrees service url (optional)
+                        
       -h, --help
                         display this help message, ignore all arguments
                         
@@ -84,6 +87,7 @@ my $protFamName='';
 my $pctIdt=50;
 my $matchThreshold=20;
 my $auth="";
+my $treeurl;
 my $opt = GetOptions (
         "help" => \$help,
         "tree-id=s" => \$treeId,
@@ -92,7 +96,8 @@ my $opt = GetOptions (
         "family-name=s" => \$protFamName,
         "percent-identity-threshold=f" => \$pctIdt,
         "length-threshold=i" => \$matchThreshold,
-        "auth=s" => \$auth
+        "auth=s" => \$auth,
+        "url=s" => \$treeurl
         );
 
 if($help) {
@@ -119,7 +124,7 @@ if($n_args==0) {
     
     #create client
     my $treeClient;
-    eval{ $treeClient = get_tree_client(); };
+    eval{ $treeClient = get_tree_client($treeurl); };
     if(!$treeClient) {
         print STDERR "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
         exit 1;

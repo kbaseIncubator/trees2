@@ -16,58 +16,17 @@ package Bio::KBase::KBaseTrees::Util;
 
 use strict;
 use warnings;
-use Data::Dumper;
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(getTreeURL get_tree_client);
+our @EXPORT_OK = qw(get_tree_client);
 
-our $defaultTreeURL = "https://kbase.us/services/tree";
-
-
-# simply returns a new copy of the Tree client based on the currently set URL
+# simply returns a new copy of the Tree client based on given URL
 sub get_tree_client {
-    return Bio::KBase::KBaseTrees::Client->new(getTreeURL());
-}
-
-
-sub getTreeURL {
-    my $set = shift;
-    my $CurrentURL;
-    if (defined($set)) {
-    	if ($set eq "default") {
-            $set = $defaultTreeURL;
-        }
-    	$CurrentURL = $set;
-    	if (!defined($ENV{KB_RUNNING_IN_IRIS})) {
-	    my $filename = "$ENV{HOME}/.kbase_treeURL";
-	    open(my $fh, ">", $filename) || return;
-	    print $fh $CurrentURL;
-	    close($fh);
-    	} elsif ($ENV{KB_TREEURL}) {
-    	    $ENV{KB_TREEURL} = $CurrentURL;
-    	}
-    } elsif (!defined($CurrentURL)) {
-    	if (!defined($ENV{KB_RUNNING_IN_IRIS})) {
-	    my $filename = "$ENV{HOME}/.kbase_treeURL";
-	    if( -e $filename ) {
-		open(my $fh, "<", $filename) || return;
-		$CurrentURL = <$fh>;
-		chomp $CurrentURL;
-		close($fh);
-	    } else {
-	    	$CurrentURL = $defaultTreeURL;
-	    }
-    	} elsif (defined($ENV{KB_TREEURL})) {
-	    	$CurrentURL = $ENV{KB_TREEURL};
-	    } else {
-		$CurrentURL = $defaultTreeURL;
-    	} 
+    my $url = shift;
+    if (defined($url)) {
+	return Bio::KBase::KBaseTrees::Client->new($url);
     }
-    return $CurrentURL;
+    return Bio::KBase::KBaseTrees::Client->new();
 }
-
-
-
-
 
 1;

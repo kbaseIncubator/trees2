@@ -43,7 +43,10 @@ DESCRIPTION
                         
       -i [FILE_NAME], --input [FILE_NAME]
                         specify an input file to read the tree from
-                        
+     
+      --url [URL]
+                        set the KBaseTrees service url (optional)
+     
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -68,6 +71,7 @@ my $inputFile = '';
 my $removalFile = '';
 my $saveFile = '';
 my $mergeZeroDistLeaves='';
+my $treeurl;
 
 # parse arguments and output file
 my $stdinString = "";
@@ -75,7 +79,8 @@ my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
                      "removal-list=s" => \$removalFile,
                      "save-list=s" => \$saveFile,
-                     "merge-zero-distance-leaves|z" => \$mergeZeroDistLeaves
+                     "merge-zero-distance-leaves|z" => \$mergeZeroDistLeaves,
+                     "url=s" => \$treeurl
                      );
 if($help) {
      print $DESCRIPTION;
@@ -122,7 +127,7 @@ else {
 
 #create client
 my $treeClient;
-eval{ $treeClient = get_tree_client(); };
+eval{ $treeClient = get_tree_client($treeurl); };
 my $client_error = $@;
 if ($client_error) {
      print Dumper($client_error);

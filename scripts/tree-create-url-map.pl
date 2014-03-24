@@ -3,9 +3,6 @@ use strict;
 use warnings;
 use Getopt::Long;
 
-use Bio::KBase::KBaseTrees::Client;
-use Bio::KBase::KBaseTrees::Util qw(getTreeURL);
-
 my $DESCRIPTION =
 "
 NAME

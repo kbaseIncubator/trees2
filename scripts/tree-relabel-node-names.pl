@@ -30,6 +30,9 @@ DESCRIPTION
       -i, --input
                         specify an input file to read the tree from
                         
+      --url [URL]
+                        set the KBaseTrees service url (optional)
+                        
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -54,12 +57,14 @@ my $help = '';
 my $treeString='';
 my $inputFile = '';
 my $replacementFile = '';
+my $treeurl;
 
 # parse arguments and output file
 my $stdinString = "";
 my $opt = GetOptions("help" => \$help,
                      "input=s" => \$inputFile,
-                     "replacement-file=s" => \$replacementFile
+                     "replacement-file=s" => \$replacementFile,
+                     "url=s" => \$treeurl
                      );
 if($help) {
      print $DESCRIPTION;
@@ -111,7 +116,7 @@ else {
 
 #create client
 my $treeClient;
-eval{ $treeClient = get_tree_client(); };
+eval{ $treeClient = get_tree_client($treeurl); };
 my $client_error = $@;
 if ($client_error) {
      print Dumper($client_error);

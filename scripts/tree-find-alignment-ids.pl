@@ -31,6 +31,8 @@ DESCRIPTION
       -i, --input
                         specify input file to read from;  each feature/sequence id must
                         be on a separate line in this file
+      --url [URL]
+                        set the KBaseTrees service url (optional)
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -54,6 +56,7 @@ my $help = '';
 my $usingFeature = "";
 my $usingSequence = "";
 my $inputFile = "";
+my $treeurl;
 
 # first parse command line options
 my $opt = GetOptions (
@@ -61,6 +64,7 @@ my $opt = GetOptions (
         "feature" => \$usingFeature,
         "protein-sequence" => \$usingSequence,
         "input=s" => \$inputFile,
+        "url=s" => \$treeurl
         );
 if ($help) {
      print $DESCRIPTION;
@@ -104,7 +108,7 @@ elsif($n_args == 0) {
 
 #create client
 my $treeClient;
-eval{ $treeClient = get_tree_client(); };
+eval{ $treeClient = get_tree_client($treeurl); };
 my $client_error = $@;
 if ($client_error) {
      print Dumper($client_error);

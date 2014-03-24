@@ -4,9 +4,6 @@ use warnings;
 use Getopt::Long;
 use Data::Dumper;
 
-#use Bio::KBase::Tree::Client;
-#use Bio::KBase::Tree::Util qw(get_tree_client);
-
 my $DESCRIPTION =
 "
 NAME

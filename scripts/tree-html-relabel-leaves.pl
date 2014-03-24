@@ -4,9 +4,6 @@ use warnings;
 use Getopt::Long;
 use Data::Dumper;
 
-#use Bio::KBase::Tree::Client;
-#use Bio::KBase::Tree::Util qw(get_tree_client);
-
 my $DESCRIPTION =
 "
 NAME
@@ -28,7 +25,7 @@ DESCRIPTION
       -t, --tree-html-file
                         Optional. Give the path to the html tree file, or provide as 
                         STDIN.
-
+			
       -h, --help
                         display this help message, ignore all arguments
                         

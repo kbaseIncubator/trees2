@@ -40,6 +40,9 @@ DESCRIPTION
                         
       -i, --input [FILENAME]
                         set this flag to specify the input file to read
+     
+      --url [URL]
+                        set the KBaseTrees service url (optional)
                         
       -h, --help
                         diplay this help message, ignore all arguments
@@ -66,12 +69,14 @@ my $metaFlag = '';
 my $replaceFeature='';
 my $replaceSequence='';
 my $inputFile='';
+my $treeurl;
 my $opt = GetOptions (
         "help" => \$help,
         "meta" => \$metaFlag,
         "feature" => \$replaceFeature,
         "protein-sequence" => \$replaceSequence,
-        "input" => \$inputFile
+        "input" => \$inputFile,
+        "url=s" => \$treeurl
         );
 
 if($help) {
@@ -117,14 +122,13 @@ elsif($n_args == 0) {
      exit 1;
 }
 
+my $treeClient;
+eval{ $treeClient = get_tree_client($treeurl); };
+if(!$treeClient) {
+     print "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
+     exit 1;
+}
 foreach my $alnId (@$id_list) {
-    #create client
-    my $treeClient;
-    eval{ $treeClient = get_tree_client(); };
-    if(!$treeClient) {
-        print "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
-        exit 1;
-    }
     if($metaFlag) {
         #get meta data
         my $aln_data;

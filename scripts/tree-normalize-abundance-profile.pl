@@ -53,6 +53,8 @@ DESCRIPTION
                         an integer value; if this option is not provided, all records are preserved
       -i [FILE_NAME], --input [FILE_NAME]  
                         specify an input file to read from; if provided standard-in is ignored
+      --url [URL]
+                        set the KBaseTrees service url (optional)
       -h, --help
                         display this help message, ignore all arguments
                                                 
@@ -72,6 +74,7 @@ my $cutoff_number_of_records='';
 my $normalization_scope='per_column';
 my $normalization_type='none';
 my $normalization_post_process='none';
+my $treeurl;
 
 my $opt = GetOptions (
         "help" => \$help,
@@ -80,7 +83,8 @@ my $opt = GetOptions (
         "cutoff-num-records|r=s" => \$cutoff_number_of_records,
         "normalization-scope|s=s" => \$normalization_scope,
         "normalization-type|t=s" => \$normalization_type,
-        "normalization-post-process|p=s" => \$normalization_post_process
+        "normalization-post-process|p=s" => \$normalization_post_process,
+        "url=s" => \$treeurl
         );
 if($help) { print $DESCRIPTION; exit 0; }
 
@@ -158,7 +162,7 @@ if(scalar keys %$data) {
     
     #create client
     my $treeClient;
-    eval{ $treeClient = get_tree_client(); };
+    eval{ $treeClient = get_tree_client($treeurl); };
     if(!$treeClient) {
         print STDERR "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
         exit 1;

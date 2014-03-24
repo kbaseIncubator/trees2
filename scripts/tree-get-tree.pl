@@ -63,6 +63,9 @@ DESCRIPTION
                         
       -i, --input [FILENAME]
                         set this flag to specify the input file to read
+     
+      --url [URL]
+                        set the KBaseTrees service url (optional)
                         
       -h, --help
                         diplay this help message, ignore all arguments
@@ -95,6 +98,7 @@ my $replaceSequence='';
 my $noBootstrap='';
 my $noDist='';
 my $inputFile='';
+my $treeurl;
 my $opt = GetOptions (
         "help|h" => \$help,
         "meta|m" => \$metaFlag,
@@ -104,7 +108,8 @@ my $opt = GetOptions (
         "protein-sequence|p" => \$replaceSequence,
         "bootstrap-remove|b" => \$noBootstrap,
         "distance-remove|d" => \$noDist,
-        "input" => \$inputFile
+        "input" => \$inputFile,
+        "url=s" => \$treeurl
         );
 
 if($help) {
@@ -153,7 +158,7 @@ elsif($n_args == 0) {
 foreach my $treeId (@$id_list) {
     #create client
     my $treeClient;
-    eval{ $treeClient = get_tree_client(); };
+    eval{ $treeClient = get_tree_client($treeurl); };
     if(!$treeClient) {
         print STDERR "FAILURE - unable to create tree service client.  Is you tree URL correct? see tree-url.\n";
         exit 1;

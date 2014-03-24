@@ -58,6 +58,10 @@ DESCRIPTION
       -i, --input
                         specify input file to read from;  each id or pattern must
                         be on a separate line in this file
+     
+      --url [URL]
+                        set the KBaseTrees service url (optional)
+                        
       -h, --help
                         diplay this help message, ignore all arguments
                         
@@ -93,6 +97,7 @@ my $usingSequence = "";
 my $inputFile = "";
 my $usingFamily = "";
 my $showSourceId = "";
+my $treeurl;
 
 # first parse command line options
 my $opt = GetOptions (
@@ -101,6 +106,7 @@ my $opt = GetOptions (
         "protein-sequence" => \$usingSequence,
         "source-id-pattern" => \$usingFamily,
         "input=s" => \$inputFile,
+        "url=s" => \$treeurl
         );
 if ($help) {
      print $DESCRIPTION;
@@ -148,7 +154,7 @@ else {
 
 #create client
 my $treeClient;
-eval{ $treeClient = get_tree_client(); };
+eval{ $treeClient = get_tree_client($treeurl); };
 my $client_error = $@;
 if ($client_error) {
      print Dumper($client_error);
