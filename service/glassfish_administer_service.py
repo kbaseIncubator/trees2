@@ -45,6 +45,8 @@ def _parseArgs():
                          'This will cause a domain restart if changed.')
     parser.add_argument('-r', '--properties', nargs='*',
                          help='JVM system properties to add to the server.')
+    parser.add_argument('--set', nargs='*',
+                         help='Set glassfish configuration attribute (ie asadmin set ...).')
     parser.add_argument('-g', '--noparallelgc', action='store_true',
                          help='permanently turn off the parallel garbage ' +
                          ' collector and use the standard gc.')
@@ -235,6 +237,11 @@ class CommandGlassfishDomain(object):
         print('Creating jvm property ' + prop)
         print(self._run_remote_command('create-jvm-options', prop)
               .rstrip())
+    
+    def set_glassfish_config_option(self, prop):
+        print('Setting glassfish configuration option ' + prop)
+        print(self._run_remote_command('set', prop)
+              .rstrip())
 
     def _set_memory(self, memstr, memlist):
         if (memstr is not None and [memstr] != memlist):
@@ -286,4 +293,6 @@ if __name__ == '__main__':
         gf.set_min_max_memory(args.Xms, args.Xmx)
         for p in args.properties:
             gf.create_property(p)
+        for s in args.set:
+            gf.set_glassfish_config_option(s)
         gf.start_service(args.war, args.port, args.threads)

@@ -91,8 +91,13 @@ $(OUT_DIR)/java_interface/kbtree.o : $(SRC_PATH)/kbtree/kbtree.cpp
 # copies java src and compiled libraries to the proper location
 deploy-java :
 	mkdir -p $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil
-	cp lib/java_interface/us/kbase/kbasetrees/cpputil/*.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
+	cp lib/java_interface/us/kbase/kbasetrees/cpputil/KBTree.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
+	cp lib/java_interface/us/kbase/kbasetrees/cpputil/KBTreeUtil.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
+	cp lib/java_interface/us/kbase/kbasetrees/cpputil/KBTreeUtilJNI.java $(LOCAL_JAVA_SRC_DEPLOY_TARGET)/us/kbase/kbasetrees/cpputil/.
 	cp lib/java_interface/libKBTreeUtil.* $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
+	javac lib/java_interface/lib-loader/us/kbase/kbasetrees/cpputil/KBTreeUtilLibLoader.java
+	cd lib/java_interface/lib-loader; jar cf ../kb-tree-util-lib-loader.jar us/kbase/kbasetrees/cpputil/KBTreeUtilLibLoader.class
+	#cp lib/java_interface/lib-loader/kb-tree-util-lib-loader.jar 
 
 clean:
 	rm -f $(OUT_DIR)/java_interface/*.jnilib $(OUT_DIR)/java_interface/*.o $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/*.class 
