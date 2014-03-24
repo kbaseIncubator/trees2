@@ -31,6 +31,7 @@ import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.kbasetrees.cpputil.KBTree;
+//import us.kbase.kbasetrees.cpputil.KBTreeUtilLibLoader;
 //END_HEADER
 
 /**
@@ -80,14 +81,18 @@ public class KBaseTreesServer extends JsonServerServlet {
 		String libPath = System.getProperty("java.library.path");
 		System.out.println("Library Path (must contain the shared c++ lib): java.library.path="+libPath);
 		
-		// we need to check if it is loaded already, if so then just continue...
 		try {
 			System.loadLibrary("KBTreeUtil");
 		} catch (java.lang.UnsatisfiedLinkError e) {
+			System.err.println("Cannot link to KBTreUtil library properly. This may be caused"
+					+ " because (1) the path to the library is not set in java.library.path or"
+					+ " (2) you are running in glassfish and you attempted to reload the Tree"
+					+ " service war file without stopping the domain (in which case the tree"
+					+ " lib attempts to load twice, and throws an error).");
 			// the only valid error is if the library is already loaded, otherwise we throw it again
-			if(!e.getMessage().contains("already loaded in another classloader")) {
-				throw e;
-			}
+			//if(!e.getMessage().contains("already loaded in another classloader")) {
+			//	throw e;
+			//}
 		}
     }
     

@@ -202,6 +202,7 @@ deploy-java-service: cpp-lib deploy-perl-service prepare-deploy-target
 	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg
 	cp dist/KBaseTreesService.war $(SERVICE_DIR)/.
 	cp lib/libKBTreeUtil.* $(TARGET)/lib/.
+	cp lib/kb-tree-util-lib-loader.* $(TARGET)/lib/.
 
 #deploys the internal perl service only (without start/stop scripts)
 deploy-perl-service: cpp-lib prepare-deploy-target
@@ -227,7 +228,8 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
 	 --threads $(THREADPOOL_SIZE) --Xms $(MEMORY) --Xmx $(MAX_MEMORY)\
 	 --noparallelgc --properties KB_DEPLOYMENT_CONFIG=\$$KB_DEPLOYMENT_CONFIG\
-	 --set server.java-config.native-library-path-prefix=$(TARGET)/lib/"\
+	 --set server.java-config.native-library-path-prefix=$(TARGET)/lib/\
+	 configs.config.server-config.java-config.classpath-prefix=$(TARGET)/lib/kb-tree-util-lib-loader.jar"\
 	 >> ./service/start_service
 	echo '#!/bin/sh' > ./service/stop_service
 	echo "./stop_perl_service" >> ./service/stop_service

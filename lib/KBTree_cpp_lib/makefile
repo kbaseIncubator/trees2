@@ -97,7 +97,7 @@ deploy-java :
 	cp lib/java_interface/libKBTreeUtil.* $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
 	javac lib/java_interface/lib-loader/us/kbase/kbasetrees/cpputil/KBTreeUtilLibLoader.java
 	cd lib/java_interface/lib-loader; jar cf ../kb-tree-util-lib-loader.jar us/kbase/kbasetrees/cpputil/KBTreeUtilLibLoader.class
-	#cp lib/java_interface/lib-loader/kb-tree-util-lib-loader.jar 
+	cp lib/java_interface/kb-tree-util-lib-loader.jar $(LOCAL_JAVA_LIB_DEPLOY_TARGET)
 
 clean:
 	rm -f $(OUT_DIR)/java_interface/*.jnilib $(OUT_DIR)/java_interface/*.o $(OUT_DIR)/java_interface/us/kbase/kbasetrees/cpputil/*.class 
