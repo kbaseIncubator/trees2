@@ -2,22 +2,19 @@ package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
-
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
-
-
 
 //BEGIN_HEADER
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Properties;
+
+import org.ini4j.Ini;
 
 import us.kbase.auth.TokenFormatException;
 import us.kbase.common.service.JsonClientException;
@@ -30,8 +27,6 @@ import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
-import us.kbase.kbasetrees.cpputil.KBTree;
-//import us.kbase.kbasetrees.cpputil.KBTreeUtilLibLoader;
 //END_HEADER
 
 /**
@@ -57,12 +52,13 @@ public class KBaseTreesServer extends JsonServerServlet {
     
 	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
     private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
+    private static final String specServiceName = "trees";
 
     static {
     	// Setup service name
     	String KB_SERVNAME = "KB_SERVICE_NAME";
-    	System.setProperty(KB_SERVNAME, "trees");
-    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: trees");
+    	System.setProperty(KB_SERVNAME, specServiceName);
+    	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: " + specServiceName);
     	// Setup deployment configuration path
 		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
 		InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
@@ -77,32 +73,16 @@ public class KBaseTreesServer extends JsonServerServlet {
 		} finally {
 			try { is.close(); } catch (Exception ignore) {}
 		}
-		// Load the C++ tree library
-		String libPath = System.getProperty("java.library.path");
-		System.out.println("Library Path (must contain the shared c++ lib): java.library.path="+libPath);
-		
-		try {
-			System.loadLibrary("KBTreeUtil");
-		} catch (java.lang.UnsatisfiedLinkError e) {
-			System.err.println("Cannot link to KBTreUtil library properly. This may be caused"
-					+ " because (1) the path to the library is not set in java.library.path or"
-					+ " (2) you are running in glassfish and you attempted to reload the Tree"
-					+ " service war file without stopping the domain (in which case the tree"
-					+ " lib attempts to load twice, and throws an error).");
-			// the only valid error is if the library is already loaded, otherwise we throw it again
-			//if(!e.getMessage().contains("already loaded in another classloader")) {
-			//	throw e;
-			//}
-		}
     }
     
-    private synchronized TaskQueue getTaskQueue() throws Exception {
+    public static synchronized TaskQueue getTaskQueue() throws Exception {
     	if (taskHolder == null) {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
     		String wsUrl = defaultWsUrl;
     		String jssUrl = defaultJssUrl;
-    		Map<String, String> allConfigProps = new LinkedHashMap<String, String>(super.config);
+    		
+    		Map<String, String> allConfigProps = loadConfig();
     		if (allConfigProps.containsKey("thread.count"))
     			threadCount = Integer.parseInt(allConfigProps.get("thread.count"));
     		if (allConfigProps.containsKey("queue.db.dir"))
@@ -141,6 +121,10 @@ public class KBaseTreesServer extends JsonServerServlet {
 			}));
     	}
     	return taskHolder;
+    }
+    
+    private static Map<String, String> loadConfig() throws Exception {
+		return new Ini(new File(System.getProperty("KB_DEPLOYMENT_CONFIG"))).get(specServiceName);
     }
     
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
@@ -198,7 +182,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String replaceNodeNames(String tree, Map<String,String> replacements) throws Exception {
         String returnVal = null;
         //BEGIN replace_node_names
-        
+        /*
         // parse the tree
         KBTree t = null;
         try {
@@ -222,7 +206,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         
         // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
         returnVal = t.toNewick(1);
-        
+        */
+        returnVal = fwd().replaceNodeNames(tree, replacements);
         //END replace_node_names
         return returnVal;
     }
@@ -243,7 +228,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String removeNodeNamesAndSimplify(String tree, List<String> removalList) throws Exception {
         String returnVal = null;
         //BEGIN remove_node_names_and_simplify
-        
+        /*
         // parse the tree
         KBTree t = null;
         try {
@@ -267,7 +252,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         
         // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
         returnVal = t.toNewick(1);
-        
+        */
+        returnVal = fwd().removeNodeNamesAndSimplify(tree, removalList);
         //END remove_node_names_and_simplify
         return returnVal;
     }
@@ -290,7 +276,7 @@ public class KBaseTreesServer extends JsonServerServlet {
         String returnVal = null;
         //BEGIN merge_zero_distance_leaves
         returnVal = fwd().mergeZeroDistanceLeaves(tree);
-        
+        /*
         // parse the tree
         KBTree t = null;
         try {
@@ -304,7 +290,7 @@ public class KBaseTreesServer extends JsonServerServlet {
         t.mergeZeroDistLeaves();
         // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
         returnVal = t.toNewick(1);
-        
+        */
         //END merge_zero_distance_leaves
         return returnVal;
     }
@@ -321,7 +307,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> extractLeafNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_leaf_node_names
-        KBTree t = null;
+        /*KBTree t = null;
         try {
         	// First we attempt to parse the tree assuming interior node labels are bootstrap values
         	t=new KBTree(tree,false,true);
@@ -331,6 +317,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         	t=new KBTree(tree,false,false);
         }
         returnVal = new ArrayList<String>(Arrays.asList(t.getAllLeafNames().split(";")));
+        */
+        returnVal = fwd().extractLeafNodeNames(tree);
         //END extract_leaf_node_names
         return returnVal;
     }
@@ -349,7 +337,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> extractNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_node_names
-        KBTree t = null;
+        /*KBTree t = null;
         try {
         	// First we attempt to parse the tree assuming interior node labels are bootstrap values
         	t=new KBTree(tree,false,true);
@@ -359,6 +347,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         	t=new KBTree(tree,false,false);
         }
         returnVal = new ArrayList<String>(Arrays.asList(t.getAllNodeNames().split(";")));
+        */
+        returnVal = fwd().extractNodeNames(tree);
         //END extract_node_names
         return returnVal;
     }
@@ -375,7 +365,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public Long getNodeCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_node_count
-        KBTree t = null;
+        /*KBTree t = null;
         try {
         	// First we attempt to parse the tree assuming interior node labels are bootstrap value
         	t=new KBTree(tree,false,true);
@@ -384,7 +374,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         	// fails then we just let the exception get thrown
         	t=new KBTree(tree,false,false);
         }
-        returnVal = t.getNodeCount();
+        returnVal = t.getNodeCount(); */
+        returnVal = fwd().getNodeCount(tree);
         //END get_node_count
         return returnVal;
     }
@@ -403,7 +394,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public Long getLeafCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_leaf_count
-        KBTree t = null;
+        /*KBTree t = null;
         try {
         	// First we attempt to parse the tree assuming interior node labels are bootstrap value
         	t=new KBTree(tree,false,true);
@@ -412,7 +403,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         	// fails then we just let the exception get thrown
         	t=new KBTree(tree,false,false);
         }
-        returnVal = t.getLeafCount();
+        returnVal = t.getLeafCount(); */
+        returnVal = fwd().getLeafCount(tree);
         //END get_leaf_count
         return returnVal;
     }
