@@ -115,7 +115,10 @@ public class KBaseTreesServer extends JsonServerServlet {
 				}
 			};
 			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, 
-					allConfigProps)).registerRunner(new SpeciesTreeBuilder());
+					allConfigProps), new SpeciesTreeBuilder());
+			System.out.println("Initial queue size: " + TaskQueue.getDbConnection(queueDbDir).collect("select count(*) from " + TaskQueue.QUEUE_TABLE_NAME, new us.kbase.common.utils.DbConn.SqlLoader<Integer>() {
+				public Integer collectRow(java.sql.ResultSet rs) throws java.sql.SQLException { return rs.getInt(1); }
+			}));
     	}
     	return taskHolder;
     }
