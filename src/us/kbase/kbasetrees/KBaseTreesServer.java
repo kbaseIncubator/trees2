@@ -8,6 +8,8 @@ import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 
 
+
+
 //BEGIN_HEADER
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,8 @@ import us.kbase.userandjobstate.UserAndJobStateClient;
 
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 //END_HEADER
 
 /**
@@ -188,32 +192,22 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String replaceNodeNames(String tree, Map<String,String> replacements) throws Exception {
         String returnVal = null;
         //BEGIN replace_node_names
-        /*
-        // parse the tree
-        KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap values
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        StringBuilder relabeledTrees = new StringBuilder();
+        for(int k=0; k<trees.length; k++) {
+            // we need to loop because forester does not provide another fast way to get all node names
+            for( final PhylogenyNodeIterator it = trees[k].iteratorPostorder(); it.hasNext(); ) {
+            	PhylogenyNode node = it.next();
+            	String replacement = replacements.get(node.getName());
+            	if(replacement != null) {
+            		node.setName(replacement);
+            	}
+            }
+            relabeledTrees.append(trees[k].toNewHampshire());
         }
-        
-        // construct the replacement string (this is bad because ';' will crash... need to update the
-        // swig wrapper code!)
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> pair : replacements.entrySet()) {
-            sb.append(pair.getKey()+";"+pair.getValue()+";");
-        }
-        
-        // actually replace the labels
-        t.replaceNodeNames(sb.toString());
-        
-        // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
-        returnVal = t.toNewick(1);
-        */
-        returnVal = fwd().replaceNodeNames(tree, replacements);
+        returnVal = relabeledTrees.toString();
         //END replace_node_names
         return returnVal;
     }
@@ -234,31 +228,6 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String removeNodeNamesAndSimplify(String tree, List<String> removalList) throws Exception {
         String returnVal = null;
         //BEGIN remove_node_names_and_simplify
-        /*
-        // parse the tree
-        KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap values
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
-        }
-        
-        // construct the replacement string (this is bad because ';' will crash... need to update the
-        // swig wrapper code!)
-        StringBuilder sb = new StringBuilder();
-        for (String name : removalList) {
-            sb.append(name+";");
-        }
-        
-        // actually replace the labels
-        t.removeNodesByNameAndSimplify(sb.toString());
-        
-        // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
-        returnVal = t.toNewick(1);
-        */
         returnVal = fwd().removeNodeNamesAndSimplify(tree, removalList);
         //END remove_node_names_and_simplify
         return returnVal;
@@ -282,21 +251,6 @@ public class KBaseTreesServer extends JsonServerServlet {
         String returnVal = null;
         //BEGIN merge_zero_distance_leaves
         returnVal = fwd().mergeZeroDistanceLeaves(tree);
-        /*
-        // parse the tree
-        KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap values
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
-        }
-        t.mergeZeroDistLeaves();
-        // 1 indicates the style to output, with 1=names and edges and comments (basically, output everything)
-        returnVal = t.toNewick(1);
-        */
         //END merge_zero_distance_leaves
         return returnVal;
     }
@@ -317,9 +271,9 @@ public class KBaseTreesServer extends JsonServerServlet {
         NHXParser parser = new NHXParser();
         parser.setSource(tree);
         Phylogeny [] trees = parser.parse();
-        if(trees.length!=1) {
-        	// TODO: handle errors if we did not parse out one tree...
-        }
+        //if(trees.length!=1) {
+        	// might want to handle errors if we did not parse out one tree... for now we allow multiple trees
+        //}
         List <String> leafNodeNames = new ArrayList<String>();
         for(int k=0; k<trees.length; k++) {
             String [] names = trees[k].getAllExternalNodeNames();
@@ -344,18 +298,20 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> extractNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_node_names
-        /*KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap values
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        //if(trees.length!=1) {
+            // might want to handle errors if we did not parse out one tree... for now we allow multiple trees
+        //}
+        List <String> nodeNames = new ArrayList<String>();
+        for(int k=0; k<trees.length; k++) {
+            // we need to loop because forester does not provide another fast way to get all node names
+            for( final PhylogenyNodeIterator it = trees[k].iteratorPostorder(); it.hasNext(); ) {
+                nodeNames.add(it.next().getName());
+            }
         }
-        returnVal = new ArrayList<String>(Arrays.asList(t.getAllNodeNames().split(";")));
-        */
-        returnVal = fwd().extractNodeNames(tree);
+        returnVal = nodeNames;
         //END extract_node_names
         return returnVal;
     }
@@ -372,17 +328,17 @@ public class KBaseTreesServer extends JsonServerServlet {
     public Long getNodeCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_node_count
-        /*KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap value
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        //if(trees.length!=1) {
+            //might want to handle errors if we did not parse out one tree... for now we allow multiple trees
+        //}
+        long totalCount=0;
+        for(int k=0; k<trees.length; k++) {
+        	totalCount += trees[k].getNodeCount();
         }
-        returnVal = t.getNodeCount(); */
-        returnVal = fwd().getNodeCount(tree);
+        returnVal = totalCount;
         //END get_node_count
         return returnVal;
     }
@@ -401,17 +357,17 @@ public class KBaseTreesServer extends JsonServerServlet {
     public Long getLeafCount(String tree) throws Exception {
         Long returnVal = null;
         //BEGIN get_leaf_count
-        /*KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap value
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        //if(trees.length!=1) {
+            // TODO: might want to handle errors if we did not parse out one tree... for now we allow multiple trees
+        //}
+        long leafCount=0;
+        for(int k=0; k<trees.length; k++) {
+        	leafCount += trees[k].getNumberOfExternalNodes();
         }
-        returnVal = t.getLeafCount(); */
-        returnVal = fwd().getLeafCount(tree);
+        returnVal = leafCount;
         //END get_leaf_count
         return returnVal;
     }
