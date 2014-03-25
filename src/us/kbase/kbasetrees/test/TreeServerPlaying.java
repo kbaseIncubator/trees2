@@ -30,9 +30,27 @@ public class TreeServerPlaying {
 
 	public static void main(String[] args) throws Exception {
 		test();
+		//runOneThread(0, true);
 	}
 	
 	private static void test() throws Exception {
+		for (int i = 0; i < 8; i++) {
+			final int taskNum = i + 1;
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						runOneThread(taskNum, false);
+					} catch (Exception ex) {
+						throw new IllegalStateException(ex);
+					}
+				}
+			}).start();
+			Thread.sleep(400);
+		}
+	}
+	
+	private static void runOneThread(int taskNum, boolean riboOnly) throws Exception {
 		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://140.221.85.58:8284/"), userId, pwd);
 		cl.setAuthAllowedForHttp(true);
 		String workspace = wsId;
@@ -41,11 +59,10 @@ public class TreeServerPlaying {
 				wsId + "/Shewanella_MR_7_uid58343.genome", 
 				wsId + "/Shewanella_MR_4_uid58345.genome",
 				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
-				//wsId + "/Shewanella_W3_18_1_uid58341.genome"
 		});
 		String jobId = cl.constructSpeciesTree(new ConstructSpeciesTreeParams().withOutWorkspace(workspace)
-				.withNewGenomes(genomeRefs).withOutTreeId("SpeciesTree1").withUseRibosomalS9Only(0L));
-		System.out.println("Job id: " + jobId);
+				.withNewGenomes(genomeRefs).withOutTreeId("SpeciesTree1").withUseRibosomalS9Only(riboOnly ? 1L : 0L));
+		System.out.println("Job-id (task " + taskNum + "): " + jobId);
 		long time = System.currentTimeMillis();
 		UserAndJobStateClient jscl = createJobClient(userId, pwd);
 		while (true) {
@@ -53,22 +70,21 @@ public class TreeServerPlaying {
 			String status = data.getE3();
     		Long complete = data.getE6();
     		Long wasError = data.getE7();
-			System.out.println("Task status: " + status);
+			System.out.println("Status (task " + taskNum + "): " + status);
 			if (complete == 1L) {
 				if (wasError == 0L) {
 					String wsRef = jscl.getResults(jobId).getWorkspaceids().get(0);
 					WorkspaceClient wc = createWorkspaceClient(userId, pwd);
 					SpeciesTree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withRef(wsRef)))
 							.get(0).getData().asClassInstance(SpeciesTree.class);
-					System.out.println("COGs: " + tree.getCogs());
-					System.out.println("Tree: " + tree.getSpeciesTree());
-					System.out.println("Labels: " + tree.getIdMap());
+					System.out.println("Tree (task " + taskNum + "): " + tree.getSpeciesTree().trim());
+					System.out.println("Labels (task " + taskNum + "): " + tree.getIdMap());
 				}
 				break;
 			}
 			Thread.sleep(60000);
 		}
-		System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms.");
+		System.out.println("Time (task " + taskNum + "): " + (System.currentTimeMillis() - time) + " ms.");
 	}
 	
 	private static UserAndJobStateClient createJobClient(String user, String password) throws Exception {
