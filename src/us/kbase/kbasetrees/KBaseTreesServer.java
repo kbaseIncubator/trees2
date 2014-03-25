@@ -10,12 +10,17 @@ import us.kbase.common.service.JsonServerServlet;
 
 
 
+
+
+
+
 //BEGIN_HEADER
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.ArrayList;
 
@@ -28,6 +33,7 @@ import us.kbase.common.taskqueue.JobStatuses;
 import us.kbase.common.taskqueue.TaskQueue;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
+import us.kbase.kbasetrees.exceptions.KBaseTreesException;
 import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
@@ -35,6 +41,7 @@ import us.kbase.userandjobstate.UserAndJobStateClient;
 
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 //END_HEADER
@@ -169,6 +176,12 @@ public class KBaseTreesServer extends JsonServerServlet {
 			throw err;
 		return ret;
 	}
+	
+	static private boolean isDouble(String s) {
+		try { Double.parseDouble(s); }
+		catch (final Exception e ) { return false; }
+		return true;
+	}
     //END_CLASS_HEADER
 
     public KBaseTreesServer() throws Exception {
@@ -197,7 +210,6 @@ public class KBaseTreesServer extends JsonServerServlet {
         Phylogeny [] trees = parser.parse();
         StringBuilder relabeledTrees = new StringBuilder();
         for(int k=0; k<trees.length; k++) {
-            // we need to loop because forester does not provide another fast way to get all node names
             for( final PhylogenyNodeIterator it = trees[k].iteratorPostorder(); it.hasNext(); ) {
             	PhylogenyNode node = it.next();
             	String replacement = replacements.get(node.getName());
@@ -228,7 +240,37 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String removeNodeNamesAndSimplify(String tree, List<String> removalList) throws Exception {
         String returnVal = null;
         //BEGIN remove_node_names_and_simplify
-        returnVal = fwd().removeNodeNamesAndSimplify(tree, removalList);
+        
+        // convert removal list to a map for fast searching
+        Map<String,String> removalMap = new HashMap<String,String>();
+        for (String r : removalList) { removalMap.put(r,""); }
+        
+        // parse the tree
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        
+        // restructure the tree
+        StringBuilder relabeledTrees = new StringBuilder();
+        for(int k=0; k<trees.length; k++) {
+            // for each tree, iterate over the nodes and remove any that we can match
+            for( final PhylogenyNodeIterator it = trees[k].iteratorPostorder(); it.hasNext(); ) {
+                PhylogenyNode node = it.next();
+                if(removalMap.containsKey(node.getName())) {
+                    PhylogenyMethods.removeNode(node, trees[k]);
+                } else if ((!node.isRoot()) && (node.getName().equals("") || isDouble(node.getName()))) {
+                    // simplify the tree by 1) removing leaf nodes that have no name (or only a bootstrap value)
+                    if(node.isExternal()) {
+                        PhylogenyMethods.removeNode(node, trees[k]);
+                    // and by 2) removing internal nodes that are not named and have only one child
+                    } else if(node.getNumberOfDescendants()==1){
+                        PhylogenyMethods.removeNode(node, trees[k]);
+                    }
+                }
+            }
+            relabeledTrees.append(trees[k].toNewHampshire());
+        }
+        returnVal = relabeledTrees.toString();
         //END remove_node_names_and_simplify
         return returnVal;
     }
@@ -250,7 +292,45 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String mergeZeroDistanceLeaves(String tree) throws Exception {
         String returnVal = null;
         //BEGIN merge_zero_distance_leaves
-        returnVal = fwd().mergeZeroDistanceLeaves(tree);
+        // parse the tree
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        
+        // restructure the tree
+        StringBuilder relabeledTrees = new StringBuilder();
+        for(int k=0; k<trees.length; k++) {
+            // first pass over leaf nodes, flag the parents if the distance to the parent is zero
+            Map <Long,Integer> parentListTarget = new HashMap<Long,Integer>();
+            for( final PhylogenyNodeIterator it = trees[k].iteratorExternalForward(); it.hasNext(); ) {
+                PhylogenyNode leaf = it.next();
+                if(leaf.getDistanceToParent()==0) {
+                    if(leaf.getParent().getName().equals("") || isDouble(leaf.getParent().getName())) {
+                    	long parentId = leaf.getParent().getId();
+                        Integer zeroCount = parentListTarget.get(parentId);
+                        if(zeroCount==null) {
+                        	parentListTarget.put(new Long(parentId), new Integer(1));
+                        } else {
+                        	parentListTarget.put(new Long(parentId), new Integer(zeroCount.intValue()+1));
+                        }
+                    }
+                }
+            }
+            // now pass over the marked parents, check if all leaf nodes were distance zero, and if
+            // so, we remove the parent and replace it with the first child node
+            for (Map.Entry<Long, Integer> pair : parentListTarget.entrySet()) {
+                PhylogenyNode parent = trees[k].getNode(pair.getKey());
+                if(pair.getValue().intValue() == parent.getNumberOfDescendants()) {
+                    // remove it.
+                    for(int c=parent.getNumberOfDescendants()-1; c>0; c--) {
+                        parent.removeChildNode(c);
+                    }
+                    PhylogenyMethods.removeNode(parent, trees[k]);
+                }
+            }
+            relabeledTrees.append(trees[k].toNewHampshire());
+        }
+        returnVal = relabeledTrees.toString();
         //END merge_zero_distance_leaves
         return returnVal;
     }
