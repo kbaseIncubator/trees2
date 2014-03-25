@@ -46,8 +46,10 @@ ERR_LOG_FILE = $(SERVICE_DIR)/log/error.log
 default: all
 
 all: compile-typespec compile-perl-typespec build-docs deploy-scripts-to-dev-container
+
+jar: cpp-lib
 	# note: we do not fail here if java compilation does not work
-	-ant compile -Djarsdir=../jars/lib/jars
+	ant compile -Djarsdir=../jars/lib/jars
 
 setup-lib-dir:
 	mkdir -p lib/biokbase/$(SERVICE_NAME)
@@ -85,6 +87,7 @@ build-docs: compile-typespec
 # building the CPP libs amounts to calling another makefile in the KBTree_cpp_lib directory
 cpp-lib:
 	cd lib/KBTree_cpp_lib; make all DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
+	cd lib/KBTree_cpp_lib; make deploy-java DEPLOY_RUNTIME=$(DEPLOY_RUNTIME)
 
 
 ## NOTE: next two targets assume you have the api-mods-aug2013 branch of dev container, which
@@ -195,9 +198,10 @@ prepare-deploy-target:
 	echo $(TAGS) >> $(SERVICE_DIR)/$(SERVICE).serverdist
 
 #deploys the java service only (without start/stop scripts)
-deploy-java-service: deploy-perl-service prepare-deploy-target
-	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg
+deploy-java-service: cpp-lib deploy-perl-service prepare-deploy-target
+	ant -Djarsdir=../jars/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg -Dcpplibdir=$(TARGET)/lib/
 	cp dist/KBaseTreesService.war $(SERVICE_DIR)/.
+	cp lib/libKBTreeUtil.* $(TARGET)/lib/.
 
 #deploys the internal perl service only (without start/stop scripts)
 deploy-perl-service: cpp-lib prepare-deploy-target

@@ -16,6 +16,7 @@
 
   <property name="jarsdir" value=""/>
   <property name="deploycfg" value=""/>
+  <property name="cpplibdir" value=""/>
 
   <fileset dir="${jarsdir}" id="serverlib">
     <include name="ini4j/ini4j-0.5.2.jar"/>
@@ -79,7 +80,13 @@
          <equals arg1="${deploycfg}" arg2=""/>
        </condition>
     </fail>
-    <echo file="${classes}/${prop.file.path}">config_path=${deploycfg}</echo>
+    <fail message="Property &quot;cpplibdir&quot; needs to be set">
+           <condition>
+             <equals arg1="${cpplibdir}" arg2=""/>
+           </condition>
+    </fail>
+    <echo file="${classes}/${prop.file.path}">config_path=${deploycfg}${line.separator}</echo>
+    <echo file="${classes}/${prop.file.path}" append="true">cpp_lib_path=${cpplibdir}</echo>
     <!-- make the war file for the server-->
     <mkdir dir="${war.lib}"/>
     <copy todir="${war.lib}/" flatten="true">
