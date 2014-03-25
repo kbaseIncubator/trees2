@@ -2,9 +2,11 @@ package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
+
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
+
 
 //BEGIN_HEADER
 import java.io.File;
@@ -13,6 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.ArrayList;
 
 import org.ini4j.Ini;
 
@@ -27,6 +30,9 @@ import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
+
+import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.phylogeny.Phylogeny;
 //END_HEADER
 
 /**
@@ -307,18 +313,19 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> extractLeafNodeNames(String tree) throws Exception {
         List<String> returnVal = null;
         //BEGIN extract_leaf_node_names
-        /*KBTree t = null;
-        try {
-        	// First we attempt to parse the tree assuming interior node labels are bootstrap values
-        	t=new KBTree(tree,false,true);
-        } catch (Exception e) {
-        	// If that does not work, then we parse assuming interior labels are node names; if that
-        	// fails then we just let the exception get thrown
-        	t=new KBTree(tree,false,false);
+        // parse the tree
+        NHXParser parser = new NHXParser();
+        parser.setSource(tree);
+        Phylogeny [] trees = parser.parse();
+        if(trees.length!=1) {
+        	// TODO: handle errors if we did not parse out one tree...
         }
-        returnVal = new ArrayList<String>(Arrays.asList(t.getAllLeafNames().split(";")));
-        */
-        returnVal = fwd().extractLeafNodeNames(tree);
+        List <String> leafNodeNames = new ArrayList<String>();
+        for(int k=0; k<trees.length; k++) {
+            String [] names = trees[k].getAllExternalNodeNames();
+            leafNodeNames.addAll(Arrays.asList(names));
+		}
+        returnVal = leafNodeNames;
         //END extract_leaf_node_names
         return returnVal;
     }

@@ -226,18 +226,17 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
 	 --threads $(THREADPOOL_SIZE) --Xms $(MEMORY) --Xmx $(MAX_MEMORY)\
-	 --noparallelgc --properties KB_DEPLOYMENT_CONFIG=\$$KB_DEPLOYMENT_CONFIG\
-	 --set server.java-config.native-library-path-prefix=$(TARGET)/lib/"\
+	 --noparallelgc --properties KB_DEPLOYMENT_CONFIG=\$$KB_DEPLOYMENT_CONFIG"\
 	 >> ./service/start_service
 	echo '#!/bin/sh' > ./service/stop_service
 	echo "./stop_perl_service" >> ./service/stop_service
 	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
 	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --port $(SERVICE_PORT)" >> ./service/stop_service
-	echo "\n#we need to shutdown the domain so that we can properly reload the cpp libs\n\
-	$(ASADMIN) stop-domain --domaindir $(SERVICE_DIR)/glassfish_domain\
-	 $(SERVICE_NAME)" >> ./service/stop_service
-	chmod +x service/start_service service/stop_service
+	echo '#!/bin/sh' > ./service/stop_domain
+	echo "$(ASADMIN) stop-domain --domaindir $(SERVICE_DIR)/glassfish_domain $(SERVICE_NAME)"\
+	 >> ./service/stop_domain
+	chmod +x service/start_service service/stop_service service/stop_domain
 
 build-perl-service-start-stop-scripts:
 	# First create the start script (should be a better way to do this...)

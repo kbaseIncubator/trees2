@@ -30,6 +30,7 @@
     <include name="jackson/jackson-databind-2.2.3.jar"/>
     <include name="kbase/kbase-common-1394838813-5087b65.jar"/>
     <include name="junit/junit-4.9.jar"/>
+  	<include name="forester/forester_1030.jar"/>
   </fileset>
 
   <path id="compile.classpath">

@@ -293,6 +293,7 @@ if __name__ == '__main__':
         gf.set_min_max_memory(args.Xms, args.Xmx)
         for p in args.properties:
             gf.create_property(p)
-        for s in args.set:
-            gf.set_glassfish_config_option(s)
-        gf.start_service(args.war, args.port, args.threads)
+        if args.set is not None:
+            for s in args.set:
+                gf.set_glassfish_config_option(s)
+        gf.start_service(args.war, args.port, args.threads)  
