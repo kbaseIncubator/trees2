@@ -33,7 +33,6 @@ import us.kbase.common.taskqueue.JobStatuses;
 import us.kbase.common.taskqueue.TaskQueue;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
-import us.kbase.kbasetrees.exceptions.KBaseTreesException;
 import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
@@ -319,7 +318,7 @@ public class KBaseTreesServer extends JsonServerServlet {
             // now pass over the marked parents, check if all leaf nodes were distance zero, and if
             // so, we remove the parent and replace it with the first child node
             for (Map.Entry<Long, Integer> pair : parentListTarget.entrySet()) {
-                PhylogenyNode parent = trees[k].getNode(pair.getKey());
+                PhylogenyNode parent = trees[k].getNode((int)(long)pair.getKey());
                 if(pair.getValue().intValue() == parent.getNumberOfDescendants()) {
                     // remove it.
                     for(int c=parent.getNumberOfDescendants()-1; c>0; c--) {
