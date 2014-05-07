@@ -29,12 +29,15 @@ DESCRIPTION
                         specify the file name of the list of nodes to remove; this file should
                         be a one column file where each line contains the name of the node to
                         remove; if multiple nodes have a identical labels, they are all
-                        removed
+                        removed; instead of a file, you can also provide a string listing the
+                        nodes to be removed, in which case they should be delimited by a ';'
                         
       -s [FILE_NAME], --save-list [FILE_NAME]
                         instead of specifying the set set of nodes to remove, this flag indicates
                         that the list includes the list of nodes to save; if a node label is
-                        on this list it is saved, otherwise it is removed
+                        on this list it is saved, otherwise it is removed; instead of a file,
+                        you can also provide a string listing the nodes to be removed, in which
+                        case they should be delimited by a ';'
                         
       -z, --merge-zero-distance-leaves
                         after other removal operations have been performed, setting this flags
@@ -141,44 +144,66 @@ if ($treeString ne '') {
      my $removalList = [];
      my $removalHash = {};
      if($removalFile) {
-          my $inputFileHandle;
-          open($inputFileHandle, "<", $removalFile);
-          if(!$inputFileHandle) {
-               print STDERR "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
-               exit 1;
-          }
-          #eval {
-               my $line_number =0;
-               while (my $line = <$inputFileHandle>) {
-                    $line_number++;
+          
+          if (-e $removalFile) {
+               my $inputFileHandle;
+               open($inputFileHandle, "<", $removalFile);
+               if(!$inputFileHandle) {
+                    print STDERR "FAILURE - cannot open removal list file '$removalFile' \n$!\n";
+                    exit 1;
+               }
+               #eval {
+                    my $line_number =0;
+                    while (my $line = <$inputFileHandle>) {
+                         $line_number++;
+                         chomp($line);
+                         if($line eq '') { next; }
+                         push @$removalList, $line;
+                         $removalHash->{$line} = '1';
+                    }
+                    close $inputFileHandle;
+               #};
+          } else {
+               my @lines = split(/;/,$removalFile);
+               foreach my $line (@lines) {
                     chomp($line);
                     if($line eq '') { next; }
                     push @$removalList, $line;
                     $removalHash->{$line} = '1';
                }
-               close $inputFileHandle;
-          #};
+          }
      }
      
      if($saveFile) {
           my $save_hashed_list = {};
           my $inputFileHandle;
-          open($inputFileHandle, "<", $saveFile);
-          if(!$inputFileHandle) {
-               print STDERR "FAILURE - cannot open save list file '$saveFile' \n$!\n";
-               exit 1;
-          }
-          #eval {
-               my $line_number =0;
-               while (my $line = <$inputFileHandle>) {
-                    $line_number++;
+          
+          if (-e $saveFile) {
+               open($inputFileHandle, "<", $saveFile);
+               if(!$inputFileHandle) {
+                    print STDERR "FAILURE - cannot open save list file '$saveFile' \n$!\n";
+                    exit 1;
+               }
+               #eval {
+                    my $line_number =0;
+                    while (my $line = <$inputFileHandle>) {
+                         $line_number++;
+                         chomp($line);
+                         if($line eq '') { next; }
+                         $save_hashed_list->{$line} = '1';
+                    }
+                    close $inputFileHandle;
+               #};
+          } else {
+                my @lines = split(/;/,$saveFile);
+               foreach my $line (@lines) {
                     chomp($line);
                     if($line eq '') { next; }
                     $save_hashed_list->{$line} = '1';
                }
-               close $inputFileHandle;
-          #};
-          
+          }
+               
+          #print Dumper($save_hashed_list)."\n";
           my $all_node_names = $treeClient->extract_leaf_node_names($treeString);
           foreach my $name (@$all_node_names) {
                if(!exists $save_hashed_list->{$name}) {
@@ -192,7 +217,7 @@ if ($treeString ne '') {
           }
      }
      
-     
+     #print Dumper($removalList)."\n";
      my $new_tree;
      eval {
           $new_tree = $treeClient->remove_node_names_and_simplify($treeString, $removalList);
