@@ -30,7 +30,7 @@ public class SpeciesTreeBuilderTest {
 	public static void main(String[] args) throws Exception {
 		String ws2url = "http://140.221.84.209:7058/";
 		String userId = "nardevuser1";
-		String pwd = "nardevuser2";
+		String pwd = "*****";
 		String wsId = "nardevuser1:home";
 		List<String> genomeRefs = Arrays.asList(new String[] {
 				wsId + "/Shewanella_ANA_3_uid58347.genome",
