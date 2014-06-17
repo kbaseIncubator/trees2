@@ -10,7 +10,8 @@ MAX_MEMORY = 4000
 
 PERL_SERVICE_NAME = Tree
 PERL_SERVICE_PSGI_FILE = Tree.psgi
-PERL_SERVICE_PORT = 50000
+PERL_SERVICE_PORT = 7121
+PERL_WORKERS = 7121
 
 
 ##################################################################################
@@ -250,7 +251,7 @@ build-perl-service-start-stop-scripts:
 	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_perl_service
 	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./start_perl_service
 	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./start_perl_service
-	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --pid $(PID_FILE) --daemonize \\" >> ./start_perl_service
+	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --pid $(PID_FILE)  --workers $(PERL_WORKERS) --daemonize \\" >> ./start_perl_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
 	echo "  $(TARGET)/lib/$(PERL_SERVICE_PSGI_FILE)" >> ./start_perl_service
