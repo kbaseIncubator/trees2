@@ -25,7 +25,7 @@ public class TreeServerPlaying {
 	private static String ws2url = "http://140.221.84.209:7058/";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
 	private static String userId = "nardevuser1";
-	private static String pwd = "nardevuser2";
+	private static String pwd = "*****";
 	private static String wsId = "nardevuser1:home";
 
 	public static void main(String[] args) throws Exception {

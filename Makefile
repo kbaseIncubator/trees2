@@ -15,7 +15,11 @@ PERL_SERVICE_PORT = 50000
 
 ##################################################################################
 #Additional configuration variables which are pulled from the environment
+ifdef JENKINS_DEV_CONTAINER_PATH
+TOP_DIR = $(JENKINS_DEV_CONTAINER_PATH)
+else
 TOP_DIR = ../..
+endif
 DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
 
@@ -126,8 +130,8 @@ test-scripts:
 test-service:
 	prove test/perl-tests/testServerUp.t || (echo "NOTE: Tests require the Tree service is running at localhost:7047" && false)
 
-
-
+test-java:
+	ant test -Djarsdir=$(TOP_DIR)/modules/jars/lib/jars
 
 
 ##################################################################################
