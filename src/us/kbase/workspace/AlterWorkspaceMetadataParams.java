@@ -2,6 +2,7 @@
 package us.kbase.workspace;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -12,23 +13,16 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: CloneWorkspaceParams</p>
+ * <p>Original spec-file type: AlterWorkspaceMetadataParams</p>
  * <pre>
- * Input parameters for the "clone_workspace" function.
- *         Note that deleted objects are not cloned, although hidden objects are
- *         and remain hidden in the new workspace.
- *         Required arguments:
- *         WorkspaceIdentity wsi - the workspace to be cloned.
- *         ws_name workspace - name of the workspace to be cloned into. This must
- *                 be a non-existant workspace name.
- *         
- *         Optional arguments:
- *         permission globalread - 'r' to set the new workspace globally readable,
- *                 default 'n'.
- *         string description - A free-text description of the new workspace, 1000
- *                 characters max. Longer strings will be mercilessly and brutally
- *                 truncated.
- *         usermeta meta - arbitrary user-supplied metadata for the workspace.
+ * Input parameters for the "alter_workspace_metadata" function.
+ * Required arguments:
+ * WorkspaceIdentity wsi - the workspace to be altered
+ * One or both of the following arguments are required:
+ * usermeta new - metadata to assign to the workspace. Duplicate keys will
+ *         be overwritten.
+ * list<string> remove - these keys will be removed from the workspace
+ *         metadata key/value pairs.
  * </pre>
  * 
  */
@@ -36,12 +30,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "wsi",
-    "workspace",
-    "globalread",
-    "description",
-    "meta"
+    "new",
+    "remove"
 })
-public class CloneWorkspaceParams {
+public class AlterWorkspaceMetadataParams {
 
     /**
      * <p>Original spec-file type: WorkspaceIdentity</p>
@@ -58,14 +50,10 @@ public class CloneWorkspaceParams {
      */
     @JsonProperty("wsi")
     private WorkspaceIdentity wsi;
-    @JsonProperty("workspace")
-    private java.lang.String workspace;
-    @JsonProperty("globalread")
-    private java.lang.String globalread;
-    @JsonProperty("description")
-    private java.lang.String description;
-    @JsonProperty("meta")
-    private Map<String, String> meta;
+    @JsonProperty("new")
+    private Map<String, String> _new;
+    @JsonProperty("remove")
+    private List<String> remove;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     /**
@@ -104,68 +92,38 @@ public class CloneWorkspaceParams {
         this.wsi = wsi;
     }
 
-    public CloneWorkspaceParams withWsi(WorkspaceIdentity wsi) {
+    public AlterWorkspaceMetadataParams withWsi(WorkspaceIdentity wsi) {
         this.wsi = wsi;
         return this;
     }
 
-    @JsonProperty("workspace")
-    public java.lang.String getWorkspace() {
-        return workspace;
+    @JsonProperty("new")
+    public Map<String, String> getNew() {
+        return _new;
     }
 
-    @JsonProperty("workspace")
-    public void setWorkspace(java.lang.String workspace) {
-        this.workspace = workspace;
+    @JsonProperty("new")
+    public void setNew(Map<String, String> _new) {
+        this._new = _new;
     }
 
-    public CloneWorkspaceParams withWorkspace(java.lang.String workspace) {
-        this.workspace = workspace;
+    public AlterWorkspaceMetadataParams withNew(Map<String, String> _new) {
+        this._new = _new;
         return this;
     }
 
-    @JsonProperty("globalread")
-    public java.lang.String getGlobalread() {
-        return globalread;
+    @JsonProperty("remove")
+    public List<String> getRemove() {
+        return remove;
     }
 
-    @JsonProperty("globalread")
-    public void setGlobalread(java.lang.String globalread) {
-        this.globalread = globalread;
+    @JsonProperty("remove")
+    public void setRemove(List<String> remove) {
+        this.remove = remove;
     }
 
-    public CloneWorkspaceParams withGlobalread(java.lang.String globalread) {
-        this.globalread = globalread;
-        return this;
-    }
-
-    @JsonProperty("description")
-    public java.lang.String getDescription() {
-        return description;
-    }
-
-    @JsonProperty("description")
-    public void setDescription(java.lang.String description) {
-        this.description = description;
-    }
-
-    public CloneWorkspaceParams withDescription(java.lang.String description) {
-        this.description = description;
-        return this;
-    }
-
-    @JsonProperty("meta")
-    public Map<String, String> getMeta() {
-        return meta;
-    }
-
-    @JsonProperty("meta")
-    public void setMeta(Map<String, String> meta) {
-        this.meta = meta;
-    }
-
-    public CloneWorkspaceParams withMeta(Map<String, String> meta) {
-        this.meta = meta;
+    public AlterWorkspaceMetadataParams withRemove(List<String> remove) {
+        this.remove = remove;
         return this;
     }
 
@@ -181,7 +139,7 @@ public class CloneWorkspaceParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((("CloneWorkspaceParams"+" [wsi=")+ wsi)+", workspace=")+ workspace)+", globalread=")+ globalread)+", description=")+ description)+", meta=")+ meta)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("AlterWorkspaceMetadataParams"+" [wsi=")+ wsi)+", _new=")+ _new)+", remove=")+ remove)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

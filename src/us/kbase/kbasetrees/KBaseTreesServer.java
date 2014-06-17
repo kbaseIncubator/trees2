@@ -2,17 +2,9 @@ package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
-
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
-
-
-
-
-
-
-
 
 //BEGIN_HEADER
 import java.io.File;
@@ -33,7 +25,6 @@ import us.kbase.common.taskqueue.JobStatuses;
 import us.kbase.common.taskqueue.TaskQueue;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
-import us.kbase.kbasetrees.exceptions.KBaseTreesException;
 import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
@@ -182,6 +173,22 @@ public class KBaseTreesServer extends JsonServerServlet {
 		catch (final Exception e ) { return false; }
 		return true;
 	}
+	
+	/**
+	 * For legacy support, we make sure that if the module has the old name,
+	 * we redirect to use the new name
+	 */
+	@Override
+	protected String correctRpcMethod(String methodWithModule) {
+		int pos = methodWithModule.indexOf('.');
+		String module = methodWithModule.substring(0, pos);
+		String method = methodWithModule.substring(pos + 1);
+		if(module.equals("Tree")) {
+			module = "KBaseTrees";
+		}
+		return module+"."+method;
+	}
+	
     //END_CLASS_HEADER
 
     public KBaseTreesServer() throws Exception {

@@ -1,6 +1,8 @@
 package us.kbase.kbasegenomes;
 
+import java.io.File;
 import java.net.URL;
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 
 /**
@@ -16,7 +18,15 @@ public class KBaseGenomesClient {
         caller = new JsonClientCaller(url);
     }
 
-	public void setConnectionReadTimeOut(Integer milliseconds) {
-		this.caller.setConnectionReadTimeOut(milliseconds);
-	}
+    public URL getURL() {
+        return caller.getURL();
+    }
+
+    public void setConnectionReadTimeOut(Integer milliseconds) {
+        this.caller.setConnectionReadTimeOut(milliseconds);
+    }
+
+    public void _setFileForNextRpcResponse(File f) {
+        caller.setFileForNextRpcResponse(f);
+    }
 }

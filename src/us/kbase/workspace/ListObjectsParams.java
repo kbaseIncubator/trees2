@@ -28,14 +28,34 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *                         existing version.
  *                 
  *                 Optional arguments:
+ *                 permission perm - filter objects by permission level. 'None' and
+ *                         'readable' are ignored.
+ *                 list<username> savedby - filter objects by the user that saved or
+ *                         copied the object.
+ *                 usermeta meta - filter objects by the user supplied metadata. NOTE:
+ *                         only one key/value pair is supported at this time. A full map
+ *                         is provided as input for the possibility for expansion in the
+ *                         future.
+ *                 timestamp after - only return objects that were created after this
+ *                         date.
+ *                 timestamp before - only return objects that were created before this
+ *                         date.
  *                 boolean showDeleted - show deleted objects in workspaces to which the
  *                         user has write access.
+ *                 boolean showOnlyDeleted - only show deleted objects in workspaces to
+ *                         which the user has write access.
  *                 boolean showHidden - show hidden objects.
  *                 boolean showAllVersions - show all versions of each object that match
  *                         the filters rather than only the most recent version.
  *                 boolean includeMetadata - include the user provided metadata in the
  *                         returned object_info. If false (0 or null), the default, the
  *                         metadata will be null.
+ *                 boolean excludeGlobal - exclude objects in global workspaces. This
+ *                         parameter only has an effect when filtering by types alone.
+ *                 int skip - skip the first X objects. Maximum value is 2^31, skip values
+ *                         < 0 are treated as 0, the default.
+ *                 int limit - limit the output to X objects. Default and maximum value
+ *                         is 10000. Limit values < 1 are treated as 10000, the default.
  * </pre>
  * 
  */
@@ -45,10 +65,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "workspaces",
     "ids",
     "type",
+    "perm",
+    "savedby",
+    "meta",
+    "after",
+    "before",
     "showDeleted",
+    "showOnlyDeleted",
     "showHidden",
     "showAllVersions",
-    "includeMetadata"
+    "includeMetadata",
+    "excludeGlobal",
+    "skip",
+    "limit"
 })
 public class ListObjectsParams {
 
@@ -58,14 +87,32 @@ public class ListObjectsParams {
     private List<Long> ids;
     @JsonProperty("type")
     private java.lang.String type;
+    @JsonProperty("perm")
+    private java.lang.String perm;
+    @JsonProperty("savedby")
+    private List<String> savedby;
+    @JsonProperty("meta")
+    private Map<String, String> meta;
+    @JsonProperty("after")
+    private java.lang.String after;
+    @JsonProperty("before")
+    private java.lang.String before;
     @JsonProperty("showDeleted")
     private java.lang.Long showDeleted;
+    @JsonProperty("showOnlyDeleted")
+    private java.lang.Long showOnlyDeleted;
     @JsonProperty("showHidden")
     private java.lang.Long showHidden;
     @JsonProperty("showAllVersions")
     private java.lang.Long showAllVersions;
     @JsonProperty("includeMetadata")
     private java.lang.Long includeMetadata;
+    @JsonProperty("excludeGlobal")
+    private java.lang.Long excludeGlobal;
+    @JsonProperty("skip")
+    private java.lang.Long skip;
+    @JsonProperty("limit")
+    private java.lang.Long limit;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("workspaces")
@@ -113,6 +160,81 @@ public class ListObjectsParams {
         return this;
     }
 
+    @JsonProperty("perm")
+    public java.lang.String getPerm() {
+        return perm;
+    }
+
+    @JsonProperty("perm")
+    public void setPerm(java.lang.String perm) {
+        this.perm = perm;
+    }
+
+    public ListObjectsParams withPerm(java.lang.String perm) {
+        this.perm = perm;
+        return this;
+    }
+
+    @JsonProperty("savedby")
+    public List<String> getSavedby() {
+        return savedby;
+    }
+
+    @JsonProperty("savedby")
+    public void setSavedby(List<String> savedby) {
+        this.savedby = savedby;
+    }
+
+    public ListObjectsParams withSavedby(List<String> savedby) {
+        this.savedby = savedby;
+        return this;
+    }
+
+    @JsonProperty("meta")
+    public Map<String, String> getMeta() {
+        return meta;
+    }
+
+    @JsonProperty("meta")
+    public void setMeta(Map<String, String> meta) {
+        this.meta = meta;
+    }
+
+    public ListObjectsParams withMeta(Map<String, String> meta) {
+        this.meta = meta;
+        return this;
+    }
+
+    @JsonProperty("after")
+    public java.lang.String getAfter() {
+        return after;
+    }
+
+    @JsonProperty("after")
+    public void setAfter(java.lang.String after) {
+        this.after = after;
+    }
+
+    public ListObjectsParams withAfter(java.lang.String after) {
+        this.after = after;
+        return this;
+    }
+
+    @JsonProperty("before")
+    public java.lang.String getBefore() {
+        return before;
+    }
+
+    @JsonProperty("before")
+    public void setBefore(java.lang.String before) {
+        this.before = before;
+    }
+
+    public ListObjectsParams withBefore(java.lang.String before) {
+        this.before = before;
+        return this;
+    }
+
     @JsonProperty("showDeleted")
     public java.lang.Long getShowDeleted() {
         return showDeleted;
@@ -125,6 +247,21 @@ public class ListObjectsParams {
 
     public ListObjectsParams withShowDeleted(java.lang.Long showDeleted) {
         this.showDeleted = showDeleted;
+        return this;
+    }
+
+    @JsonProperty("showOnlyDeleted")
+    public java.lang.Long getShowOnlyDeleted() {
+        return showOnlyDeleted;
+    }
+
+    @JsonProperty("showOnlyDeleted")
+    public void setShowOnlyDeleted(java.lang.Long showOnlyDeleted) {
+        this.showOnlyDeleted = showOnlyDeleted;
+    }
+
+    public ListObjectsParams withShowOnlyDeleted(java.lang.Long showOnlyDeleted) {
+        this.showOnlyDeleted = showOnlyDeleted;
         return this;
     }
 
@@ -173,6 +310,51 @@ public class ListObjectsParams {
         return this;
     }
 
+    @JsonProperty("excludeGlobal")
+    public java.lang.Long getExcludeGlobal() {
+        return excludeGlobal;
+    }
+
+    @JsonProperty("excludeGlobal")
+    public void setExcludeGlobal(java.lang.Long excludeGlobal) {
+        this.excludeGlobal = excludeGlobal;
+    }
+
+    public ListObjectsParams withExcludeGlobal(java.lang.Long excludeGlobal) {
+        this.excludeGlobal = excludeGlobal;
+        return this;
+    }
+
+    @JsonProperty("skip")
+    public java.lang.Long getSkip() {
+        return skip;
+    }
+
+    @JsonProperty("skip")
+    public void setSkip(java.lang.Long skip) {
+        this.skip = skip;
+    }
+
+    public ListObjectsParams withSkip(java.lang.Long skip) {
+        this.skip = skip;
+        return this;
+    }
+
+    @JsonProperty("limit")
+    public java.lang.Long getLimit() {
+        return limit;
+    }
+
+    @JsonProperty("limit")
+    public void setLimit(java.lang.Long limit) {
+        this.limit = limit;
+    }
+
+    public ListObjectsParams withLimit(java.lang.Long limit) {
+        this.limit = limit;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -185,7 +367,7 @@ public class ListObjectsParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((("ListObjectsParams"+" [workspaces=")+ workspaces)+", ids=")+ ids)+", type=")+ type)+", showDeleted=")+ showDeleted)+", showHidden=")+ showHidden)+", showAllVersions=")+ showAllVersions)+", includeMetadata=")+ includeMetadata)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((("ListObjectsParams"+" [workspaces=")+ workspaces)+", ids=")+ ids)+", type=")+ type)+", perm=")+ perm)+", savedby=")+ savedby)+", meta=")+ meta)+", after=")+ after)+", before=")+ before)+", showDeleted=")+ showDeleted)+", showOnlyDeleted=")+ showOnlyDeleted)+", showHidden=")+ showHidden)+", showAllVersions=")+ showAllVersions)+", includeMetadata=")+ includeMetadata)+", excludeGlobal=")+ excludeGlobal)+", skip=")+ skip)+", limit=")+ limit)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

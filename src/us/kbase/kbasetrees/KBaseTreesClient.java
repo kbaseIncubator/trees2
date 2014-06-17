@@ -42,9 +42,13 @@ public class KBaseTreesClient {
         caller = new JsonClientCaller(url, user, password);
     }
 
-	public void setConnectionReadTimeOut(Integer milliseconds) {
-		this.caller.setConnectionReadTimeOut(milliseconds);
-	}
+    public URL getURL() {
+        return caller.getURL();
+    }
+
+    public void setConnectionReadTimeOut(Integer milliseconds) {
+        this.caller.setConnectionReadTimeOut(milliseconds);
+    }
 
     public boolean isAuthAllowedForHttp() {
         return caller.isAuthAllowedForHttp();
@@ -54,9 +58,13 @@ public class KBaseTreesClient {
         caller.setAuthAllowedForHttp(isAuthAllowedForHttp);
     }
 
-	public void _setFileForNextRpcResponse(File f) {
-		caller.setFileForNextRpcResponse(f);
-	}
+    public AuthToken getToken() {
+        return caller.getToken();
+    }
+
+    public void _setFileForNextRpcResponse(File f) {
+        caller.setFileForNextRpcResponse(f);
+    }
 
     /**
      * <p>Original spec-file function name: replace_node_names</p>

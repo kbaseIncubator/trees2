@@ -13,19 +13,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: ContigSet</p>
+ * <p>Original spec-file type: ProteinSet</p>
  * <pre>
- * Type spec for the "ContigSet" object
- *                 contigset_id id - unique kbase ID of the contig set
- *                 string name - name of the contig set
- *                 string type - type of the contig set (values are: Genome,Transcripts,Environment,Collection)
- *                 source_id source_id - source ID of the contig set
- *                 string source - source of the contig set
- *                 list<Contig> contigs - list of contigs in the contig set
- *                 reads_ref reads_ref - reference to the shocknode with the rawreads from which contigs were assembled
+ * Type spec for the "ProteinSet" object
+ *                 proteinset_id id - unique kbase ID of the protein set
+ *                 string name - name of the protein set
+ *                 string type - type of the protein set (values are: Organism,Environment,Collection)
+ *                 source_id source_id - source ID of the protein set
+ *                 string source - source of the protein set
+ *                 list<Protein> proteins - list of proteins in the protein set
  *                 fasta_ref fasta_ref - reference to fasta file from which contig set were read
- *                 @optional name type reads_ref fasta_ref
- *             @searchable ws_subset contigs.[*].(id,md5) md5 id name source_id source type
+ *                 @optional name type fasta_ref
+ *             @searchable ws_subset proteins.[*].(id,md5,function,length,aliases) md5 id name source_id source type
  * </pre>
  * 
  */
@@ -38,11 +37,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "source_id",
     "source",
     "type",
-    "reads_ref",
     "fasta_ref",
-    "contigs"
+    "proteins"
 })
-public class ContigSet {
+public class ProteinSet {
 
     @JsonProperty("id")
     private String id;
@@ -56,12 +54,10 @@ public class ContigSet {
     private String source;
     @JsonProperty("type")
     private String type;
-    @JsonProperty("reads_ref")
-    private String readsRef;
     @JsonProperty("fasta_ref")
     private String fastaRef;
-    @JsonProperty("contigs")
-    private List<Contig> contigs;
+    @JsonProperty("proteins")
+    private List<Protein> proteins;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
@@ -74,7 +70,7 @@ public class ContigSet {
         this.id = id;
     }
 
-    public ContigSet withId(String id) {
+    public ProteinSet withId(String id) {
         this.id = id;
         return this;
     }
@@ -89,7 +85,7 @@ public class ContigSet {
         this.name = name;
     }
 
-    public ContigSet withName(String name) {
+    public ProteinSet withName(String name) {
         this.name = name;
         return this;
     }
@@ -104,7 +100,7 @@ public class ContigSet {
         this.md5 = md5;
     }
 
-    public ContigSet withMd5(String md5) {
+    public ProteinSet withMd5(String md5) {
         this.md5 = md5;
         return this;
     }
@@ -119,7 +115,7 @@ public class ContigSet {
         this.sourceId = sourceId;
     }
 
-    public ContigSet withSourceId(String sourceId) {
+    public ProteinSet withSourceId(String sourceId) {
         this.sourceId = sourceId;
         return this;
     }
@@ -134,7 +130,7 @@ public class ContigSet {
         this.source = source;
     }
 
-    public ContigSet withSource(String source) {
+    public ProteinSet withSource(String source) {
         this.source = source;
         return this;
     }
@@ -149,23 +145,8 @@ public class ContigSet {
         this.type = type;
     }
 
-    public ContigSet withType(String type) {
+    public ProteinSet withType(String type) {
         this.type = type;
-        return this;
-    }
-
-    @JsonProperty("reads_ref")
-    public String getReadsRef() {
-        return readsRef;
-    }
-
-    @JsonProperty("reads_ref")
-    public void setReadsRef(String readsRef) {
-        this.readsRef = readsRef;
-    }
-
-    public ContigSet withReadsRef(String readsRef) {
-        this.readsRef = readsRef;
         return this;
     }
 
@@ -179,23 +160,23 @@ public class ContigSet {
         this.fastaRef = fastaRef;
     }
 
-    public ContigSet withFastaRef(String fastaRef) {
+    public ProteinSet withFastaRef(String fastaRef) {
         this.fastaRef = fastaRef;
         return this;
     }
 
-    @JsonProperty("contigs")
-    public List<Contig> getContigs() {
-        return contigs;
+    @JsonProperty("proteins")
+    public List<Protein> getProteins() {
+        return proteins;
     }
 
-    @JsonProperty("contigs")
-    public void setContigs(List<Contig> contigs) {
-        this.contigs = contigs;
+    @JsonProperty("proteins")
+    public void setProteins(List<Protein> proteins) {
+        this.proteins = proteins;
     }
 
-    public ContigSet withContigs(List<Contig> contigs) {
-        this.contigs = contigs;
+    public ProteinSet withProteins(List<Protein> proteins) {
+        this.proteins = proteins;
         return this;
     }
 
@@ -211,7 +192,7 @@ public class ContigSet {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((("ContigSet"+" [id=")+ id)+", name=")+ name)+", md5=")+ md5)+", sourceId=")+ sourceId)+", source=")+ source)+", type=")+ type)+", readsRef=")+ readsRef)+", fastaRef=")+ fastaRef)+", contigs=")+ contigs)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((("ProteinSet"+" [id=")+ id)+", name=")+ name)+", md5=")+ md5)+", sourceId=")+ sourceId)+", source=")+ source)+", type=")+ type)+", fastaRef=")+ fastaRef)+", proteins=")+ proteins)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
