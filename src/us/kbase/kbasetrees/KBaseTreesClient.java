@@ -570,4 +570,21 @@ public class KBaseTreesClient {
         List<String> res = caller.jsonrpcCall("KBaseTrees.construct_species_tree", args, retType, true, true);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: construct_multiple_alignment</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructMultipleAlignment ConstructMultipleAlignment}
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String constructMultipleAlignment(ConstructMultipleAlignment params) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_multiple_alignment", args, retType, true, true);
+        return res.get(0);
+    }
 }

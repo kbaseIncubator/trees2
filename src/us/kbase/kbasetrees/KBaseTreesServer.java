@@ -802,6 +802,23 @@ public class KBaseTreesServer extends JsonServerServlet {
         return returnVal;
     }
 
+    /**
+     * <p>Original spec-file function name: construct_multiple_alignment</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructMultipleAlignment ConstructMultipleAlignment}
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.construct_multiple_alignment")
+    public String constructMultipleAlignment(ConstructMultipleAlignment params, AuthToken authPart) throws Exception {
+        String returnVal = null;
+        //BEGIN construct_multiple_alignment
+        if (true)
+        	throw new IllegalStateException("Method is not yet support");
+        //END construct_multiple_alignment
+        return returnVal;
+    }
+
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.out.println("Usage: <program> <server_port>");
