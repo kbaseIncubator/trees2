@@ -752,4 +752,44 @@ module KBaseTrees
     */
     funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
 
+	/* Type for multiple sequence alignment.
+	
+		int alignment_length - number of columns in alignment.
+		string alignment_method - name of program used for this alignment construction (optional),
+			currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
+        is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
+		mapping<string, string> alignment - mapping from sequence id to aligned sequence
+		list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
+		@optional alignment_method
+		@optional is_protein_mode
+		@optional sequence_id_order
+	*/
+	typedef structure {
+		int alignment_length;
+		string alignment_method;
+        int is_protein_mode;
+		mapping<string, string> alignment;
+		list<string> sequence_id_order;
+	} MSA;
+
+    /* Input data type for construct_species_tree method.
+
+        gene_sequences - (required) the mapping from gene ids to their sequences
+        alignment_method - (required) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
+        	Mafft.
+        is_protein_mode - (optional) 1 in case sequences are amino acids, 0 in case of nucleotides 
+        	(default value is 1).
+        out_workspace - (required) the workspace to deposit the completed alignment
+        out_msa_id - (optional) the name of the newly constructed msa (will be random if not present 
+        	or null)
+    */
+    typedef structure {
+        mapping<string, string> gene_sequences;
+        string alignment_method;
+        int is_protein_mode;
+        string out_workspace;
+        string out_msa_id;
+    } ConstructMultipleAlignment;
+
+	funcdef construct_multiple_alignment(ConstructMultipleAlignment params) returns (job_id) authentication required;
 };
