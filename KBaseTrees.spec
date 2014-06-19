@@ -1,8 +1,8 @@
 /*
 Phylogenetic Tree and Multiple Sequence Alignment Services
 
-This service provides a set of methods for querying, manipulating, and analyzing multiple
-sequence alignments and phylogenetic trees.
+This service provides a set of data types and methods for operating with multiple
+sequence alignments (MSAs) and phylogenetic trees.
 
 Authors
 ---------
@@ -11,7 +11,7 @@ Fangfang Xia, ANL (fangfang.xia@gmail.com)
 Keith Keller, LBL (kkeller@lbl.gov)
 Matt Henderson, LBL (mhenderson@lbl.gov)
 Dylan Chivian, LBL (dcchivian@lbl.gov)
-
+Roman Sutormin, LBL (rsutormin@lbl.gov)
 */
 module KBaseTrees
 {
@@ -36,119 +36,55 @@ module KBaseTrees
     */
     typedef int position;
     
-    /* A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
-    designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and
-    "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
-    identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as
-    "kb|g.1234.peg.771".
-    @id kb
+    /*
+        A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
+        designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and
+        "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
+        identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as
+        "kb|g.1234.peg.771".
+        @id kb
     */
     typedef string kbase_id;
 
-    /* A string representation of a phylogenetic tree.  The format/syntax of the string is
-    specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
-    'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
-    trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
-    in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
-    of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
-    Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and
-    distances.
+    /*
+        A string representation of a phylogenetic tree.  The format/syntax of the string is
+        specified by using one of the available typedefs declaring a particular format, such as 'newick_tree',
+        'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return
+        trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes
+        in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality
+        of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named.
+        Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and
+        distances.
     */
     typedef string tree;
 
-    /* Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format)
-    and are returned to you in this format by default.  
+    /*
+        Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format)
+        and are returned to you in this format by default.  
     */
     typedef tree newick_tree;
     
-    /* Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
-    but can optionally be converted to the more verbose phyloXML format, which is useful for compatibility or
-    when additional information/annotations decorate the tree.
+    /*
+        Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
+        but can optionally be converted to the more verbose phyloXML format, which is useful for compatibility or
+        when additional information/annotations decorate the tree.
     */
     typedef tree phylo_xml_tree;
     
-    /* Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
-    but can optionally be converted to JSON format where the structure of the tree matches the structure of
-    the JSON object.  This is useful when interacting with the tree in JavaScript, for instance. 
+    /*
+        Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format),
+        but can optionally be converted to JSON format where the structure of the tree matches the structure of
+        the JSON object.  This is useful when interacting with the tree in JavaScript, for instance. 
     */
     typedef tree json_tree;
     
-    /* String representation of a sequence alignment, the format of which may be different depending on
-    input options for retrieving the alignment.
+    /*
+        String representation of a sequence alignment, the format of which may be different depending on
+        input options for retrieving the alignment.
     */
     typedef string alignment;
     
-    
-    /* String representation of a sequence or set of sequences in FASTA format.  The precise alphabet used is
-    not yet specified, but will be similar to sequences stored in KBase with '-' to denote gaps in alignments.
-    */
-    typedef string fasta;
-    
-    /* String representation of an alignment in FASTA format.  The precise alphabet and syntax of the alignment
-    string is not yet specified, but will be similar to sequences stored in KBase  with '-' to denote gaps in
-    alignments.
-    */
-    typedef fasta fasta_alignment;
-    
-    /* The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this
-    is not the full, raw label in a newick_tree (which may include comments).
-    */
-    typedef string node_name;
-    
-    /* String in HTML format, used in the KBase Tree library for returning rendered trees. */
-    typedef string html_file;
-    
-    
-    
-    
-    
-    
-    /*
-    These structures are not currently used yet, and are therefore commented out....
-    
-    typedef structure {
-        int beg_pos_aln;
-        int end_pos_aln;
-        int beg_pos_in_parent;
-        int end_pos_in_parent;
-        int parent_seq_length;
-        string md5_of_ungapped_sequence;
-        
-        string parent_sequence;
-        string parent_sequence_type;
-        string parent_sequence_md5;
-        
-        string parent_sequence_canonical_kb_feature_id;
-    
-    } AlignmentRowComponent;
-    
-    typedef structure {
-        string row_id;
-        string row_description;
-        string raw_row_sequence;
-        list <AlignmentRowComponent> components;
-    } AlignmentRow;
-    
-    typedef structure {
-        string alignment_id;
-        list<AlignmentRow> rows;
-        mapping<string,string> alignment_attributes;
-        string status;
-        boolean is_concatenation
-        string sequence_type
-        timestamp timestamp
-        string method
-        string parameters
-        string protocol;
-        string source_db;
-        string source_id;
-    } Alignment;
-    
-    
-    */
-    
-    /*
-        A workspace ID that references a Tree data object.
+    /* A workspace ID that references a Tree data object.
         @id ws KBaseTrees.Tree
     */
     typedef string ws_tree_id;
@@ -163,8 +99,7 @@ module KBaseTrees
     */
     typedef string ws_tree_id;
     
-    /*
-        A workspace ID that references a Genome data object.
+    /* A workspace ID that references a Genome data object.
         @id ws KBaseGenomes.Genome
     */
     typedef string ws_genome_id;
@@ -181,8 +116,7 @@ module KBaseTrees
     /* basic information associated with nodes in a tree */
     typedef tuple<node_id,label,is_leaf> node_info;
     
-    /*
-        Data type representative of a phylogenetic tree.
+    /* Data type representative of a phylogenetic tree.
         @optional name description type
         @optional ws_genome_refs kb_refs tree_attributes
         @optional source_id source_db
@@ -205,8 +139,7 @@ module KBaseTrees
     } Tree;
     
     
-    /*
-        Data type that stores a view of a tree.
+    /* Data type that stores a view of a tree.
         @optional node_labels node_attributes node_values
     */
     typedef structure {
@@ -273,18 +206,25 @@ module KBaseTrees
     /* METHODS FOR TREE PARSING AND STRING MANIPULATIONS */
     /* *********************************************************************************************** */
 
+    /*
+        The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this
+        is not the full, raw label in a newick_tree (which may include comments).
+    */
+    typedef string node_name;
+    
+    
     /* Given a tree in newick format, replace the node names indicated as keys in the 'replacements' mapping
     with new node names indicated as values in the 'replacements' mapping.  Matching is EXACT and will not handle
     regular expression patterns.
     */
-    funcdef replace_node_names(newick_tree tree, mapping<node_name,node_name>replacements) returns (newick_tree);
+    funcdef replace_node_names(newick_tree tree, mapping<node_id,node_name>replacements) returns (newick_tree);
     
     /* Given a tree in newick format, remove the nodes with the given names indicated in the list, and
     simplify the tree.  Simplifying a tree involves removing unnamed internal nodes that have only one
     child, and removing unnamed leaf nodes.  During the removal process, edge lengths (if they exist) are
     conserved so that the summed end to end distance between any two nodes left in the tree will remain the same.
     */
-    funcdef remove_node_names_and_simplify(newick_tree tree, list<node_name>removal_list) returns (newick_tree);
+    funcdef remove_node_names_and_simplify(newick_tree tree, list<node_id>removal_list) returns (newick_tree);
    
     /* Some KBase trees keep information on canonical feature ids, even if they have the same protien sequence
     in an alignment.  In these cases, some leaves with identical sequences will have zero distance so that
@@ -702,20 +642,16 @@ module KBaseTrees
     /* *********************************************************************************************** */
     /* METHODS FOR ALIGNMENT / TREE BUILDING */
     /* *********************************************************************************************** */
- 
-    /* Given an alignment in FASTA format, build a phylogenetic tree using the options indicated.
-    */
-    /* funcdef build_tree_from_fasta(fasta_alignment alignment, mapping<string,string>options) returns (newick_tree); */
-    
-    /* Given a set of sequences in FASTA format, construct a sequence alignment with the options indicated.
-    */
-    /* funcdef align_sequences(list<fasta> sequences, mapping<string,string>options) returns (fasta_alignment); */
- 
- 
+
+
     /* *********************************************************************************************** */
     /* METHODS FOR TREE VISUALIZATION */
     /* *********************************************************************************************** */
 
+    /* String in HTML format, used in the KBase Tree library for returning rendered trees.
+    */
+    typedef string html_file;
+    
     /* Given a tree structure in newick, render it in HTML/JAVASCRIPT and return the page as a string. display_options
     provides a way to pass parameters to the tree rendering algorithm, but currently no options are recognized. */
     funcdef draw_html_tree(newick_tree tree, mapping<string,string>display_options) returns (html_file);

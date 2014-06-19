@@ -41,8 +41,8 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * <p>Original spec-file module name: KBaseTrees</p>
  * <pre>
  * Phylogenetic Tree and Multiple Sequence Alignment Services
- * This service provides a set of methods for querying, manipulating, and analyzing multiple
- * sequence alignments and phylogenetic trees.
+ * This service provides a set of data types and methods for operating with multiple
+ * sequence alignments (MSAs) and phylogenetic trees.
  * Authors
  * ---------
  * Michael Sneddon, LBL (mwsneddon@lbl.gov)
@@ -50,6 +50,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  * Keith Keller, LBL (kkeller@lbl.gov)
  * Matt Henderson, LBL (mhenderson@lbl.gov)
  * Dylan Chivian, LBL (dcchivian@lbl.gov)
+ * Roman Sutormin, LBL (rsutormin@lbl.gov)
  * </pre>
  */
 public class KBaseTreesServer extends JsonServerServlet {
@@ -205,7 +206,7 @@ public class KBaseTreesServer extends JsonServerServlet {
      * regular expression patterns.
      * </pre>
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
-     * @param   replacements   instance of mapping from original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).) to original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
+     * @param   replacements   instance of mapping from original type "node_id" to original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
      * @return   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
     @JsonServerMethod(rpc = "KBaseTrees.replace_node_names")
@@ -240,7 +241,7 @@ public class KBaseTreesServer extends JsonServerServlet {
      * conserved so that the summed end to end distance between any two nodes left in the tree will remain the same.
      * </pre>
      * @param   tree   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
-     * @param   removalList   instance of list of original type "node_name" (The string representation of the parsed node name (may be a kbase_id, but does not have to be).  Note that this is not the full, raw label in a newick_tree (which may include comments).)
+     * @param   removalList   instance of list of original type "node_id"
      * @return   instance of original type "newick_tree" (Trees are represented in KBase by default in newick format (http://en.wikipedia.org/wiki/Newick_format) and are returned to you in this format by default.) &rarr; original type "tree" (A string representation of a phylogenetic tree.  The format/syntax of the string is specified by using one of the available typedefs declaring a particular format, such as 'newick_tree', 'phylo_xml_tree' or 'json_tree'.  When a format is not explictily specified, it is possible to return trees in different formats depending on addtional parameters. Regardless of format, all leaf nodes in trees built from MSAs are indexed to a specific MSA row.  You can use the appropriate functionality of the API to replace these IDs with other KBase Ids instead. Internal nodes may or may not be named. Nodes, depending on the format, may also be annotated with structured data such as bootstrap values and distances.)
      */
     @JsonServerMethod(rpc = "KBaseTrees.remove_node_names_and_simplify")
