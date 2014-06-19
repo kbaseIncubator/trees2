@@ -29,6 +29,7 @@ import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
+import us.kbase.erdbservice.ERDBServiceClient;
 
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;

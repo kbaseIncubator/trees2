@@ -216,6 +216,91 @@ module KBaseTrees
     } AlignmentTree;
     */
     
+    /*
+        A workspace ID that references a Tree data object.
+        @id ws KBaseTrees.Tree
+    */
+    typedef string ws_tree_id;
+    
+    
+    /*
+    
+    */
+    typedef string ws_alignment_id;
+    
+    /*
+        @id ws KBaseTrees.Tree
+    */
+    typedef string ws_tree_id;
+    
+    /*
+        A workspace ID that references a Genome data object.
+        @id ws KBaseGenomes.Genome
+    */
+    typedef string ws_genome_id;
+    
+    /*
+        An ID for some piece of reference data in KBase, generally
+        stored in the Central Data Store
+        @id kb
+    */
+    typedef string kb_id;
+    
+    
+    typedef string node_id;
+    typedef boolean is_leaf;
+    typedef string label;
+    
+    /* basic information associated with nodes in a tree */
+    typedef tuple<node_id,label,is_leaf> node_info;
+    
+    /*
+        Data type representative of a phylogenetic tree.
+        @optional name description type
+        @optional ws_genome_refs kb_refs tree_attributes
+        @optional source_id source_db
+    */
+    typedef structure {
+        string name;
+        string description;
+        string type;
+        
+        newick_tree tree;
+        
+        mapping <string,string> tree_attributes;
+        
+        list<node_info> nodes;
+        mapping <node_id,ws_genome_id> ws_genome_refs;
+        mapping <node_id,kb_id> kb_refs;
+        
+        string source_id;
+        string source_db;
+    } Tree;
+    
+    
+    /*
+        Data type that stores a view of a tree.
+        @optional node_labels node_attributes node_values view_state
+    */
+    typedef structure {
+        
+        ws_tree_id ws_tree_id;
+        
+        mapping <node_id,label> node_labels;
+        mapping <node_id,mapping<string,string>> node_attributes;
+        mapping <node_id,mapping<string,float>>  node_values;
+        
+        mapping <node_id,string> view_state;
+        
+    } TreeDecorator;
+
+
+
+
+
+
+
+
     
     
     /* *********************************************************************************************** */
@@ -441,6 +526,16 @@ module KBaseTrees
     funcdef get_trees_with_overlapping_domain(kbase_id domain, mapping<string,string>options) returns (list<kbase_id>);
     */
     
+
+
+    /* *********************************************************************************************** */
+    /* BASIC METHODS FOR TREES/MSAs IN THE WORKSPACE */
+    /* *********************************************************************************************** */
+
+
+    /* funcdef import_tree_from_cdm() returns (); */
+
+
 
 
     /* *********************************************************************************************** */
