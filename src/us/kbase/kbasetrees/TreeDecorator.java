@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: TreeDecorator</p>
  * <pre>
  * Data type that stores a view of a tree.
- * @optional node_labels node_attributes node_values view_state
+ * @optional node_labels node_attributes node_values
  * </pre>
  * 
  */
@@ -25,8 +25,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ws_tree_id",
     "node_labels",
     "node_attributes",
-    "node_values",
-    "view_state"
+    "node_values"
 })
 public class TreeDecorator {
 
@@ -38,8 +37,6 @@ public class TreeDecorator {
     private Map<String, Map<String, String>> nodeAttributes;
     @JsonProperty("node_values")
     private Map<String, Map<String, Double>> nodeValues;
-    @JsonProperty("view_state")
-    private Map<String, String> viewState;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("ws_tree_id")
@@ -102,21 +99,6 @@ public class TreeDecorator {
         return this;
     }
 
-    @JsonProperty("view_state")
-    public Map<String, String> getViewState() {
-        return viewState;
-    }
-
-    @JsonProperty("view_state")
-    public void setViewState(Map<String, String> viewState) {
-        this.viewState = viewState;
-    }
-
-    public TreeDecorator withViewState(Map<String, String> viewState) {
-        this.viewState = viewState;
-        return this;
-    }
-
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -129,7 +111,7 @@ public class TreeDecorator {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((("TreeDecorator"+" [wsTreeId=")+ wsTreeId)+", nodeLabels=")+ nodeLabels)+", nodeAttributes=")+ nodeAttributes)+", nodeValues=")+ nodeValues)+", viewState=")+ viewState)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("TreeDecorator"+" [wsTreeId=")+ wsTreeId)+", nodeLabels=")+ nodeLabels)+", nodeAttributes=")+ nodeAttributes)+", nodeValues=")+ nodeValues)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

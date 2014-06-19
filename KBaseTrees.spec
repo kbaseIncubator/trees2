@@ -228,12 +228,12 @@ module KBaseTrees
     typedef int parent_len;
     typedef string parent_md5;
     
-    typedef tuple <label,
+    typedef tuple <
         start_pos_in_parent,
         end_pos_in_parent,
         parent_len,
         parent_md5>
-            row_info;
+            trim_info;
 
     /* Type for multiple sequence alignment.
 	int alignment_length - number of columns in alignment.
@@ -243,7 +243,7 @@ module KBaseTrees
 	mapping<string, string> alignment - mapping from sequence id to aligned sequence
 	list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
 	@optional name description sequence_type
-	@optional rows alignment_attributes row_order
+	@optional trim_info alignment_attributes row_order
 	@optional source_id source_db
     */
     typedef structure {
@@ -254,7 +254,7 @@ module KBaseTrees
         int alignment_length;
 	mapping <row_id, sequence> alignment;
         
-        mapping <row_id, row_info> rows;
+        mapping <row_id, trim_info> trim_info;
         
         mapping <string,string> alignment_attributes;
 	list <row_id> row_order;

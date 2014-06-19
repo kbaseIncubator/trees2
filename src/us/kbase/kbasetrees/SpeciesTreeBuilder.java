@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,29 +26,19 @@ import java.util.zip.GZIPInputStream;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import us.kbase.auth.AuthToken;
-import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
-import us.kbase.common.taskqueue.TaskQueueConfig;
-import us.kbase.common.taskqueue.TaskRunner;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
-import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.SaveObjectsParams;
-import us.kbase.workspace.WorkspaceClient;
 
-public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams> {
-	
-	private File tempDir;
-	private File dataDir;
-	private ObjectStorage storage;
+public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeParams> {
 	
 	private static String MAX_EVALUE = "1e-05";
 	private static int MIN_COVERAGE = 50;
@@ -59,49 +48,8 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 		return ConstructSpeciesTreeParams.class;
 	}
 
-	@Override
-	public void init(TaskQueueConfig queueCfg, Map<String, String> configParams) {
-		init(getDirParam(configParams, "temp.dir"), getDirParam(configParams, "data.dir"),
-				createDefaultObjectStorage(queueCfg.getWsUrl()));
-	}
-	
-	public static ObjectStorage createDefaultObjectStorage(final String wsUrl) {
-		return new ObjectStorage() {
-			
-			@Override
-			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
-					String authToken, SaveObjectsParams params) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
-				return client.saveObjects(params);
-			}
-			
-			@Override
-			public List<ObjectData> getObjects(String authToken,
-					List<ObjectIdentity> objectIds) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
-				return client.getObjects(objectIds);
-			}
-		};
-	}
-	
 	public SpeciesTreeBuilder init(File tempDir, File dataDir, ObjectStorage ws) {
-		this.tempDir = tempDir;
-		if (!tempDir.exists())
-			tempDir.mkdir();
-		this.dataDir = dataDir;
-		if (!dataDir.exists())
-			throw new IllegalStateException("Directory " + dataDir + " doesn't exist");
-		this.storage = ws;
-		return this;
-	}
-
-	private static File getDirParam(Map<String, String> configParams, String param) {
-		String tempDirPath = configParams.get(param);
-		if (tempDirPath == null)
-			throw new IllegalStateException("Parameter " + param + " is not defined in configuration");
-		return new File(tempDirPath);
+		return (SpeciesTreeBuilder)super.init(tempDir, dataDir, ws);
 	}
 
 	@Override
@@ -157,30 +105,17 @@ public class SpeciesTreeBuilder implements TaskRunner<ConstructSpeciesTreeParams
 	}
 	
 	private File getFastTreeBin() {
-		return new File(new File(dataDir, "bin"), "FastTree." + getOsSuffix());
+		return new File(getBinDir(), "FastTree." + getOsSuffix());
 	}
 
 	private File getFormatRpsDbBin() {
-		return new File(new File(dataDir, "bin"), "makeprofiledb." + getOsSuffix());
+		return new File(getBinDir(), "makeprofiledb." + getOsSuffix());
 	}
 
 	private File getRpsBlastBin() {
-		return new File(new File(dataDir, "bin"), "rpsblast." + getOsSuffix());
+		return new File(getBinDir(), "rpsblast." + getOsSuffix());
 	}
 
-	private String getOsSuffix() {
-		String osName = System.getProperty("os.name").toLowerCase();
-		String suffix;
-		if (osName.contains("linux")) {
-			suffix = "linux";
-		} else if (osName.contains("mac os x")) {
-			suffix = "macosx";
-		} else {
-			throw new IllegalStateException("Unsupported OS type: " + osName);
-		}
-		return suffix;
-	}
-	
 	private String runFastTree(File input) throws Exception {
 		CorrectProcess cp = null;
 		ByteArrayOutputStream errBaos = null;
