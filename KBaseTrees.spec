@@ -19,13 +19,21 @@ module KBaseTrees
     /* ALIGNMENT AND TREE DATA TYPES */
     /* *********************************************************************************************** */
 
-    /* indicates true or false values, false <= 0, true >=1 */
+    /*
+        Indicates true or false values, false = 0, true = 1
+        @range [0,1]
+    */
     typedef int boolean;
     
-    /* time in units of number of seconds since the epoch */
+    /*
+        Time in units of number of seconds since the epoch
+    */
     typedef string timestamp;
     
-    /* integer number indicating a 1-based position in an amino acid / nucleotide sequence */
+    /*
+        Integer number indicating a 1-based position in an amino acid / nucleotide sequence
+        @range [1,
+    */
     typedef int position;
     
     /* A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are
@@ -33,6 +41,7 @@ module KBaseTrees
     "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome
     identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as
     "kb|g.1234.peg.771".
+    @id kb
     */
     typedef string kbase_id;
 
@@ -90,66 +99,7 @@ module KBaseTrees
     typedef string html_file;
     
     
-    /* Meta data associated with a tree.
     
-        kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
-        string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
-                      either built from a sequence alignment, or imported directly indexed to genomes.
-        string status - set to 'active' if this is the latest built tree for a particular gene family
-        timestamp date_created - time at which the tree was built/loaded in seconds since the epoch
-        string tree_contruction_method - the name of the software used to construct the tree
-        string tree_construction_parameters - any non-default parameters of the tree construction method
-        string tree_protocol - simple free-form text which may provide additional details of how the tree was built
-        int node_count - total number of nodes in the tree
-        int leaf_count - total number of leaf nodes in the tree (generally this cooresponds to the number of sequences)
-        string source_db - the source database where this tree originated, if one exists
-        string source_id - the id of this tree in an external database, if one exists 
-    */
-    typedef structure {
-        kbase_id alignment_id;
-        string type;
-        string status;
-        timestamp date_created;
-        string tree_contruction_method;
-        string tree_construction_parameters;
-        string tree_protocol;
-        int node_count;
-        int leaf_count;
-        string source_db;
-        string source_id;
-    } TreeMetaData;
-    
-    
-    /* Meta data associated with an alignment.
-    
-        list<kbase_id> tree_ids - the set of trees that were built from this alignment
-        string status - set to 'active' if this is the latest alignment for a particular set of sequences
-        string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
-        boolean is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
-                                sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
-        timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
-        int n_rows - number of rows in the alignment
-        int n_cols - number of columns in the alignment
-        string alignment_construction_method - the name of the software tool used to build the alignment
-        string alignment_construction_parameters - set of non-default parameters used to construct the alignment
-        string alignment_protocol - simple free-form text which may provide additional details of how the alignment was built
-        string source_db - the source database where this alignment originated, if one exists
-        string source_id - the id of this alignment in an external database, if one exists
-    */
-    typedef structure {
-        list<kbase_id> tree_ids;
-        string status;
-        string sequence_type;
-        string is_concatenation;
-        timestamp date_created;
-        int n_rows;
-        int n_cols;
-        string alignment_construction_method;
-        string alignment_construction_parameters;
-        string alignment_protocol;
-        string source_db;
-        string source_id;
-    } AlignmentMetaData;
     
     
     
@@ -194,26 +144,7 @@ module KBaseTrees
         string source_id;
     } Alignment;
     
-    typedef structure {
-        string tree_id;
-        newick_tree newick_tree;
-        mapping<string,string> tree_attributes;
-        mapping<string,mapping<string,string>> node_attributes;
-        string status;
-        string data_type;
-        timestamp timestamp;
-        string method;
-        string parameters;
-        string protocol;
-        string source_id;
-        string source_db;
-    } Tree;
     
-    
-    typedef structure {
-        Tree tree;
-        Alignment alignment;
-    } AlignmentTree;
     */
     
     /*
@@ -222,9 +153,8 @@ module KBaseTrees
     */
     typedef string ws_tree_id;
     
-    
     /*
-    
+        @id ws KBaseTrees.MSA KBaseTrees.ConcatMSA KBaseTrees.MS
     */
     typedef string ws_alignment_id;
     
@@ -239,16 +169,13 @@ module KBaseTrees
     */
     typedef string ws_genome_id;
     
-    /*
-        An ID for some piece of reference data in KBase, generally
-        stored in the Central Data Store
-        @id kb
-    */
-    typedef string kb_id;
-    
-    
+    /* */
     typedef string node_id;
+    
+    
     typedef boolean is_leaf;
+    
+    
     typedef string label;
     
     /* basic information associated with nodes in a tree */
@@ -269,9 +196,9 @@ module KBaseTrees
         
         mapping <string,string> tree_attributes;
         
-        list<node_info> nodes;
+        list <node_info> nodes;
         mapping <node_id,ws_genome_id> ws_genome_refs;
-        mapping <node_id,kb_id> kb_refs;
+        mapping <node_id,kbase_id> kb_refs;
         
         string source_id;
         string source_db;
@@ -280,7 +207,7 @@ module KBaseTrees
     
     /*
         Data type that stores a view of a tree.
-        @optional node_labels node_attributes node_values view_state
+        @optional node_labels node_attributes node_values
     */
     typedef structure {
         
@@ -290,12 +217,51 @@ module KBaseTrees
         mapping <node_id,mapping<string,string>> node_attributes;
         mapping <node_id,mapping<string,float>>  node_values;
         
-        mapping <node_id,string> view_state;
-        
     } TreeDecorator;
 
 
+    typedef string row_id;
+    typedef string sequence;
+    
+    typedef int start_pos_in_parent;
+    typedef int end_pos_in_parent;
+    typedef int parent_len;
+    typedef string parent_md5;
+    
+    typedef tuple <label,
+        start_pos_in_parent,
+        end_pos_in_parent,
+        parent_len,
+        parent_md5>
+            row_info;
 
+    /* Type for multiple sequence alignment.
+	int alignment_length - number of columns in alignment.
+	string alignment_method - name of program used for this alignment construction (optional),
+                currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
+        is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
+	mapping<string, string> alignment - mapping from sequence id to aligned sequence
+	list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
+	@optional name description sequence_type
+	@optional rows alignment_attributes row_order
+	@optional source_id source_db
+    */
+    typedef structure {
+        string name;
+        string description;
+        string sequence_type;
+        
+        int alignment_length;
+	mapping <row_id, sequence> alignment;
+        
+        mapping <row_id, row_info> rows;
+        
+        mapping <string,string> alignment_attributes;
+	list <row_id> row_order;
+        
+        string source_id;
+        string source_db;
+    } MSA;
 
 
 
@@ -383,6 +349,69 @@ module KBaseTrees
     /* *********************************************************************************************** */
     /* METHODS FOR ALIGNMENT AND TREE RETRIEVAL */
     /* *********************************************************************************************** */
+    
+    
+        /* Meta data associated with a tree.
+    
+        kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
+        string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
+                      either built from a sequence alignment, or imported directly indexed to genomes.
+        string status - set to 'active' if this is the latest built tree for a particular gene family
+        timestamp date_created - time at which the tree was built/loaded in seconds since the epoch
+        string tree_contruction_method - the name of the software used to construct the tree
+        string tree_construction_parameters - any non-default parameters of the tree construction method
+        string tree_protocol - simple free-form text which may provide additional details of how the tree was built
+        int node_count - total number of nodes in the tree
+        int leaf_count - total number of leaf nodes in the tree (generally this cooresponds to the number of sequences)
+        string source_db - the source database where this tree originated, if one exists
+        string source_id - the id of this tree in an external database, if one exists 
+    */
+    typedef structure {
+        kbase_id alignment_id;
+        string type;
+        string status;
+        timestamp date_created;
+        string tree_contruction_method;
+        string tree_construction_parameters;
+        string tree_protocol;
+        int node_count;
+        int leaf_count;
+        string source_db;
+        string source_id;
+    } TreeMetaData;
+    
+    
+    /* Meta data associated with an alignment.
+    
+        list<kbase_id> tree_ids - the set of trees that were built from this alignment
+        string status - set to 'active' if this is the latest alignment for a particular set of sequences
+        string sequence_type - indicates what type of sequence is aligned (e.g. protein vs. dna)
+        boolean is_concatenation - true if the alignment is based on the concatenation of multiple non-contiguous
+                                sequences, false if each row cooresponds to exactly one sequence (possibly with gaps)
+        timestamp date_created - time at which the alignment was built/loaded in seconds since the epoch
+        int n_rows - number of rows in the alignment
+        int n_cols - number of columns in the alignment
+        string alignment_construction_method - the name of the software tool used to build the alignment
+        string alignment_construction_parameters - set of non-default parameters used to construct the alignment
+        string alignment_protocol - simple free-form text which may provide additional details of how the alignment was built
+        string source_db - the source database where this alignment originated, if one exists
+        string source_id - the id of this alignment in an external database, if one exists
+    */
+    typedef structure {
+        list<kbase_id> tree_ids;
+        string status;
+        string sequence_type;
+        string is_concatenation;
+        timestamp date_created;
+        int n_rows;
+        int n_cols;
+        string alignment_construction_method;
+        string alignment_construction_parameters;
+        string alignment_protocol;
+        string source_db;
+        string source_id;
+    } AlignmentMetaData;
+    
     
     /* Returns the specified tree in the specified format, or an empty string if the tree does not exist.
     The options hash provides a way to return the tree with different labels replaced or with different attached meta
@@ -751,26 +780,6 @@ module KBaseTrees
     /* Build a species tree out of a set of given genome references.
     */
     funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
-
-	/* Type for multiple sequence alignment.
-	
-		int alignment_length - number of columns in alignment.
-		string alignment_method - name of program used for this alignment construction (optional),
-			currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
-        is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
-		mapping<string, string> alignment - mapping from sequence id to aligned sequence
-		list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
-		@optional alignment_method
-		@optional is_protein_mode
-		@optional sequence_id_order
-	*/
-	typedef structure {
-		int alignment_length;
-		string alignment_method;
-        int is_protein_mode;
-		mapping<string, string> alignment;
-		list<string> sequence_id_order;
-	} MSA;
 
     /* Input data type for construct_species_tree method.
 
