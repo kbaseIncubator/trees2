@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -43,8 +44,8 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		return "Multiple alignment construction for gene/protein list using one of widely used methods";
 	}
 	
-	private File getMuscleBin() {
-		return new File(new File(dataDir, "bin"), "muscle." + getOsSuffix());
+	private File getMethodBin(String method) {
+		return new File(new File(dataDir, "bin"), method + "." + getOsSuffix());
 	}
 	
 	@Override
@@ -53,6 +54,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		Map<Integer, String> numToId = new TreeMap<Integer, String>();
 		File inputFasta = File.createTempFile("msaInput", ".fa", getTempDir());
 		File resultFile = null;
+		List<File> toDelete = new ArrayList<File>(Arrays.asList(inputFasta));
 		Alignment aln = null;
 		try {
 			FastaWriter fw = new FastaWriter(inputFasta);
@@ -63,18 +65,26 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 			}
 			fw.close();
 			resultFile = File.createTempFile("msaOutput", ".aln", getTempDir());
-			if (inputData.getAlignmentMethod().toLowerCase().equals("muscle")) {
-				String binPath = getMuscleBin().getAbsolutePath();
+			toDelete.add(resultFile);
+			String method = inputData.getAlignmentMethod().toLowerCase();
+			if (method.equals("muscle")) {  // version 3.8.31
+				String binPath = getMethodBin("muscle").getAbsolutePath();
 				runProgram(binPath, "-in", inputFasta.getAbsolutePath(), "-out", resultFile.getAbsolutePath(), "-clw");
+			} else if (method.equals("clustal")) { // version 2.1
+				File dndFile = new File(inputFasta.getParentFile(), inputFasta.getName().substring(0, inputFasta.getName().length() - 2) + "dnd");
+				toDelete.add(dndFile);
+				String binPath = getMethodBin("clustalw2").getAbsolutePath();
+				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "DNA" : "PROTEIN";
+				runProgram(binPath, "/INFILE=" + inputFasta.getAbsolutePath(), 
+						"-OUTFILE=" + resultFile, "/OUTORDER=INPUT", "-TYPE=" + type);
 			} else {
 				throw new IllegalStateException("Method " + inputData.getAlignmentMethod() + " is not supported");
 			}
 			aln = ClustalParser.parse(new BufferedReader(new FileReader(resultFile)), null);
 		} finally {
-			if (inputFasta.exists())
-				inputFasta.delete();
-			if (resultFile != null && resultFile.exists())
-				resultFile.delete();
+			for (File f : toDelete)
+				if (f.exists())
+					f.delete();
 		}
 		String alnType = null;
 		if (inputData.getIsProteinMode() != null) {
@@ -108,7 +118,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				Arrays.asList(data)));
 	}
 
-	private void runProgram(String... cmd) throws Exception {
+	private String runProgram(String... cmd) throws Exception {
 		CorrectProcess cp = null;
 		ByteArrayOutputStream errBaos = null;
 		Exception err = null;
@@ -141,6 +151,6 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				err = new IllegalStateException("MSA exit code: " + procExitValue);
 			throw err;
 		}
-		//return new String(result.toByteArray(), Charset.forName("UTF-8")).trim();
+		return new String(result.toByteArray(), Charset.forName("UTF-8")).trim();
 	}
 }

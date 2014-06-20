@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import us.kbase.common.service.Tuple11;
@@ -26,7 +28,12 @@ public class MultipleAlignmentBuilderTest {
 	public void testMuscle() throws Exception {
 		build("Muscle");
 	}
-	
+
+	@Test
+	public void testClustal() throws Exception {
+		build("Clustal");
+	}
+
 	private static MSA build(String method) throws Exception {
 		final MSA[] retWrap = new MSA[] { null };
 		MultipleAlignmentBuilder stb = new MultipleAlignmentBuilder().init(
@@ -43,13 +50,19 @@ public class MultipleAlignmentBuilderTest {
 						throw new IllegalStateException();
 					}
 				});
-
-		stb.run("token", new ConstructMultipleAlignment().withAlignmentMethod(method).withGeneSequences(loadProtSeqs()).withOutWorkspace("ws"), "", "ws/123");
+		Map<String, String> seqs = loadProtSeqs();
+		stb.run("token", new ConstructMultipleAlignment().withAlignmentMethod(method).withGeneSequences(seqs).withOutWorkspace("ws"), "", "ws/123");
+		MSA msa = retWrap[0];
 		for (String id : retWrap[0].getRowOrder()) {
 			String seq = retWrap[0].getAlignment().get(id);
-			System.out.println(method + "\t" + id + "\t" + seq.substring(0, 50) + "...");
+			Assert.assertEquals((long)msa.getAlignmentLength(), (long)seq.length());
+			//System.out.println(method + "\t" + id + "\t" + seq);  //.substring(0, 50) + "...");
 		}
-		return retWrap[0];
+		Assert.assertEquals(seqs.size(), msa.getAlignment().size());
+		for (String id : seqs.keySet()) {
+			Assert.assertEquals(seqs.get(id), AlignUtil.removeGaps(msa.getAlignment().get(id)));
+		}
+		return msa;
 	}
 
 	private static Map<String, String> loadProtSeqs() throws Exception {
