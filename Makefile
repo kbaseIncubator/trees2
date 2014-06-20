@@ -112,7 +112,8 @@ COMMANDS: COMMANDS.json
 		--irisCommandsFile COMMANDS \
 		--devContainerToolsDir $(TOOLS_DIR)
 
-
+prepare-thrirdparty-bins:
+	./download_3rd_party_bins.sh
 
 ##################################################################################
 # here are the standard KBase test targets (test, test-all, deploy-client, deploy-scripts, & deploy-service)
@@ -131,7 +132,7 @@ test-scripts:
 test-service:
 	prove test/perl-tests/testServerUp.t || (echo "NOTE: Tests require the Tree service is running at localhost:7047" && false)
 
-test-java:
+test-java:  prepare-thrirdparty-bins
 	ant test -Djarsdir=$(TOP_DIR)/modules/jars/lib/jars
 
 
@@ -193,7 +194,7 @@ deploy-docs:
 # deploys all libraries and scripts needed to start/stop the service
 deploy-service: deploy-java-service deploy-service-start_scripts
 
-prepare-deploy-target:
+prepare-deploy-target:  prepare-thrirdparty-bins
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(PERL_SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(SERVICE_DIR)
