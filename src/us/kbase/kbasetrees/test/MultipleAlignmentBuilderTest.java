@@ -34,6 +34,11 @@ public class MultipleAlignmentBuilderTest {
 		build("Clustal");
 	}
 
+	@Test
+	public void testTCoffee() throws Exception {
+		build("T-Coffee");
+	}
+
 	private static MSA build(String method) throws Exception {
 		final MSA[] retWrap = new MSA[] { null };
 		MultipleAlignmentBuilder stb = new MultipleAlignmentBuilder().init(

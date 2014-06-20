@@ -32,6 +32,17 @@ if [[ "$unamestr" == 'Linux' ]]; then
 		mv ./muscle3.8.31_i86linux64 ../bin/muscle.linux
 		rm ./muscle.tar.gz
 	fi
+	########### T-coffee ############
+	if [ ! -f ../bin/tcoffee.linux ]; then
+		curl -o tcoffee.tar.gz 'http://www.tcoffee.org/Packages/Stable/Version_10.00.r1613/T-COFFEE_distribution_Version_10.00.r1613.tar.gz'
+		tar -zxvf tcoffee.tar.gz
+		cd ./T-COFFEE_distribution_Version_10.00.r1613/t_coffee_source
+		make
+		mv ./t_coffee ../../../bin/tcoffee.linux
+		cd ../..
+		rm -r ./T-COFFEE_distribution_Version_10.00.r1613
+		rm ./tcoffee.tar.gz
+	fi
 elif [[ "$unamestr" == 'Darwin' ]]; then
 	echo "OS architecture: mac os x"
 	########### Blast #############
@@ -61,6 +72,17 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 		tar -zxvf muscle.tar.gz muscle3.8.31_i86darwin64
 		mv ./muscle3.8.31_i86darwin64 ../bin/muscle.macosx
 		rm ./muscle.tar.gz
+	fi
+	########### T-coffee ############
+	if [ ! -f ../bin/tcoffee.macosx ]; then
+		curl -o tcoffee.tar.gz 'http://www.tcoffee.org/Packages/Stable/Version_10.00.r1613/T-COFFEE_distribution_Version_10.00.r1613.tar.gz'
+		tar -zxvf tcoffee.tar.gz
+		cd ./T-COFFEE_distribution_Version_10.00.r1613/t_coffee_source
+		make
+		mv ./t_coffee ../../../bin/tcoffee.macosx
+		cd ../..
+		rm -r ./T-COFFEE_distribution_Version_10.00.r1613
+		rm ./tcoffee.tar.gz
 	fi
 else
 	echo "Unknown OS architecture: $unamestr"

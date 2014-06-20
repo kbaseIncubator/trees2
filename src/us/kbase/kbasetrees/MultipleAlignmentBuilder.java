@@ -77,6 +77,10 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "DNA" : "PROTEIN";
 				runProgram(binPath, "/INFILE=" + inputFasta.getAbsolutePath(), 
 						"-OUTFILE=" + resultFile, "/OUTORDER=INPUT", "-TYPE=" + type);
+			} else if (method.equals("t-coffee")) {  // version 10.00
+				String binPath = getMethodBin("tcoffee").getAbsolutePath();
+				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "dna" : "protein";
+				runProgram(binPath, inputFasta.getAbsolutePath(), "-type", type, "-outfile=" + resultFile.getAbsolutePath(), "-output=clustalw");
 			} else {
 				throw new IllegalStateException("Method " + inputData.getAlignmentMethod() + " is not supported");
 			}
