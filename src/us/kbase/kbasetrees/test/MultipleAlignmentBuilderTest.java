@@ -44,6 +44,11 @@ public class MultipleAlignmentBuilderTest {
 		build("ProbCons");
 	}
 
+	@Test
+	public void testMafft() throws Exception {
+		build("Mafft");
+	}
+
 	private static MSA build(String method) throws Exception {
 		final MSA[] retWrap = new MSA[] { null };
 		MultipleAlignmentBuilder stb = new MultipleAlignmentBuilder().init(

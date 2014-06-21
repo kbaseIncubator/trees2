@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -49,6 +50,15 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		return new File(new File(dataDir, "bin"), method + "." + getOsSuffix());
 	}
 	
+	private File writeTempScript(String cmd) throws Exception {
+		File f = File.createTempFile("cmd", "sh", getTempDir());
+		PrintWriter pw = new PrintWriter(f);
+		pw.println("#!/bin/bash");
+		pw.println(cmd);
+		pw.close();
+		return f;
+	}
+	
 	@Override
 	public void run(String token, ConstructMultipleAlignment inputData,
 			String jobId, String outRef) throws Exception {
@@ -91,7 +101,12 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				toDelete.add(dndFile);
 				String binPath = getMethodBin("probcons").getAbsolutePath();
 				resultAlnText = runProgram(tmp, binPath, "-clustalw", inputFasta.getAbsolutePath());
-				System.out.println("[" + resultAlnText + "]");
+			} else if (method.equals("mafft")) {  // version 7.157b
+				String binPath = getMethodBin("mafft").getAbsolutePath();
+				String libPath = getMethodBin("mafftlib").getAbsolutePath();
+				File cmdFile = writeTempScript("export MAFFT_BINARIES=" + libPath + "\n" + binPath + " --clustalout " + inputFasta.getAbsolutePath());
+				toDelete.add(cmdFile);
+				resultAlnText = runProgram(tmp, "bash", cmdFile.getAbsolutePath());
 			} else {
 				throw new IllegalStateException("Method " + inputData.getAlignmentMethod() + " is not supported");
 			}

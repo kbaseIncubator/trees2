@@ -56,6 +56,17 @@ if [[ "$unamestr" == 'Linux' ]]; then
 		rm -r ./probcons
 		rm probcons.tar.gz
 	fi
+	########### Mafft ##############
+	if [ ! -f ../bin/mafft.linux ]; then
+		echo "Downloading mafft..."
+		curl -o mafft.tgz 'http://mafft.cbrc.jp/alignment/software/mafft-7.157-linux.tgz'
+		tar -zxvf mafft.tgz
+		mv ./mafft-linux64/mafftdir/bin/mafft ../bin/mafft.linux
+		mv ./mafft-linux64/mafftdir/libexec ../bin/mafftlib.linux
+		rm -r ./mafft-linux32
+		rm -r ./mafft-linux64
+		rm mafft.tgz
+	fi
 elif [[ "$unamestr" == 'Darwin' ]]; then
 	echo "OS architecture: mac os x"
 	########### Blast #############
@@ -109,6 +120,16 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 		cd ..
 		rm -r ./probcons
 		rm probcons.tar.gz
+	fi
+	########### Mafft ##############
+	if [ ! -f ../bin/mafft.macosx ]; then
+		echo "Downloading mafft..."
+		curl -o mafft.zip 'http://mafft.cbrc.jp/alignment/software/mafft-7.157-mac.zip'
+		unzip ./mafft.zip
+		mv ./mafft-mac/mafftdir/bin/mafft ../bin/mafft.macosx
+		mv ./mafft-mac/mafftdir/libexec ../bin/mafftlib.macosx
+		rm -r ./mafft-mac
+		rm mafft.zip
 	fi
 else
 	echo "Unknown OS architecture: $unamestr"
