@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +55,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		Map<Integer, String> numToId = new TreeMap<Integer, String>();
 		File inputFasta = File.createTempFile("msaInput", ".fa", getTempDir());
 		File resultFile = null;
+		String resultAlnText = null;
 		List<File> toDelete = new ArrayList<File>(Arrays.asList(inputFasta));
 		Alignment aln = null;
 		try {
@@ -67,24 +69,37 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 			resultFile = File.createTempFile("msaOutput", ".aln", getTempDir());
 			toDelete.add(resultFile);
 			String method = inputData.getAlignmentMethod().toLowerCase();
+			File tmp = getTempDir();
 			if (method.equals("muscle")) {  // version 3.8.31
 				String binPath = getMethodBin("muscle").getAbsolutePath();
-				runProgram(binPath, "-in", inputFasta.getAbsolutePath(), "-out", resultFile.getAbsolutePath(), "-clw");
+				runProgram(tmp, binPath, "-in", inputFasta.getAbsolutePath(), "-out", resultFile.getAbsolutePath(), "-clw");
 			} else if (method.equals("clustal")) { // version 2.1
 				File dndFile = new File(inputFasta.getParentFile(), inputFasta.getName().substring(0, inputFasta.getName().length() - 2) + "dnd");
 				toDelete.add(dndFile);
 				String binPath = getMethodBin("clustalw2").getAbsolutePath();
 				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "DNA" : "PROTEIN";
-				runProgram(binPath, "/INFILE=" + inputFasta.getAbsolutePath(), 
+				runProgram(tmp, binPath, "/INFILE=" + inputFasta.getAbsolutePath(), 
 						"-OUTFILE=" + resultFile, "/OUTORDER=INPUT", "-TYPE=" + type);
 			} else if (method.equals("t-coffee")) {  // version 10.00
+				File dndFile = new File(inputFasta.getParentFile(), inputFasta.getName().substring(0, inputFasta.getName().length() - 2) + "dnd");
+				toDelete.add(dndFile);
 				String binPath = getMethodBin("tcoffee").getAbsolutePath();
 				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "dna" : "protein";
-				runProgram(binPath, inputFasta.getAbsolutePath(), "-type", type, "-outfile=" + resultFile.getAbsolutePath(), "-output=clustalw");
+				runProgram(tmp, binPath, inputFasta.getAbsolutePath(), "-type", type, "-outfile=" + resultFile.getAbsolutePath(), "-output=clustalw");
+			} else if (method.equals("probcons")) {  // version 1.12
+				File dndFile = new File(inputFasta.getParentFile(), inputFasta.getName().substring(0, inputFasta.getName().length() - 2) + "dnd");
+				toDelete.add(dndFile);
+				String binPath = getMethodBin("probcons").getAbsolutePath();
+				resultAlnText = runProgram(tmp, binPath, "-clustalw", inputFasta.getAbsolutePath());
+				System.out.println("[" + resultAlnText + "]");
 			} else {
 				throw new IllegalStateException("Method " + inputData.getAlignmentMethod() + " is not supported");
 			}
-			aln = ClustalParser.parse(new BufferedReader(new FileReader(resultFile)), null);
+			if (resultAlnText == null) {
+				aln = ClustalParser.parse(new BufferedReader(new FileReader(resultFile)), null);
+			} else {
+				aln = ClustalParser.parse(new BufferedReader(new StringReader(resultAlnText)), null);
+			}
 		} finally {
 			for (File f : toDelete)
 				if (f.exists())
@@ -122,17 +137,17 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				Arrays.asList(data)));
 	}
 
-	private String runProgram(String... cmd) throws Exception {
+	private String runProgram(File tempDir, String... cmd) throws Exception {
 		CorrectProcess cp = null;
 		ByteArrayOutputStream errBaos = null;
 		Exception err = null;
 		int procExitValue = -1;
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
 			try {
-				Process p = Runtime.getRuntime().exec(CorrectProcess.arr(cmd));
+				Process p = Runtime.getRuntime().exec(CorrectProcess.arr(cmd), null, tempDir);
 				errBaos = new ByteArrayOutputStream();
 				cp = new CorrectProcess(p, result, "", errBaos, "");
-				p.waitFor();
+				cp.waitFor();
 				errBaos.close();
 				procExitValue = p.exitValue();
 			} catch(Exception ex) {

@@ -34,6 +34,7 @@ if [[ "$unamestr" == 'Linux' ]]; then
 	fi
 	########### T-coffee ############
 	if [ ! -f ../bin/tcoffee.linux ]; then
+		echo "Downloading t-coffee..."
 		curl -o tcoffee.tar.gz 'http://www.tcoffee.org/Packages/Stable/Version_10.00.r1613/T-COFFEE_distribution_Version_10.00.r1613.tar.gz'
 		tar -zxvf tcoffee.tar.gz
 		cd ./T-COFFEE_distribution_Version_10.00.r1613/t_coffee_source
@@ -42,6 +43,18 @@ if [[ "$unamestr" == 'Linux' ]]; then
 		cd ../..
 		rm -r ./T-COFFEE_distribution_Version_10.00.r1613
 		rm ./tcoffee.tar.gz
+	fi
+	########### ProbCons ############
+	if [ ! -f ../bin/probcons.linux ]; then
+		echo "Downloading probcons..."
+		curl -o probcons.tar.gz 'http://probcons.stanford.edu/probcons_v1_12.tar.gz'
+		tar -zxvf probcons.tar.gz
+		cd ./probcons
+		make
+		mv ./probcons ../../bin/probcons.linux
+		cd ..
+		rm -r ./probcons
+		rm probcons.tar.gz
 	fi
 elif [[ "$unamestr" == 'Darwin' ]]; then
 	echo "OS architecture: mac os x"
@@ -75,6 +88,7 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 	fi
 	########### T-coffee ############
 	if [ ! -f ../bin/tcoffee.macosx ]; then
+		echo "Downloading t-coffee..."
 		curl -o tcoffee.tar.gz 'http://www.tcoffee.org/Packages/Stable/Version_10.00.r1613/T-COFFEE_distribution_Version_10.00.r1613.tar.gz'
 		tar -zxvf tcoffee.tar.gz
 		cd ./T-COFFEE_distribution_Version_10.00.r1613/t_coffee_source
@@ -83,6 +97,18 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 		cd ../..
 		rm -r ./T-COFFEE_distribution_Version_10.00.r1613
 		rm ./tcoffee.tar.gz
+	fi
+	########### ProbCons ############
+	if [ ! -f ../bin/probcons.macosx ]; then
+		echo "Downloading probcons..."
+		curl -o probcons.tar.gz 'http://probcons.stanford.edu/probcons_v1_12.tar.gz'
+		tar -zxvf probcons.tar.gz
+		cd ./probcons
+		make
+		mv ./probcons ../../bin/probcons.macosx
+		cd ..
+		rm -r ./probcons
+		rm probcons.tar.gz
 	fi
 else
 	echo "Unknown OS architecture: $unamestr"

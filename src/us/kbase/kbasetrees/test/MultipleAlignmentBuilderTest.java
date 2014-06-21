@@ -39,6 +39,11 @@ public class MultipleAlignmentBuilderTest {
 		build("T-Coffee");
 	}
 
+	@Test
+	public void testProbCons() throws Exception {
+		build("ProbCons");
+	}
+
 	private static MSA build(String method) throws Exception {
 		final MSA[] retWrap = new MSA[] { null };
 		MultipleAlignmentBuilder stb = new MultipleAlignmentBuilder().init(
