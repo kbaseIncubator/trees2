@@ -10,16 +10,15 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import us.kbase.common.service.Tuple3;
 
 
 /**
  * <p>Original spec-file type: Tree</p>
  * <pre>
- * Data type representative of a phylogenetic tree.
- * @optional name description type
- * @optional ws_genome_refs kb_refs tree_attributes
- * @optional source_id source_db
+ * Data type for phylogenetic trees.
+ *     @optional name description type tree_attributes
+ *     @optional default_node_labels ws_refs kb_refs leaf_list
+ *     @optional source_id source_db
  * </pre>
  * 
  */
@@ -31,9 +30,10 @@ import us.kbase.common.service.Tuple3;
     "type",
     "tree",
     "tree_attributes",
-    "nodes",
-    "ws_genome_refs",
+    "default_node_labels",
+    "ws_refs",
     "kb_refs",
+    "leaf_list",
     "source_id",
     "source_db"
 })
@@ -49,12 +49,14 @@ public class Tree {
     private java.lang.String tree;
     @JsonProperty("tree_attributes")
     private Map<String, String> treeAttributes;
-    @JsonProperty("nodes")
-    private List<Tuple3 <String, String, Long>> nodes;
-    @JsonProperty("ws_genome_refs")
-    private Map<String, String> wsGenomeRefs;
+    @JsonProperty("default_node_labels")
+    private Map<String, String> defaultNodeLabels;
+    @JsonProperty("ws_refs")
+    private Map<String, Map<String, String>> wsRefs;
     @JsonProperty("kb_refs")
-    private Map<String, String> kbRefs;
+    private Map<String, Map<String, String>> kbRefs;
+    @JsonProperty("leaf_list")
+    private List<String> leafList;
     @JsonProperty("source_id")
     private java.lang.String sourceId;
     @JsonProperty("source_db")
@@ -136,48 +138,63 @@ public class Tree {
         return this;
     }
 
-    @JsonProperty("nodes")
-    public List<Tuple3 <String, String, Long>> getNodes() {
-        return nodes;
+    @JsonProperty("default_node_labels")
+    public Map<String, String> getDefaultNodeLabels() {
+        return defaultNodeLabels;
     }
 
-    @JsonProperty("nodes")
-    public void setNodes(List<Tuple3 <String, String, Long>> nodes) {
-        this.nodes = nodes;
+    @JsonProperty("default_node_labels")
+    public void setDefaultNodeLabels(Map<String, String> defaultNodeLabels) {
+        this.defaultNodeLabels = defaultNodeLabels;
     }
 
-    public Tree withNodes(List<Tuple3 <String, String, Long>> nodes) {
-        this.nodes = nodes;
+    public Tree withDefaultNodeLabels(Map<String, String> defaultNodeLabels) {
+        this.defaultNodeLabels = defaultNodeLabels;
         return this;
     }
 
-    @JsonProperty("ws_genome_refs")
-    public Map<String, String> getWsGenomeRefs() {
-        return wsGenomeRefs;
+    @JsonProperty("ws_refs")
+    public Map<String, Map<String, String>> getWsRefs() {
+        return wsRefs;
     }
 
-    @JsonProperty("ws_genome_refs")
-    public void setWsGenomeRefs(Map<String, String> wsGenomeRefs) {
-        this.wsGenomeRefs = wsGenomeRefs;
+    @JsonProperty("ws_refs")
+    public void setWsRefs(Map<String, Map<String, String>> wsRefs) {
+        this.wsRefs = wsRefs;
     }
 
-    public Tree withWsGenomeRefs(Map<String, String> wsGenomeRefs) {
-        this.wsGenomeRefs = wsGenomeRefs;
+    public Tree withWsRefs(Map<String, Map<String, String>> wsRefs) {
+        this.wsRefs = wsRefs;
         return this;
     }
 
     @JsonProperty("kb_refs")
-    public Map<String, String> getKbRefs() {
+    public Map<String, Map<String, String>> getKbRefs() {
         return kbRefs;
     }
 
     @JsonProperty("kb_refs")
-    public void setKbRefs(Map<String, String> kbRefs) {
+    public void setKbRefs(Map<String, Map<String, String>> kbRefs) {
         this.kbRefs = kbRefs;
     }
 
-    public Tree withKbRefs(Map<String, String> kbRefs) {
+    public Tree withKbRefs(Map<String, Map<String, String>> kbRefs) {
         this.kbRefs = kbRefs;
+        return this;
+    }
+
+    @JsonProperty("leaf_list")
+    public List<String> getLeafList() {
+        return leafList;
+    }
+
+    @JsonProperty("leaf_list")
+    public void setLeafList(List<String> leafList) {
+        this.leafList = leafList;
+    }
+
+    public Tree withLeafList(List<String> leafList) {
+        this.leafList = leafList;
         return this;
     }
 
@@ -223,7 +240,7 @@ public class Tree {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((("Tree"+" [name=")+ name)+", description=")+ description)+", type=")+ type)+", tree=")+ tree)+", treeAttributes=")+ treeAttributes)+", nodes=")+ nodes)+", wsGenomeRefs=")+ wsGenomeRefs)+", kbRefs=")+ kbRefs)+", sourceId=")+ sourceId)+", sourceDb=")+ sourceDb)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((("Tree"+" [name=")+ name)+", description=")+ description)+", type=")+ type)+", tree=")+ tree)+", treeAttributes=")+ treeAttributes)+", defaultNodeLabels=")+ defaultNodeLabels)+", wsRefs=")+ wsRefs)+", kbRefs=")+ kbRefs)+", leafList=")+ leafList)+", sourceId=")+ sourceId)+", sourceDb=")+ sourceDb)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
