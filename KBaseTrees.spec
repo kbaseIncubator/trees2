@@ -84,6 +84,11 @@ module KBaseTrees
     */
     typedef string alignment;
     
+    /*
+        @id ws
+    */
+    typedef string ws_obj_id;
+    
     /* A workspace ID that references a Tree data object.
         @id ws KBaseTrees.Tree
     */
@@ -113,12 +118,22 @@ module KBaseTrees
     
     typedef string label;
     
-    /* basic information associated with nodes in a tree */
-    typedef tuple<node_id,label,is_leaf> node_info;
+    /*
+    An enumeration of reference types for a node.  Either the one letter abreviation or full
+    name can be given.  For large trees, it is strongly advised you use the one letter abreviations.
+    Supported types are:
+        g | genome  => genome typed object or CDS data
+        p | protein => protein sequence object or CDS data, often given as the MD5 of the sequence
+        n | dna     => dna sequence object or CDS data, often given as the MD5 of the sequence
+        f | feature => feature object or CDS data
+    */
+    typedef string ref_type;
     
-    /* Data type representative of a phylogenetic tree.
-        @optional name description type
-        @optional ws_genome_refs kb_refs tree_attributes
+    
+    /* Data type for phylogenetic trees.
+    
+        @optional name description type tree_attributes
+        @optional default_node_labels ws_refs kb_refs leaf_list
         @optional source_id source_db
     */
     typedef structure {
@@ -130,9 +145,11 @@ module KBaseTrees
         
         mapping <string,string> tree_attributes;
         
-        list <node_info> nodes;
-        mapping <node_id,ws_genome_id> ws_genome_refs;
-        mapping <node_id,kbase_id> kb_refs;
+        mapping <node_id,label> default_node_labels;
+        mapping <node_id,mapping<ref_type,ws_obj_id>> ws_refs;
+        mapping <node_id,mapping<ref_type,kbase_id>> kb_refs;
+        
+        list <node_id> leaf_list;
         
         string source_id;
         string source_db;
@@ -436,7 +453,7 @@ module KBaseTrees
     funcdef get_alignment_data(list<kbase_id> alignment_ids) returns (mapping<kbase_id,AlignmentMetaData>);
     
     /* Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
-    is identified and used to retrieve all trees by ID that were built using the given protein sequence. */
+    is identified and used to retrieve all trees by ID that were built using the given protein seqence. */
     funcdef get_tree_ids_by_feature(list <kbase_id> feature_ids) returns (list<kbase_id>);
     
     /* Given a list of kbase ids of a protein sequences (their MD5s), retrieve the tree ids of trees that
@@ -502,8 +519,46 @@ module KBaseTrees
     /* *********************************************************************************************** */
 
 
-    /* funcdef import_tree_from_cdm() returns (); */
-
+    /*
+        Parameters for importing phylogentic tree data from the Central Data Store to
+        the Workspace, which allows you to manipulate, edit, and use the tree data in
+        the narrative interface.
+        
+        load_alignment_for_tree - if true, load the alignment that was used to build the tree (default = false)
+        
+        
+        @optional load_alignment_for_tree
+        @optional target_workspace_name target_workspace_id
+        
+        @optional ws_tree_name additional_tree_metadata
+        @optional ws_alignment_name additional_alignment_metadata
+    */
+    typedef structure {
+        kbase_id tree_id;
+        boolean load_alignment_for_tree;
+        
+        string target_workspace_name;
+        int target_workspace_id;
+        
+        string ws_tree_name;
+        mapping <string,string> additional_tree_metadata;
+        string ws_alignment_name;
+        mapping <string,string> additional_alignment_metadata;
+        
+        boolean link_nodes_to_protein_sequence;
+        boolean link_nodes_to_exemplar_feature;
+        boolean link_nodes_to_exemplar_genome;
+        
+        string default_label;
+        
+    } CdsImportTreeParameters;
+    
+    funcdef import_tree_from_cds(list <CdsImportTreeParameters> selection) returns (list <string> ) authentication required;
+    
+    
+    
+    
+    /* funcdef import_msa_from_cds(list <CdsImportAlignmentParameters> selection) returns (list <string> ) requires authentication; */
 
 
 

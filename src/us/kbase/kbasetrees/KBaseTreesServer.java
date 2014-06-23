@@ -590,7 +590,7 @@ public class KBaseTreesServer extends JsonServerServlet {
      * <p>Original spec-file function name: get_tree_ids_by_feature</p>
      * <pre>
      * Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
-     * is identified and used to retrieve all trees by ID that were built using the given protein sequence.
+     * is identified and used to retrieve all trees by ID that were built using the given protein seqence.
      * </pre>
      * @param   featureIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771". @id kb)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771". @id kb)
@@ -715,6 +715,27 @@ public class KBaseTreesServer extends JsonServerServlet {
         //BEGIN get_leaf_to_feature_map
         returnVal = fwd().getLeafToFeatureMap(treeId);
         //END get_leaf_to_feature_map
+        return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: import_tree_from_cds</p>
+     * <pre>
+     * </pre>
+     * @param   selection   instance of list of type {@link us.kbase.kbasetrees.CdsImportTreeParameters CdsImportTreeParameters}
+     * @return   instance of list of String
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.import_tree_from_cds")
+    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection, AuthToken authPart) throws Exception {
+        List<String> returnVal = null;
+        //BEGIN import_tree_from_cds
+        
+        for(CdsImportTreeParameters s : selection) {
+        	
+        }
+        
+        
+        //END import_tree_from_cds
         return returnVal;
     }
 

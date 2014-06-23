@@ -347,7 +347,7 @@ public class KBaseTreesClient {
      * <p>Original spec-file function name: get_tree_ids_by_feature</p>
      * <pre>
      * Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
-     * is identified and used to retrieve all trees by ID that were built using the given protein sequence.
+     * is identified and used to retrieve all trees by ID that were built using the given protein seqence.
      * </pre>
      * @param   featureIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771". @id kb)
      * @return   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771". @id kb)
@@ -479,6 +479,23 @@ public class KBaseTreesClient {
         args.add(treeId);
         TypeReference<List<Map<String,String>>> retType = new TypeReference<List<Map<String,String>>>() {};
         List<Map<String,String>> res = caller.jsonrpcCall("KBaseTrees.get_leaf_to_feature_map", args, retType, true, false);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: import_tree_from_cds</p>
+     * <pre>
+     * </pre>
+     * @param   selection   instance of list of type {@link us.kbase.kbasetrees.CdsImportTreeParameters CdsImportTreeParameters}
+     * @return   instance of list of String
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(selection);
+        TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.import_tree_from_cds", args, retType, true, true);
         return res.get(0);
     }
 
