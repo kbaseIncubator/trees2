@@ -50,6 +50,12 @@ if [[ "$unamestr" == 'Linux' ]]; then
 		curl -o probcons.tar.gz 'http://probcons.stanford.edu/probcons_v1_12.tar.gz'
 		tar -zxvf probcons.tar.gz
 		cd ./probcons
+		for f in *.cc *.h
+		do
+			text=$(cat $f)
+			echo '#include <cstring>' > $f
+			echo "$text" >> $f
+		done
 		make
 		mv ./probcons ../../bin/probcons.linux
 		cd ..
