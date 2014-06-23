@@ -88,8 +88,8 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				toDelete.add(dndFile);
 				String binPath = getMethodBin("clustalw2").getAbsolutePath();
 				String type = (inputData.getIsProteinMode() != null && inputData.getIsProteinMode() == 0) ? "DNA" : "PROTEIN";
-				runProgram(tmp, binPath, "/INFILE=" + inputFasta.getAbsolutePath(), 
-						"-OUTFILE=" + resultFile, "/OUTORDER=INPUT", "-TYPE=" + type);
+				runProgram(tmp, binPath, "/INFILE=" + inputFasta.getName(), 
+						"-OUTFILE=" + resultFile.getName(), "/OUTORDER=INPUT", "-TYPE=" + type);
 			} else if (method.equals("t-coffee")) {  // version 10.00
 				File dndFile = new File(inputFasta.getParentFile(), inputFasta.getName().substring(0, inputFasta.getName().length() - 2) + "dnd");
 				toDelete.add(dndFile);
