@@ -51,6 +51,7 @@ public class MultipleAlignmentBuilderTest {
 
 	private static MSA build(String method) throws Exception {
 		final MSA[] retWrap = new MSA[] { null };
+		long time = System.currentTimeMillis();
 		MultipleAlignmentBuilder stb = new MultipleAlignmentBuilder().init(
 				new File("temp_files"), new File("data"), new ObjectStorage() {
 					@Override
@@ -77,6 +78,7 @@ public class MultipleAlignmentBuilderTest {
 		for (String id : seqs.keySet()) {
 			Assert.assertEquals(seqs.get(id), AlignUtil.removeGaps(msa.getAlignment().get(id)));
 		}
+		System.out.println("Multiple alignment (" + method + "), time: " + (System.currentTimeMillis() - time) + " ms");
 		return msa;
 	}
 

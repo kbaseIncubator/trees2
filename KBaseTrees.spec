@@ -748,13 +748,13 @@ module KBaseTrees
         list<cog_id> cogs;
     } SpeciesTree;
 
-    /* Input data type for construct_species_tree method.
+    /* Input data type for construct_species_tree method. Method produces object of SpeciesTree type.
 
         new_genomes - (required) the list of genome references to use in constructing a tree
         out_workspace - (required) the workspace to deposit the completed tree
         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
-        use_ribosomal_s9_only - optional parameter, 1 means only one protein family (Ribosomal S9) is used for 
-            tree construction rather than all 49 improtant families
+        use_ribosomal_s9_only - (optional) 1 means only one protein family (Ribosomal S9) is used for 
+            tree construction rather than all 49 improtant families, default value is 0.
     */
     typedef structure {
         list<genome_ref> new_genomes;
@@ -772,11 +772,11 @@ module KBaseTrees
     */
     funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
 
-    /* Input data type for construct_species_tree method.
+    /* Input data type for construct_multiple_alignment method. Method produces object of MSA type.
 
         gene_sequences - (required) the mapping from gene ids to their sequences
-        alignment_method - (required) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
-        	Mafft.
+        alignment_method - (optional) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
+        	Mafft (default is Clustal).
         is_protein_mode - (optional) 1 in case sequences are amino acids, 0 in case of nucleotides 
         	(default value is 1).
         out_workspace - (required) the workspace to deposit the completed alignment
@@ -791,5 +791,30 @@ module KBaseTrees
         string out_msa_id;
     } ConstructMultipleAlignment;
 
+	/* Build a multiple sequence alignment based on gene sequences.
+	*/
 	funcdef construct_multiple_alignment(ConstructMultipleAlignment params) returns (job_id) authentication required;
+	
+	/* Input data type for construct_tree_for_alignment method. Method produces object of Tree type.
+		
+		msa_ref - (required) reference to MSA input object.
+        tree_method - (optional) tree construction program, one of 'Clustal' (Neighbor-joining approach) or 
+        	'FastTree' (where Maximum likelihood is used), (default is 'Clustal').
+        min_nongap_percentage_for_trim - (optional) minimum percentage of non-gapped positions in alignment column,
+        	if you define this parameter in 50, then columns having less than half non-gapped letters are trimmed
+        	(default value is 0 - it means no trimming at all). 
+        out_workspace - (required) the workspace to deposit the completed tree
+        out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
+	*/
+	typedef structure {
+		ws_alignment_id msa_ref;
+		string tree_method;
+		int min_nongap_percentage_for_trim;
+        string out_workspace;
+        string out_tree_id;
+	} ConstructTreeForAlignmentParams;
+
+    /* Build a tree based on MSA object.
+    */
+	funcdef construct_tree_for_alignment(ConstructTreeForAlignmentParams params) returns (job_id) authentication required; 
 };

@@ -124,8 +124,10 @@ public class KBaseTreesServer extends JsonServerServlet {
 				}
 			};
 			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, 
-					allConfigProps), new SpeciesTreeBuilder(), new MultipleAlignmentBuilder());
-			System.out.println("Initial queue size: " + TaskQueue.getDbConnection(queueDbDir).collect("select count(*) from " + TaskQueue.QUEUE_TABLE_NAME, new us.kbase.common.utils.DbConn.SqlLoader<Integer>() {
+					allConfigProps), new SpeciesTreeBuilder(), new MultipleAlignmentBuilder(),
+					new TreeForAlignmentBuilder());
+			System.out.println("Initial queue size: " + TaskQueue.getDbConnection(queueDbDir).collect(
+					"select count(*) from " + TaskQueue.QUEUE_TABLE_NAME, new us.kbase.common.utils.DbConn.SqlLoader<Integer>() {
 				public Integer collectRow(java.sql.ResultSet rs) throws java.sql.SQLException { return rs.getInt(1); }
 			}));
     	}
@@ -827,6 +829,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     /**
      * <p>Original spec-file function name: construct_multiple_alignment</p>
      * <pre>
+     * Build a multiple sequence alignment based on gene sequences.
      * </pre>
      * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructMultipleAlignment ConstructMultipleAlignment}
      * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
@@ -838,6 +841,24 @@ public class KBaseTreesServer extends JsonServerServlet {
         TaskQueue tq = getTaskQueue();
         returnVal = tq.addTask(params, authPart.toString());
         //END construct_multiple_alignment
+        return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: construct_tree_for_alignment</p>
+     * <pre>
+     * Build a tree based on MSA object.
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructTreeForAlignmentParams ConstructTreeForAlignmentParams}
+     * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.construct_tree_for_alignment")
+    public String constructTreeForAlignment(ConstructTreeForAlignmentParams params, AuthToken authPart) throws Exception {
+        String returnVal = null;
+        //BEGIN construct_tree_for_alignment
+        TaskQueue tq = getTaskQueue();
+        returnVal = tq.addTask(params, authPart.toString());
+        //END construct_tree_for_alignment
         return returnVal;
     }
 

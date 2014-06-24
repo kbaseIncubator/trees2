@@ -14,10 +14,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: ConstructMultipleAlignment</p>
  * <pre>
- * Input data type for construct_species_tree method.
+ * Input data type for construct_multiple_alignment method. Method produces object of MSA type.
  *         gene_sequences - (required) the mapping from gene ids to their sequences
- *         alignment_method - (required) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
- *                 Mafft.
+ *         alignment_method - (optional) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
+ *                 Mafft (default is Clustal).
  *         is_protein_mode - (optional) 1 in case sequences are amino acids, 0 in case of nucleotides 
  *                 (default value is 1).
  *         out_workspace - (required) the workspace to deposit the completed alignment

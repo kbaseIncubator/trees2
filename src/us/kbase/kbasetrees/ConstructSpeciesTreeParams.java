@@ -15,12 +15,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: ConstructSpeciesTreeParams</p>
  * <pre>
- * Input data type for construct_species_tree method.
+ * Input data type for construct_species_tree method. Method produces object of SpeciesTree type.
  *         new_genomes - (required) the list of genome references to use in constructing a tree
  *         out_workspace - (required) the workspace to deposit the completed tree
  *         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
- *         use_ribosomal_s9_only - optional parameter, 1 means only one protein family (Ribosomal S9) is used for 
- *             tree construction rather than all 49 improtant families
+ *         use_ribosomal_s9_only - (optional) 1 means only one protein family (Ribosomal S9) is used for 
+ *             tree construction rather than all 49 improtant families, default value is 0.
  * </pre>
  * 
  */
