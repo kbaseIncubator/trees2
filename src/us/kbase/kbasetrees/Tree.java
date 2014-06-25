@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * Data type for phylogenetic trees.
  *     @optional name description type tree_attributes
  *     @optional default_node_labels ws_refs kb_refs leaf_list
- *     @optional source_id source_db
  * </pre>
  * 
  */
@@ -33,9 +32,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "default_node_labels",
     "ws_refs",
     "kb_refs",
-    "leaf_list",
-    "source_id",
-    "source_db"
+    "leaf_list"
 })
 public class Tree {
 
@@ -57,10 +54,6 @@ public class Tree {
     private Map<String, Map<String, String>> kbRefs;
     @JsonProperty("leaf_list")
     private List<String> leafList;
-    @JsonProperty("source_id")
-    private java.lang.String sourceId;
-    @JsonProperty("source_db")
-    private java.lang.String sourceDb;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("name")
@@ -198,36 +191,6 @@ public class Tree {
         return this;
     }
 
-    @JsonProperty("source_id")
-    public java.lang.String getSourceId() {
-        return sourceId;
-    }
-
-    @JsonProperty("source_id")
-    public void setSourceId(java.lang.String sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    public Tree withSourceId(java.lang.String sourceId) {
-        this.sourceId = sourceId;
-        return this;
-    }
-
-    @JsonProperty("source_db")
-    public java.lang.String getSourceDb() {
-        return sourceDb;
-    }
-
-    @JsonProperty("source_db")
-    public void setSourceDb(java.lang.String sourceDb) {
-        this.sourceDb = sourceDb;
-    }
-
-    public Tree withSourceDb(java.lang.String sourceDb) {
-        this.sourceDb = sourceDb;
-        return this;
-    }
-
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -240,7 +203,7 @@ public class Tree {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((("Tree"+" [name=")+ name)+", description=")+ description)+", type=")+ type)+", tree=")+ tree)+", treeAttributes=")+ treeAttributes)+", defaultNodeLabels=")+ defaultNodeLabels)+", wsRefs=")+ wsRefs)+", kbRefs=")+ kbRefs)+", leafList=")+ leafList)+", sourceId=")+ sourceId)+", sourceDb=")+ sourceDb)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((("Tree"+" [name=")+ name)+", description=")+ description)+", type=")+ type)+", tree=")+ tree)+", treeAttributes=")+ treeAttributes)+", defaultNodeLabels=")+ defaultNodeLabels)+", wsRefs=")+ wsRefs)+", kbRefs=")+ kbRefs)+", leafList=")+ leafList)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

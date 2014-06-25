@@ -20,7 +20,7 @@ import us.kbase.common.service.Tuple4;
  * int alignment_length - number of columns in alignment.
  * string alignment_method - name of program used for this alignment construction (optional),
  *         currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
- * is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
+ *         is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
  * mapping<string, string> alignment - mapping from sequence id to aligned sequence
  * list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
  * @optional name description sequence_type
