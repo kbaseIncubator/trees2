@@ -78,7 +78,12 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 			fw.close();
 			resultFile = File.createTempFile("msaOutput", ".aln", getTempDir());
 			toDelete.add(resultFile);
-			String method = inputData.getAlignmentMethod().toLowerCase();
+			String method = inputData.getAlignmentMethod();
+			if (method == null) {
+				method = "clustal";
+			} else {
+				method = method.toLowerCase();
+			}
 			File tmp = getTempDir();
 			if (method.equals("muscle")) {  // version 3.8.31
 				String binPath = getMethodBin("muscle").getAbsolutePath();

@@ -42,3 +42,6 @@ Thumbs.db
 /bin
 /temp
 /temp_files
+/dist
+/junitreports
+/classes

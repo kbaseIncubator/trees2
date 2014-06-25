@@ -62,6 +62,15 @@ public class KBaseTreesServer extends JsonServerServlet {
 	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
     private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
     private static final String specServiceName = "trees";
+    
+    public static final String SYS_PROP_KB_DEPLOYMENT_CONFIG = "KB_DEPLOYMENT_CONFIG";
+    
+    public static final String CFG_PROP_THREAD_COUNT = "thread.count";
+    public static final String CFG_PROP_QUEUE_DB_DIR = "queue.db.dir";
+    public static final String CFG_PROP_WS_SRV_URL = "workspace.srv.url";
+    public static final String CFG_PROP_JSS_SRV_URL = "jobstatus.srv.url";
+    public static final String CFG_PROP_TEMP_DIR = "temp.dir";
+    public static final String CFG_PROP_DATA_DIR = "data.dir";
 
     static {
     	// Setup service name
@@ -69,18 +78,21 @@ public class KBaseTreesServer extends JsonServerServlet {
     	System.setProperty(KB_SERVNAME, specServiceName);
     	System.out.println(KBaseTreesServer.class.getName() + ": Service name was defined: " + specServiceName);
     	// Setup deployment configuration path
-		String KB_DEP = "KB_DEPLOYMENT_CONFIG";
-		InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
-		try {
-			Properties props = new Properties();
-			props.load(is);
-			String configPath = props.getProperty("config_path");
-			System.setProperty(KB_DEP, configPath);
-			System.out.println(KBaseTreesServer.class.getName() + ": Deployment config path was defined: " + configPath);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		} finally {
-			try { is.close(); } catch (Exception ignore) {}
+		String configPath = System.getProperty(SYS_PROP_KB_DEPLOYMENT_CONFIG);
+		if (configPath == null)
+			configPath = System.getenv(SYS_PROP_KB_DEPLOYMENT_CONFIG);
+		if (configPath == null) {
+			InputStream is = KBaseTreesServer.class.getResourceAsStream("config_path.properties");
+			try {
+				Properties props = new Properties();
+				props.load(is);
+				configPath = props.getProperty("config_path");
+				System.setProperty(SYS_PROP_KB_DEPLOYMENT_CONFIG, configPath);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			} finally {
+				try { is.close(); } catch (Exception ignore) {}
+			}
 		}
     }
     
@@ -92,14 +104,14 @@ public class KBaseTreesServer extends JsonServerServlet {
     		String jssUrl = defaultJssUrl;
     		
     		Map<String, String> allConfigProps = loadConfig();
-    		if (allConfigProps.containsKey("thread.count"))
-    			threadCount = Integer.parseInt(allConfigProps.get("thread.count"));
-    		if (allConfigProps.containsKey("queue.db.dir"))
-    			queueDbDir = new File(allConfigProps.get("queue.db.dir"));
-    		if (allConfigProps.containsKey("workspace.srv.url"))
-    			wsUrl = allConfigProps.get("workspace.srv.url");
-    		if (allConfigProps.containsKey("jobstatus.srv.url"))
-    			jssUrl = allConfigProps.get("jobstatus.srv.url");
+    		if (allConfigProps.containsKey(CFG_PROP_THREAD_COUNT))
+    			threadCount = Integer.parseInt(allConfigProps.get(CFG_PROP_THREAD_COUNT));
+    		if (allConfigProps.containsKey(CFG_PROP_QUEUE_DB_DIR))
+    			queueDbDir = new File(allConfigProps.get(CFG_PROP_QUEUE_DB_DIR));
+    		if (allConfigProps.containsKey(CFG_PROP_WS_SRV_URL))
+    			wsUrl = allConfigProps.get(CFG_PROP_WS_SRV_URL);
+    		if (allConfigProps.containsKey(CFG_PROP_JSS_SRV_URL))
+    			jssUrl = allConfigProps.get(CFG_PROP_JSS_SRV_URL);
     		for (Object key : allConfigProps.keySet())
     			allConfigProps.put(key.toString(), allConfigProps.get(key.toString()));
     		final String finalWsUrl = wsUrl;
@@ -135,7 +147,9 @@ public class KBaseTreesServer extends JsonServerServlet {
     }
     
     private static Map<String, String> loadConfig() throws Exception {
-		return new Ini(new File(System.getProperty("KB_DEPLOYMENT_CONFIG"))).get(specServiceName);
+		String configPath = System.getProperty(SYS_PROP_KB_DEPLOYMENT_CONFIG);
+		System.out.println(KBaseTreesServer.class.getName() + ": Deployment config path was defined: " + configPath);
+		return new Ini(new File(configPath)).get(specServiceName);
     }
     
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
@@ -190,6 +204,22 @@ public class KBaseTreesServer extends JsonServerServlet {
 			module = "KBaseTrees";
 		}
 		return module+"."+method;
+	}
+	
+	@Override
+	public void stopServer() throws Exception {
+		super.stopServer();
+		if (taskHolder != null)
+			taskHolder.stopAllThreads();
+	}
+	
+	private static String registerConfigFile(File configFile) {
+		System.setProperty(SYS_PROP_KB_DEPLOYMENT_CONFIG, configFile.getAbsolutePath());
+		return "";
+	}
+	
+	public KBaseTreesServer(File configFile) throws Exception {
+        super("KBaseTrees" + registerConfigFile(configFile));
 	}
 	
     //END_CLASS_HEADER
