@@ -134,7 +134,6 @@ module KBaseTrees
     
         @optional name description type tree_attributes
         @optional default_node_labels ws_refs kb_refs leaf_list
-        @optional source_id source_db
     */
     typedef structure {
         string name;
@@ -150,16 +149,13 @@ module KBaseTrees
         mapping <node_id,mapping<ref_type,kbase_id>> kb_refs;
         
         list <node_id> leaf_list;
-        
-        string source_id;
-        string source_db;
     } Tree;
     
     
     /* Data type that stores a view of a tree.
         @optional node_labels node_attributes node_values
     */
-    typedef structure {
+    /*typedef structure {
         
         ws_tree_id ws_tree_id;
         
@@ -167,7 +163,7 @@ module KBaseTrees
         mapping <node_id,mapping<string,string>> node_attributes;
         mapping <node_id,mapping<string,float>>  node_values;
         
-    } TreeDecorator;
+    } TreeDecorator;*/
 
 
     typedef string row_id;
@@ -188,8 +184,8 @@ module KBaseTrees
     /* Type for multiple sequence alignment.
 	int alignment_length - number of columns in alignment.
 	string alignment_method - name of program used for this alignment construction (optional),
-                currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
-        is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
+		currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
+		is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
 	mapping<string, string> alignment - mapping from sequence id to aligned sequence
 	list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
 	@optional name description sequence_type
@@ -202,12 +198,12 @@ module KBaseTrees
         string sequence_type;
         
         int alignment_length;
-	mapping <row_id, sequence> alignment;
+        mapping <row_id, sequence> alignment;
         
         mapping <row_id, trim_info> trim_info;
         
         mapping <string,string> alignment_attributes;
-	list <row_id> row_order;
+        list <row_id> row_order;
         
         string source_id;
         string source_db;
