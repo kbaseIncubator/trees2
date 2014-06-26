@@ -49,9 +49,9 @@ public class Tree {
     @JsonProperty("default_node_labels")
     private Map<String, String> defaultNodeLabels;
     @JsonProperty("ws_refs")
-    private Map<String, Map<String, String>> wsRefs;
+    private Map<String, Map<String, List<String>>> wsRefs;
     @JsonProperty("kb_refs")
-    private Map<String, Map<String, String>> kbRefs;
+    private Map<String, Map<String, List<String>>> kbRefs;
     @JsonProperty("leaf_list")
     private List<String> leafList;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
@@ -147,31 +147,31 @@ public class Tree {
     }
 
     @JsonProperty("ws_refs")
-    public Map<String, Map<String, String>> getWsRefs() {
+    public Map<String, Map<String, List<String>>> getWsRefs() {
         return wsRefs;
     }
 
     @JsonProperty("ws_refs")
-    public void setWsRefs(Map<String, Map<String, String>> wsRefs) {
+    public void setWsRefs(Map<String, Map<String, List<String>>> wsRefs) {
         this.wsRefs = wsRefs;
     }
 
-    public Tree withWsRefs(Map<String, Map<String, String>> wsRefs) {
+    public Tree withWsRefs(Map<String, Map<String, List<String>>> wsRefs) {
         this.wsRefs = wsRefs;
         return this;
     }
 
     @JsonProperty("kb_refs")
-    public Map<String, Map<String, String>> getKbRefs() {
+    public Map<String, Map<String, List<String>>> getKbRefs() {
         return kbRefs;
     }
 
     @JsonProperty("kb_refs")
-    public void setKbRefs(Map<String, Map<String, String>> kbRefs) {
+    public void setKbRefs(Map<String, Map<String, List<String>>> kbRefs) {
         this.kbRefs = kbRefs;
     }
 
-    public Tree withKbRefs(Map<String, Map<String, String>> kbRefs) {
+    public Tree withKbRefs(Map<String, Map<String, List<String>>> kbRefs) {
         this.kbRefs = kbRefs;
         return this;
     }

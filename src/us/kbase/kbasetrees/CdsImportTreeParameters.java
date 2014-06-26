@@ -18,10 +18,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * the Workspace, which allows you to manipulate, edit, and use the tree data in
  * the narrative interface.
  * load_alignment_for_tree - if true, load the alignment that was used to build the tree (default = false)
+ * default label => one of protein_md5, feature, genome, genome_species
  * @optional load_alignment_for_tree
- * @optional target_workspace_name target_workspace_id
- * @optional ws_tree_name additional_tree_metadata
- * @optional ws_alignment_name additional_alignment_metadata
+ * @optional ws_tree_name additional_tree_ws_metadata
+ * @optional ws_alignment_name additional_alignment_ws_metadata
+ * @optional link_nodes_to_protein_sequence link_nodes_to_exemplar_feature link_nodes_to_exemplar_genome
+ * @optional default_label
  * </pre>
  * 
  */
@@ -30,12 +32,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "tree_id",
     "load_alignment_for_tree",
-    "target_workspace_name",
-    "target_workspace_id",
     "ws_tree_name",
-    "additional_tree_metadata",
+    "additional_tree_ws_metadata",
     "ws_alignment_name",
-    "additional_alignment_metadata",
+    "additional_alignment_ws_metadata",
     "link_nodes_to_protein_sequence",
     "link_nodes_to_exemplar_feature",
     "link_nodes_to_exemplar_genome",
@@ -47,18 +47,14 @@ public class CdsImportTreeParameters {
     private java.lang.String treeId;
     @JsonProperty("load_alignment_for_tree")
     private Long loadAlignmentForTree;
-    @JsonProperty("target_workspace_name")
-    private java.lang.String targetWorkspaceName;
-    @JsonProperty("target_workspace_id")
-    private Long targetWorkspaceId;
     @JsonProperty("ws_tree_name")
     private java.lang.String wsTreeName;
-    @JsonProperty("additional_tree_metadata")
-    private Map<String, String> additionalTreeMetadata;
+    @JsonProperty("additional_tree_ws_metadata")
+    private Map<String, String> additionalTreeWsMetadata;
     @JsonProperty("ws_alignment_name")
     private java.lang.String wsAlignmentName;
-    @JsonProperty("additional_alignment_metadata")
-    private Map<String, String> additionalAlignmentMetadata;
+    @JsonProperty("additional_alignment_ws_metadata")
+    private Map<String, String> additionalAlignmentWsMetadata;
     @JsonProperty("link_nodes_to_protein_sequence")
     private Long linkNodesToProteinSequence;
     @JsonProperty("link_nodes_to_exemplar_feature")
@@ -99,36 +95,6 @@ public class CdsImportTreeParameters {
         return this;
     }
 
-    @JsonProperty("target_workspace_name")
-    public java.lang.String getTargetWorkspaceName() {
-        return targetWorkspaceName;
-    }
-
-    @JsonProperty("target_workspace_name")
-    public void setTargetWorkspaceName(java.lang.String targetWorkspaceName) {
-        this.targetWorkspaceName = targetWorkspaceName;
-    }
-
-    public CdsImportTreeParameters withTargetWorkspaceName(java.lang.String targetWorkspaceName) {
-        this.targetWorkspaceName = targetWorkspaceName;
-        return this;
-    }
-
-    @JsonProperty("target_workspace_id")
-    public Long getTargetWorkspaceId() {
-        return targetWorkspaceId;
-    }
-
-    @JsonProperty("target_workspace_id")
-    public void setTargetWorkspaceId(Long targetWorkspaceId) {
-        this.targetWorkspaceId = targetWorkspaceId;
-    }
-
-    public CdsImportTreeParameters withTargetWorkspaceId(Long targetWorkspaceId) {
-        this.targetWorkspaceId = targetWorkspaceId;
-        return this;
-    }
-
     @JsonProperty("ws_tree_name")
     public java.lang.String getWsTreeName() {
         return wsTreeName;
@@ -144,18 +110,18 @@ public class CdsImportTreeParameters {
         return this;
     }
 
-    @JsonProperty("additional_tree_metadata")
-    public Map<String, String> getAdditionalTreeMetadata() {
-        return additionalTreeMetadata;
+    @JsonProperty("additional_tree_ws_metadata")
+    public Map<String, String> getAdditionalTreeWsMetadata() {
+        return additionalTreeWsMetadata;
     }
 
-    @JsonProperty("additional_tree_metadata")
-    public void setAdditionalTreeMetadata(Map<String, String> additionalTreeMetadata) {
-        this.additionalTreeMetadata = additionalTreeMetadata;
+    @JsonProperty("additional_tree_ws_metadata")
+    public void setAdditionalTreeWsMetadata(Map<String, String> additionalTreeWsMetadata) {
+        this.additionalTreeWsMetadata = additionalTreeWsMetadata;
     }
 
-    public CdsImportTreeParameters withAdditionalTreeMetadata(Map<String, String> additionalTreeMetadata) {
-        this.additionalTreeMetadata = additionalTreeMetadata;
+    public CdsImportTreeParameters withAdditionalTreeWsMetadata(Map<String, String> additionalTreeWsMetadata) {
+        this.additionalTreeWsMetadata = additionalTreeWsMetadata;
         return this;
     }
 
@@ -174,18 +140,18 @@ public class CdsImportTreeParameters {
         return this;
     }
 
-    @JsonProperty("additional_alignment_metadata")
-    public Map<String, String> getAdditionalAlignmentMetadata() {
-        return additionalAlignmentMetadata;
+    @JsonProperty("additional_alignment_ws_metadata")
+    public Map<String, String> getAdditionalAlignmentWsMetadata() {
+        return additionalAlignmentWsMetadata;
     }
 
-    @JsonProperty("additional_alignment_metadata")
-    public void setAdditionalAlignmentMetadata(Map<String, String> additionalAlignmentMetadata) {
-        this.additionalAlignmentMetadata = additionalAlignmentMetadata;
+    @JsonProperty("additional_alignment_ws_metadata")
+    public void setAdditionalAlignmentWsMetadata(Map<String, String> additionalAlignmentWsMetadata) {
+        this.additionalAlignmentWsMetadata = additionalAlignmentWsMetadata;
     }
 
-    public CdsImportTreeParameters withAdditionalAlignmentMetadata(Map<String, String> additionalAlignmentMetadata) {
-        this.additionalAlignmentMetadata = additionalAlignmentMetadata;
+    public CdsImportTreeParameters withAdditionalAlignmentWsMetadata(Map<String, String> additionalAlignmentWsMetadata) {
+        this.additionalAlignmentWsMetadata = additionalAlignmentWsMetadata;
         return this;
     }
 
@@ -261,7 +227,7 @@ public class CdsImportTreeParameters {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((("CdsImportTreeParameters"+" [treeId=")+ treeId)+", loadAlignmentForTree=")+ loadAlignmentForTree)+", targetWorkspaceName=")+ targetWorkspaceName)+", targetWorkspaceId=")+ targetWorkspaceId)+", wsTreeName=")+ wsTreeName)+", additionalTreeMetadata=")+ additionalTreeMetadata)+", wsAlignmentName=")+ wsAlignmentName)+", additionalAlignmentMetadata=")+ additionalAlignmentMetadata)+", linkNodesToProteinSequence=")+ linkNodesToProteinSequence)+", linkNodesToExemplarFeature=")+ linkNodesToExemplarFeature)+", linkNodesToExemplarGenome=")+ linkNodesToExemplarGenome)+", defaultLabel=")+ defaultLabel)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((("CdsImportTreeParameters"+" [treeId=")+ treeId)+", loadAlignmentForTree=")+ loadAlignmentForTree)+", wsTreeName=")+ wsTreeName)+", additionalTreeWsMetadata=")+ additionalTreeWsMetadata)+", wsAlignmentName=")+ wsAlignmentName)+", additionalAlignmentWsMetadata=")+ additionalAlignmentWsMetadata)+", linkNodesToProteinSequence=")+ linkNodesToProteinSequence)+", linkNodesToExemplarFeature=")+ linkNodesToExemplarFeature)+", linkNodesToExemplarGenome=")+ linkNodesToExemplarGenome)+", defaultLabel=")+ defaultLabel)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

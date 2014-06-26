@@ -304,7 +304,7 @@ module KBaseTrees
     /* *********************************************************************************************** */
     
     
-        /* Meta data associated with a tree.
+    /* Meta data associated with a tree.
     
         kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
         string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
@@ -526,8 +526,8 @@ module KBaseTrees
         
         @optional load_alignment_for_tree
         
-        @optional ws_tree_name additional_tree_metadata
-        @optional ws_alignment_name additional_alignment_metadata
+        @optional ws_tree_name additional_tree_ws_metadata
+        @optional ws_alignment_name additional_alignment_ws_metadata
         
         @optional link_nodes_to_protein_sequence link_nodes_to_exemplar_feature link_nodes_to_exemplar_genome
         @optional default_label
