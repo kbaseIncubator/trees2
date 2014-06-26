@@ -145,8 +145,8 @@ module KBaseTrees
         mapping <string,string> tree_attributes;
         
         mapping <node_id,label> default_node_labels;
-        mapping <node_id,mapping<ref_type,ws_obj_id>> ws_refs;
-        mapping <node_id,mapping<ref_type,kbase_id>> kb_refs;
+        mapping <node_id,mapping<ref_type,list<ws_obj_id>>> ws_refs;
+        mapping <node_id,mapping<ref_type,list<kbase_id>>> kb_refs;
         
         list <node_id> leaf_list;
     } Tree;
@@ -304,7 +304,7 @@ module KBaseTrees
     /* *********************************************************************************************** */
     
     
-        /* Meta data associated with a tree.
+    /* Meta data associated with a tree.
     
         kbase_id alignment_id - if this tree was built from an alignment, this provides that alignment id
         string type - the type of tree; possible values currently are "sequence_alignment" and "genome" for trees
@@ -522,24 +522,24 @@ module KBaseTrees
         
         load_alignment_for_tree - if true, load the alignment that was used to build the tree (default = false)
         
+        default label => one of protein_md5, feature, genome, genome_species
         
         @optional load_alignment_for_tree
-        @optional target_workspace_name target_workspace_id
         
-        @optional ws_tree_name additional_tree_metadata
-        @optional ws_alignment_name additional_alignment_metadata
+        @optional ws_tree_name additional_tree_ws_metadata
+        @optional ws_alignment_name additional_alignment_ws_metadata
+        
+        @optional link_nodes_to_protein_sequence link_nodes_to_exemplar_feature link_nodes_to_exemplar_genome
+        @optional default_label
     */
     typedef structure {
         kbase_id tree_id;
         boolean load_alignment_for_tree;
         
-        string target_workspace_name;
-        int target_workspace_id;
-        
         string ws_tree_name;
-        mapping <string,string> additional_tree_metadata;
+        mapping <string,string> additional_tree_ws_metadata;
         string ws_alignment_name;
-        mapping <string,string> additional_alignment_metadata;
+        mapping <string,string> additional_alignment_ws_metadata;
         
         boolean link_nodes_to_protein_sequence;
         boolean link_nodes_to_exemplar_feature;
@@ -549,7 +549,7 @@ module KBaseTrees
         
     } CdsImportTreeParameters;
     
-    funcdef import_tree_from_cds(list <CdsImportTreeParameters> selection) returns (list <string> ) authentication required;
+    funcdef import_tree_from_cds(list <CdsImportTreeParameters> selection, string targetWsNameOrId) returns (list <string> ) authentication required;
     
     
     

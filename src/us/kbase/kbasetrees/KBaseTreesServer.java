@@ -755,10 +755,11 @@ public class KBaseTreesServer extends JsonServerServlet {
      * <pre>
      * </pre>
      * @param   selection   instance of list of type {@link us.kbase.kbasetrees.CdsImportTreeParameters CdsImportTreeParameters}
+     * @param   targetWsNameOrId   instance of String
      * @return   instance of list of String
      */
     @JsonServerMethod(rpc = "KBaseTrees.import_tree_from_cds")
-    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection, AuthToken authPart) throws Exception {
+    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection, String targetWsNameOrId, AuthToken authPart) throws Exception {
         List<String> returnVal = null;
         //BEGIN import_tree_from_cds
         

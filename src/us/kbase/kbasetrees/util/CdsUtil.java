@@ -149,7 +149,22 @@ public class CdsUtil {
 	
 	
 	
-	
+	/**
+	 * 
+	 * int level:  
+	 *   NONE (0)
+	 *   PROTIEN (1)
+	 *    - EXEMPLAR_FEATURE (10)
+	 *         -EXEMPLAR_GENOME (11)
+	 *              -EXEMPLAR_SPECIES (12)
+	 *    - FIRST_FEATURE (20)
+	 *         -FIRST_GENOME (21)
+	 *              -FIRST_SPECIES (22)
+	 *    - ALL_FEATURES (30)
+	 *         -ALL_GENOMES (31)
+	 *              -ALL_SPECIES (32)
+	 * 
+	 */
 	public void getTreeNodeData(TreeInCdsData tree,
 			boolean getProteinIds,
 			boolean getFeatureIds,
