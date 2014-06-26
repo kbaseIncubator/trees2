@@ -487,13 +487,15 @@ public class KBaseTreesClient {
      * <pre>
      * </pre>
      * @param   selection   instance of list of type {@link us.kbase.kbasetrees.CdsImportTreeParameters CdsImportTreeParameters}
+     * @param   targetWsNameOrId   instance of String
      * @return   instance of list of String
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection) throws IOException, JsonClientException {
+    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection, String targetWsNameOrId) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(selection);
+        args.add(targetWsNameOrId);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
         List<List<String>> res = caller.jsonrpcCall("KBaseTrees.import_tree_from_cds", args, retType, true, true);
         return res.get(0);
