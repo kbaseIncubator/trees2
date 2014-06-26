@@ -60,7 +60,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     private static TaskQueue taskHolder = null;
     
 	private static final String defaultWsUrl = "https://kbase.us/services/ws/";
-    private static final String defaultJssUrl = "https://kbase.us/services/userandjobstate/";
+    private static final String defaultUjsUrl = "https://kbase.us/services/userandjobstate/";
     private static final String specServiceName = "trees";
     
     public static final String SYS_PROP_KB_DEPLOYMENT_CONFIG = "KB_DEPLOYMENT_CONFIG";
@@ -101,7 +101,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
     		String wsUrl = defaultWsUrl;
-    		String jssUrl = defaultJssUrl;
+    		String ujsUrl = defaultUjsUrl;
     		
     		Map<String, String> allConfigProps = loadConfig();
     		if (allConfigProps.containsKey(CFG_PROP_THREAD_COUNT))
@@ -111,27 +111,27 @@ public class KBaseTreesServer extends JsonServerServlet {
     		if (allConfigProps.containsKey(CFG_PROP_WS_SRV_URL))
     			wsUrl = allConfigProps.get(CFG_PROP_WS_SRV_URL);
     		if (allConfigProps.containsKey(CFG_PROP_JSS_SRV_URL))
-    			jssUrl = allConfigProps.get(CFG_PROP_JSS_SRV_URL);
+    			ujsUrl = allConfigProps.get(CFG_PROP_JSS_SRV_URL);
     		for (Object key : allConfigProps.keySet())
     			allConfigProps.put(key.toString(), allConfigProps.get(key.toString()));
     		final String finalWsUrl = wsUrl;
-    		final String finalJssUrl = jssUrl;
+    		final String finalUjsUrl = ujsUrl;
     		JobStatuses jobStatuses = new JobStatuses() {
 				@Override
 				public String createAndStartJob(String token, String status, String desc,
 						String initProgressPtype, String estComplete) throws Exception {
-    				return createJobClient(finalJssUrl, token).createAndStartJob(token, status, desc, 
+    				return createJobClient(finalUjsUrl, token).createAndStartJob(token, status, desc, 
     						new InitProgress().withPtype(initProgressPtype), estComplete);
 				}
 				@Override
 				public void updateJob(String job, String token, String status,
 						String estComplete) throws Exception {
-    				createJobClient(finalJssUrl, token).updateJob(job, token, status, estComplete);
+    				createJobClient(finalUjsUrl, token).updateJob(job, token, status, estComplete);
 				}
 				@Override
 				public void completeJob(String job, String token, String status,
 						String error, String wsUrl, String outRef) throws Exception {
-    				createJobClient(finalJssUrl, token).completeJob(job, token, status, error, 
+    				createJobClient(finalUjsUrl, token).completeJob(job, token, status, error, 
     						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(Arrays.asList(outRef)));
 				}
 			};

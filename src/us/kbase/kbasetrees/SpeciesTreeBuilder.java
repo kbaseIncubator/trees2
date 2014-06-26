@@ -236,7 +236,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 					"-scale", "100.0", "-dbtype", "rps", "-index", "true"));
 			errBaos = new ByteArrayOutputStream();
 			cp = new CorrectProcess(p, null, "formatrpsdb", errBaos, "");
-			p.waitFor();
+			cp.waitFor();
 			errBaos.close();
 			procExitValue = p.exitValue();
 		} catch(Exception ex) {
@@ -277,7 +277,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 					"-evalue", MAX_EVALUE));
 			errBaos = new ByteArrayOutputStream();
 			cp = new CorrectProcess(p, fos, "", errBaos, "");
-			p.waitFor();
+			cp.waitFor();
 			errBaos.close();
 			procExitValue = p.exitValue();
 		} catch(Exception ex) {

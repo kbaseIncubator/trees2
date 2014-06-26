@@ -126,7 +126,7 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 				Process p = Runtime.getRuntime().exec(CorrectProcess.arr(cmd), null, tempDir);
 				errBaos = new ByteArrayOutputStream();
 				cp = new CorrectProcess(p, result, "", errBaos, "");
-				p.waitFor();
+				cp.waitFor();
 				errBaos.close();
 				procExitValue = p.exitValue();
 			} catch(Exception ex) {

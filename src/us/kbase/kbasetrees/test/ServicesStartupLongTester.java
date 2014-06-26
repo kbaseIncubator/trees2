@@ -2,6 +2,7 @@ package us.kbase.kbasetrees.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -259,11 +260,18 @@ public class ServicesStartupLongTester {
 		return (Map<String, String>) m.get(unmodifiable);
 	}
 
-	/*********************** KBaseTrees module registration ***********************/
+	/*********************** Modules/ws registration/creation ***********************/
 	
 	private static void registerModuleAndWorkspace() throws Exception {
+		registerSpec("KBaseTrees", new FileInputStream("KBaseTrees.spec"), "SpeciesTree", "Tree", "MSA");
+		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(defaultWokspace).withGlobalread("r"));
+		registerSpec("KBaseGenomes", ServicesStartupLongTester.class.getResourceAsStream("KBaseGenomes.properties"),
+				"Genome", "ContigSet");
+	}
+	
+	private static void registerSpec(String mod, InputStream is, String... types) throws Exception {
 		StringBuilder specText = new StringBuilder();
-		BufferedReader br = new BufferedReader(new FileReader("KBaseTrees.spec"));
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		while (true) {
 			String l = br.readLine();
 			if (l == null)
@@ -271,15 +279,11 @@ public class ServicesStartupLongTester {
 			specText.append(l).append('\n');
 		}
 		br.close();
-		String mod = "KBaseTrees";
 		wsClient.requestModuleOwnership(mod);
 		administerCommand(wsClient, "approveModRequest", "module", mod);
 		wsClient.registerTypespec(new RegisterTypespecParams()
-			.withDryrun(0L)
-			.withSpec(specText.toString())
-			.withNewTypes(Arrays.asList("SpeciesTree", "Tree", "MSA")));
+			.withDryrun(0L).withSpec(specText.toString()).withNewTypes(Arrays.asList(types)));
 		wsClient.releaseModule(mod);
-		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(defaultWokspace).withGlobalread("r"));
 	}
 	
 	protected static void administerCommand(WorkspaceClient client, String command, String... params) 

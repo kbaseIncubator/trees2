@@ -22,15 +22,16 @@ import us.kbase.workspace.RegisterTypespecParams;
 import us.kbase.workspace.WorkspaceClient;
 
 public class TreeServerPlaying {
-	private static String ws2url = "http://140.221.84.209:7058/";
+	private static String ws2url = "http://dev04.berkeley.kbase.us:7058";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
 	private static String userId = "nardevuser1";
 	private static String pwd = "*****";
 	private static String wsId = "nardevuser1:home";
 
 	public static void main(String[] args) throws Exception {
-		test();
+		//test();
 		//runOneThread(0, true);
+		reg();
 	}
 	
 	private static void test() throws Exception {
@@ -115,7 +116,7 @@ public class TreeServerPlaying {
 		br.close();
 		System.out.println(sb.toString());
 		System.out.println(wc.registerTypespec(new RegisterTypespecParams()
-				.withSpec(sb.toString()).withNewTypes(Arrays.asList("SpeciesTree")).withDryrun(0L)));
+				.withSpec(sb.toString()).withNewTypes(Arrays.asList("SpeciesTree", "Tree", "MSA")).withDryrun(0L)));
 		System.out.println(wc.listModuleVersions(new ListModuleVersionsParams().withMod(module)));
 		System.out.println(wc.getModuleInfo(new GetModuleInfoParams().withMod(module)));
 		System.out.println(wc.releaseModule(module));
