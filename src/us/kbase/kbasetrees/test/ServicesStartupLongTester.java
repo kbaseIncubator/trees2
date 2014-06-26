@@ -180,6 +180,7 @@ public class ServicesStartupLongTester {
 							System.out.println(prefix + ": " + line);
 						} else {
 							console.add(line);
+							System.out.println(prefix + ": " + line);
 						}
 					}
 					br.close();
