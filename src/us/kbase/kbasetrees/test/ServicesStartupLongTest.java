@@ -105,7 +105,7 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 					Assert.assertEquals(genomeName, idName.getE2());
 				}
 			}
-		} catch (Throwable ex) {
+		} catch (Exception ex) {
 			System.err.println(tree.getSpeciesTree());
 			throw ex;
 		}
