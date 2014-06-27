@@ -202,7 +202,7 @@ prepare-deploy-target:  prepare-thrirdparty-bins
 	cp deploy.cfg $(SERVICE_DIR)/.
 	echo $(GITCOMMIT) > $(SERVICE_DIR)/$(SERVICE).serverdist
 	echo $(TAGS) >> $(SERVICE_DIR)/$(SERVICE).serverdist
-	rsync data $(SERVICE_DIR)
+	rsync -a data $(SERVICE_DIR)
 
 #deploys the java service only (without start/stop scripts)
 deploy-java-service: cpp-lib deploy-perl-service prepare-deploy-target

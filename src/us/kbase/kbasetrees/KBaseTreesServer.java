@@ -69,7 +69,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public static final String CFG_PROP_QUEUE_DB_DIR = "queue.db.dir";
     public static final String CFG_PROP_WS_SRV_URL = "workspace.srv.url";
     public static final String CFG_PROP_JSS_SRV_URL = "jobstatus.srv.url";
-    public static final String CFG_PROP_TEMP_DIR = "temp.dir";
+    public static final String CFG_PROP_TEMP_DIR = "scratch";
     public static final String CFG_PROP_DATA_DIR = "data.dir";
 
     static {

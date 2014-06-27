@@ -76,7 +76,7 @@ public class ServicesStartupLongTester {
 			if (ret.exists()) {
 				suffix++;
 			} else {
-				ret.mkdir();
+				ret.mkdirs();
 				return ret;
 			}
 		}
@@ -180,7 +180,6 @@ public class ServicesStartupLongTester {
 							System.out.println(prefix + ": " + line);
 						} else {
 							console.add(line);
-							System.out.println(prefix + ": " + line);
 						}
 					}
 					br.close();
