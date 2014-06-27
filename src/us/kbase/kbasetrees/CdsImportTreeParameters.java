@@ -22,7 +22,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @optional load_alignment_for_tree
  * @optional ws_tree_name additional_tree_ws_metadata
  * @optional ws_alignment_name additional_alignment_ws_metadata
- * @optional link_nodes_to_protein_sequence link_nodes_to_exemplar_feature link_nodes_to_exemplar_genome
+ * @optional link_nodes_to_best_feature link_nodes_to_best_genome link_nodes_to_best_genome_name
+ * @optional link_nodes_to_all_features link_nodes_to_all_genomes link_nodes_to_all_genome_names
  * @optional default_label
  * </pre>
  * 
@@ -36,9 +37,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "additional_tree_ws_metadata",
     "ws_alignment_name",
     "additional_alignment_ws_metadata",
-    "link_nodes_to_protein_sequence",
-    "link_nodes_to_exemplar_feature",
-    "link_nodes_to_exemplar_genome",
+    "link_nodes_to_best_feature",
+    "link_nodes_to_best_genome",
+    "link_nodes_to_best_genome_name",
+    "link_nodes_to_all_features",
+    "link_nodes_to_all_genomes",
+    "link_nodes_to_all_genome_names",
     "default_label"
 })
 public class CdsImportTreeParameters {
@@ -55,12 +59,18 @@ public class CdsImportTreeParameters {
     private java.lang.String wsAlignmentName;
     @JsonProperty("additional_alignment_ws_metadata")
     private Map<String, String> additionalAlignmentWsMetadata;
-    @JsonProperty("link_nodes_to_protein_sequence")
-    private Long linkNodesToProteinSequence;
-    @JsonProperty("link_nodes_to_exemplar_feature")
-    private Long linkNodesToExemplarFeature;
-    @JsonProperty("link_nodes_to_exemplar_genome")
-    private Long linkNodesToExemplarGenome;
+    @JsonProperty("link_nodes_to_best_feature")
+    private Long linkNodesToBestFeature;
+    @JsonProperty("link_nodes_to_best_genome")
+    private Long linkNodesToBestGenome;
+    @JsonProperty("link_nodes_to_best_genome_name")
+    private Long linkNodesToBestGenomeName;
+    @JsonProperty("link_nodes_to_all_features")
+    private Long linkNodesToAllFeatures;
+    @JsonProperty("link_nodes_to_all_genomes")
+    private Long linkNodesToAllGenomes;
+    @JsonProperty("link_nodes_to_all_genome_names")
+    private Long linkNodesToAllGenomeNames;
     @JsonProperty("default_label")
     private java.lang.String defaultLabel;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
@@ -155,48 +165,93 @@ public class CdsImportTreeParameters {
         return this;
     }
 
-    @JsonProperty("link_nodes_to_protein_sequence")
-    public Long getLinkNodesToProteinSequence() {
-        return linkNodesToProteinSequence;
+    @JsonProperty("link_nodes_to_best_feature")
+    public Long getLinkNodesToBestFeature() {
+        return linkNodesToBestFeature;
     }
 
-    @JsonProperty("link_nodes_to_protein_sequence")
-    public void setLinkNodesToProteinSequence(Long linkNodesToProteinSequence) {
-        this.linkNodesToProteinSequence = linkNodesToProteinSequence;
+    @JsonProperty("link_nodes_to_best_feature")
+    public void setLinkNodesToBestFeature(Long linkNodesToBestFeature) {
+        this.linkNodesToBestFeature = linkNodesToBestFeature;
     }
 
-    public CdsImportTreeParameters withLinkNodesToProteinSequence(Long linkNodesToProteinSequence) {
-        this.linkNodesToProteinSequence = linkNodesToProteinSequence;
+    public CdsImportTreeParameters withLinkNodesToBestFeature(Long linkNodesToBestFeature) {
+        this.linkNodesToBestFeature = linkNodesToBestFeature;
         return this;
     }
 
-    @JsonProperty("link_nodes_to_exemplar_feature")
-    public Long getLinkNodesToExemplarFeature() {
-        return linkNodesToExemplarFeature;
+    @JsonProperty("link_nodes_to_best_genome")
+    public Long getLinkNodesToBestGenome() {
+        return linkNodesToBestGenome;
     }
 
-    @JsonProperty("link_nodes_to_exemplar_feature")
-    public void setLinkNodesToExemplarFeature(Long linkNodesToExemplarFeature) {
-        this.linkNodesToExemplarFeature = linkNodesToExemplarFeature;
+    @JsonProperty("link_nodes_to_best_genome")
+    public void setLinkNodesToBestGenome(Long linkNodesToBestGenome) {
+        this.linkNodesToBestGenome = linkNodesToBestGenome;
     }
 
-    public CdsImportTreeParameters withLinkNodesToExemplarFeature(Long linkNodesToExemplarFeature) {
-        this.linkNodesToExemplarFeature = linkNodesToExemplarFeature;
+    public CdsImportTreeParameters withLinkNodesToBestGenome(Long linkNodesToBestGenome) {
+        this.linkNodesToBestGenome = linkNodesToBestGenome;
         return this;
     }
 
-    @JsonProperty("link_nodes_to_exemplar_genome")
-    public Long getLinkNodesToExemplarGenome() {
-        return linkNodesToExemplarGenome;
+    @JsonProperty("link_nodes_to_best_genome_name")
+    public Long getLinkNodesToBestGenomeName() {
+        return linkNodesToBestGenomeName;
     }
 
-    @JsonProperty("link_nodes_to_exemplar_genome")
-    public void setLinkNodesToExemplarGenome(Long linkNodesToExemplarGenome) {
-        this.linkNodesToExemplarGenome = linkNodesToExemplarGenome;
+    @JsonProperty("link_nodes_to_best_genome_name")
+    public void setLinkNodesToBestGenomeName(Long linkNodesToBestGenomeName) {
+        this.linkNodesToBestGenomeName = linkNodesToBestGenomeName;
     }
 
-    public CdsImportTreeParameters withLinkNodesToExemplarGenome(Long linkNodesToExemplarGenome) {
-        this.linkNodesToExemplarGenome = linkNodesToExemplarGenome;
+    public CdsImportTreeParameters withLinkNodesToBestGenomeName(Long linkNodesToBestGenomeName) {
+        this.linkNodesToBestGenomeName = linkNodesToBestGenomeName;
+        return this;
+    }
+
+    @JsonProperty("link_nodes_to_all_features")
+    public Long getLinkNodesToAllFeatures() {
+        return linkNodesToAllFeatures;
+    }
+
+    @JsonProperty("link_nodes_to_all_features")
+    public void setLinkNodesToAllFeatures(Long linkNodesToAllFeatures) {
+        this.linkNodesToAllFeatures = linkNodesToAllFeatures;
+    }
+
+    public CdsImportTreeParameters withLinkNodesToAllFeatures(Long linkNodesToAllFeatures) {
+        this.linkNodesToAllFeatures = linkNodesToAllFeatures;
+        return this;
+    }
+
+    @JsonProperty("link_nodes_to_all_genomes")
+    public Long getLinkNodesToAllGenomes() {
+        return linkNodesToAllGenomes;
+    }
+
+    @JsonProperty("link_nodes_to_all_genomes")
+    public void setLinkNodesToAllGenomes(Long linkNodesToAllGenomes) {
+        this.linkNodesToAllGenomes = linkNodesToAllGenomes;
+    }
+
+    public CdsImportTreeParameters withLinkNodesToAllGenomes(Long linkNodesToAllGenomes) {
+        this.linkNodesToAllGenomes = linkNodesToAllGenomes;
+        return this;
+    }
+
+    @JsonProperty("link_nodes_to_all_genome_names")
+    public Long getLinkNodesToAllGenomeNames() {
+        return linkNodesToAllGenomeNames;
+    }
+
+    @JsonProperty("link_nodes_to_all_genome_names")
+    public void setLinkNodesToAllGenomeNames(Long linkNodesToAllGenomeNames) {
+        this.linkNodesToAllGenomeNames = linkNodesToAllGenomeNames;
+    }
+
+    public CdsImportTreeParameters withLinkNodesToAllGenomeNames(Long linkNodesToAllGenomeNames) {
+        this.linkNodesToAllGenomeNames = linkNodesToAllGenomeNames;
         return this;
     }
 
@@ -227,7 +282,7 @@ public class CdsImportTreeParameters {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((("CdsImportTreeParameters"+" [treeId=")+ treeId)+", loadAlignmentForTree=")+ loadAlignmentForTree)+", wsTreeName=")+ wsTreeName)+", additionalTreeWsMetadata=")+ additionalTreeWsMetadata)+", wsAlignmentName=")+ wsAlignmentName)+", additionalAlignmentWsMetadata=")+ additionalAlignmentWsMetadata)+", linkNodesToProteinSequence=")+ linkNodesToProteinSequence)+", linkNodesToExemplarFeature=")+ linkNodesToExemplarFeature)+", linkNodesToExemplarGenome=")+ linkNodesToExemplarGenome)+", defaultLabel=")+ defaultLabel)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((("CdsImportTreeParameters"+" [treeId=")+ treeId)+", loadAlignmentForTree=")+ loadAlignmentForTree)+", wsTreeName=")+ wsTreeName)+", additionalTreeWsMetadata=")+ additionalTreeWsMetadata)+", wsAlignmentName=")+ wsAlignmentName)+", additionalAlignmentWsMetadata=")+ additionalAlignmentWsMetadata)+", linkNodesToBestFeature=")+ linkNodesToBestFeature)+", linkNodesToBestGenome=")+ linkNodesToBestGenome)+", linkNodesToBestGenomeName=")+ linkNodesToBestGenomeName)+", linkNodesToAllFeatures=")+ linkNodesToAllFeatures)+", linkNodesToAllGenomes=")+ linkNodesToAllGenomes)+", linkNodesToAllGenomeNames=")+ linkNodesToAllGenomeNames)+", defaultLabel=")+ defaultLabel)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
