@@ -22,7 +22,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 
 	@Override
 	public void init(TaskQueueConfig queueCfg, Map<String, String> configParams) {
-		init(getDirParam(configParams, "temp.dir"), getDirParam(configParams, "data.dir"),
+		init(getDirParam(configParams, "scratch"), getDirParam(configParams, "data.dir"),
 				createDefaultObjectStorage(queueCfg.getWsUrl()));
 	}
 	
