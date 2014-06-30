@@ -222,6 +222,10 @@ public class KBaseTreesServer extends JsonServerServlet {
         super("KBaseTrees" + registerConfigFile(configFile));
 	}
 	
+	public static String getServiceVersion() { 
+		return "1.0";
+	}
+	
     //END_CLASS_HEADER
 
     public KBaseTreesServer() throws Exception {

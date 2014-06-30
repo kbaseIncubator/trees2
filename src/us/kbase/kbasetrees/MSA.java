@@ -17,15 +17,18 @@ import us.kbase.common.service.Tuple4;
  * <p>Original spec-file type: MSA</p>
  * <pre>
  * Type for multiple sequence alignment.
+ * sequence_type - 'protein' in case sequences are amino acids, 'dna' in case of 
+ *         nucleotides.
  * int alignment_length - number of columns in alignment.
- * string alignment_method - name of program used for this alignment construction (optional),
- *         currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
- *         is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
- * mapping<string, string> alignment - mapping from sequence id to aligned sequence
- * list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
+ * mapping<row_id, sequence> alignment - mapping from sequence id to aligned sequence.
+ * list<row_id> row_order - list of sequence ids defining alignment order (optional). 
+ * ws_alignment_id parent_msa_ref - reference to parental alignment object to which 
+ *         this object adds some new aligned sequences (it could be useful in case of
+ *         profile alignments where you don't need to insert new gaps in original msa).
  * @optional name description sequence_type
  * @optional trim_info alignment_attributes row_order
  * @optional source_id source_db
+ * @optional parent_msa_ref
  * </pre>
  * 
  */
@@ -41,7 +44,8 @@ import us.kbase.common.service.Tuple4;
     "alignment_attributes",
     "row_order",
     "source_id",
-    "source_db"
+    "source_db",
+    "parent_msa_ref"
 })
 public class MSA {
 
@@ -65,6 +69,8 @@ public class MSA {
     private java.lang.String sourceId;
     @JsonProperty("source_db")
     private java.lang.String sourceDb;
+    @JsonProperty("parent_msa_ref")
+    private java.lang.String parentMsaRef;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("name")
@@ -217,6 +223,21 @@ public class MSA {
         return this;
     }
 
+    @JsonProperty("parent_msa_ref")
+    public java.lang.String getParentMsaRef() {
+        return parentMsaRef;
+    }
+
+    @JsonProperty("parent_msa_ref")
+    public void setParentMsaRef(java.lang.String parentMsaRef) {
+        this.parentMsaRef = parentMsaRef;
+    }
+
+    public MSA withParentMsaRef(java.lang.String parentMsaRef) {
+        this.parentMsaRef = parentMsaRef;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -229,7 +250,7 @@ public class MSA {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((("MSA"+" [name=")+ name)+", description=")+ description)+", sequenceType=")+ sequenceType)+", alignmentLength=")+ alignmentLength)+", alignment=")+ alignment)+", trimInfo=")+ trimInfo)+", alignmentAttributes=")+ alignmentAttributes)+", rowOrder=")+ rowOrder)+", sourceId=")+ sourceId)+", sourceDb=")+ sourceDb)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((("MSA"+" [name=")+ name)+", description=")+ description)+", sequenceType=")+ sequenceType)+", alignmentLength=")+ alignmentLength)+", alignment=")+ alignment)+", trimInfo=")+ trimInfo)+", alignmentAttributes=")+ alignmentAttributes)+", rowOrder=")+ rowOrder)+", sourceId=")+ sourceId)+", sourceDb=")+ sourceDb)+", parentMsaRef=")+ parentMsaRef)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

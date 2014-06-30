@@ -95,7 +95,8 @@ module KBaseTrees
     typedef string ws_tree_id;
     
     /*
-        @id ws KBaseTrees.MSA KBaseTrees.ConcatMSA KBaseTrees.MS
+    	###  KBaseTrees.ConcatMSA KBaseTrees.MS
+        @id ws KBaseTrees.MSA
     */
     typedef string ws_alignment_id;
     
@@ -182,15 +183,18 @@ module KBaseTrees
             trim_info;
 
     /* Type for multiple sequence alignment.
+	sequence_type - 'protein' in case sequences are amino acids, 'dna' in case of 
+		nucleotides.
 	int alignment_length - number of columns in alignment.
-	string alignment_method - name of program used for this alignment construction (optional),
-		currently service supports one of: Muscle, Clustal, ProbCons, T-Coffee, Mafft.
-		is_protein_mode - 1 in case sequences are amino acids, 0 in case of nucleotides (optional).
-	mapping<string, string> alignment - mapping from sequence id to aligned sequence
-	list<string> sequence_id_order - list of sequence ids defining alignment order (optional). 
+	mapping<row_id, sequence> alignment - mapping from sequence id to aligned sequence.
+	list<row_id> row_order - list of sequence ids defining alignment order (optional). 
+	ws_alignment_id parent_msa_ref - reference to parental alignment object to which 
+		this object adds some new aligned sequences (it could be useful in case of
+		profile alignments where you don't need to insert new gaps in original msa).
 	@optional name description sequence_type
 	@optional trim_info alignment_attributes row_order
 	@optional source_id source_db
+	@optional parent_msa_ref
     */
     typedef structure {
         string name;
@@ -207,6 +211,8 @@ module KBaseTrees
         
         string source_id;
         string source_db;
+        
+        ws_alignment_id parent_msa_ref;
     } MSA;
 
 

@@ -3,7 +3,6 @@ package us.kbase.kbasetrees.test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +28,22 @@ import us.kbase.auth.AuthService;
 import us.kbase.auth.AuthUser;
 import us.kbase.common.mongo.exceptions.InvalidHostException;
 import us.kbase.common.service.JsonClientException;
+import us.kbase.common.service.ServerException;
+import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UObject;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.common.test.TestException;
 import us.kbase.kbasetrees.KBaseTreesClient;
 import us.kbase.kbasetrees.KBaseTreesServer;
+import us.kbase.kbasetrees.MSA;
 import us.kbase.typedobj.core.TempFilesManager;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.workspace.CreateWorkspaceParams;
+import us.kbase.workspace.ObjectIdentity;
+import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.RegisterTypespecParams;
+import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.WorkspaceClient;
 import us.kbase.workspace.WorkspaceServer;
 import us.kbase.workspace.test.WorkspaceTestCommon;
@@ -360,6 +367,7 @@ public class ServicesStartupLongTester {
 			try {
 				System.out.print("Killing mongodb... ");
 				mongodProcess.destroy();
+				System.out.println("Done");
 			} catch (Throwable ex) {
 				ex.printStackTrace();
 			}
@@ -385,6 +393,40 @@ public class ServicesStartupLongTester {
 			for (File f : fileOrDir.listFiles()) 
 				deleteRecursively(f);
 		fileOrDir.delete();
+	}
+
+	/**************************** Utility Methods *****************************/
+	
+	protected static void saveWsObject(String wsName, String type, String objName, Object data) throws Exception {
+		wsClient.saveObjects(new SaveObjectsParams().withWorkspace(wsName)
+				.withObjects(Arrays.asList(new ObjectSaveData()
+				.withType(type).withName(objName).withData(new UObject(data)))));
+	}
+	
+	protected static <T> T getWsObject(String ref, Class<T> type) throws Exception {
+		T ret = wsClient.getObjects(Arrays.asList(new ObjectIdentity().withRef(ref))).get(0).getData().asClassInstance(type);
+		return ret;
+	}
+
+	protected static List<ProvenanceAction> getWsProvenance(String ref) throws Exception {
+		return wsClient.getObjects(Arrays.asList(new ObjectIdentity().withRef(ref))).get(0).getProvenance();
+	}
+
+	protected static void waitForJob(String jobId) throws Exception {
+		while (true) {
+			Tuple7<String, String, String, Long, String, Long, Long> status = ujsClient.getJobStatus(jobId);
+			boolean completed = status.getE6() == 1L;
+			if (!completed) {
+				Thread.sleep(1000);
+				continue;
+			}
+			boolean isError = status.getE7() == 1L;
+			if (isError) {
+				System.err.println("Detailed error: " + ujsClient.getDetailedError(jobId));
+				throw new IllegalStateException("Error in job execution (see console for detailes)");
+			}
+			break;
+		}
 	}
 
 }

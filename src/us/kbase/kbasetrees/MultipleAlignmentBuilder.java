@@ -20,6 +20,7 @@ import us.kbase.common.utils.ClustalParser;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
 public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultipleAlignment> {
@@ -67,6 +68,12 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		File resultFile = null;
 		String resultAlnText = null;
 		List<File> toDelete = new ArrayList<File>(Arrays.asList(inputFasta));
+		String method = inputData.getAlignmentMethod();
+		if (method == null) {
+			method = "clustal";
+		} else {
+			method = method.toLowerCase();
+		}
 		Alignment aln = null;
 		try {
 			FastaWriter fw = new FastaWriter(inputFasta);
@@ -78,12 +85,6 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 			fw.close();
 			resultFile = File.createTempFile("msaOutput", ".aln", getTempDir());
 			toDelete.add(resultFile);
-			String method = inputData.getAlignmentMethod();
-			if (method == null) {
-				method = "clustal";
-			} else {
-				method = method.toLowerCase();
-			}
 			File tmp = getTempDir();
 			if (method.equals("muscle")) {  // version 3.8.31
 				String binPath = getMethodBin("muscle").getAbsolutePath();
@@ -142,11 +143,21 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		}
 		ret.withAlignment(idToAln).withRowOrder(seqIds);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
-		saveResult(inputData.getOutWorkspace(), id, token, ret);
+		saveResult(inputData.getOutWorkspace(), id, token, ret, method, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, MSA res) throws Exception {
-		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res)).withType("KBaseTrees.MSA");
+	private void saveResult(String ws, String id, String token, MSA res, String method,
+			ConstructMultipleAlignment inputData) throws Exception {
+		Map<String, String> seqs = inputData.getGeneSequences();
+		inputData.setGeneSequences(null);
+		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
+				.withType("KBaseTrees.MSA")
+				.withProvenance(Arrays.asList(new ProvenanceAction()
+				.withDescription("MSA was constructed using " + method + " program (sequences " +
+						"are not present in method parameters, just remove gaps from aligned ones)")
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withMethod("construct_multiple_alignment")
+				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {
 			long objid = Long.parseLong(id);
 			data.withObjid(objid);
@@ -155,6 +166,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		}
 		storage.saveObjects(token, new SaveObjectsParams().withWorkspace(ws).withObjects(
 				Arrays.asList(data)));
+		inputData.setGeneSequences(seqs);
 	}
 
 	private String runProgram(File tempDir, String... cmd) throws Exception {

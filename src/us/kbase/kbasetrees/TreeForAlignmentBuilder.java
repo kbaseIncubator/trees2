@@ -15,6 +15,7 @@ import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
 public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeForAlignmentParams> {
@@ -54,14 +55,28 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 			numbersToOrignalNodeNames.put("" + num, entry.getKey());
 			numbersToAln.put("" + num, entry.getValue());
 		}
-		String treeText = makeTree(numbersToAln, inputData.getTreeMethod());
+		String method = inputData.getTreeMethod();
+		if (method == null) {
+			method = "clustal";
+		} else {
+			method = method.toLowerCase();
+		}
+		String treeText = makeTree(numbersToAln, method);
 		Tree tree = new Tree().withTree(treeText).withDefaultNodeLabels(numbersToOrignalNodeNames);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
-		saveResult(inputData.getOutWorkspace(), id, token, tree);
+		saveResult(inputData.getOutWorkspace(), id, token, tree, method, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, Tree res) throws Exception {
-		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res)).withType("KBaseTrees.Tree");
+	private void saveResult(String ws, String id, String token, Tree res, String method, 
+			ConstructTreeForAlignmentParams inputData) throws Exception {
+		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
+				.withType("KBaseTrees.Tree")
+				.withProvenance(Arrays.asList(new ProvenanceAction()
+				.withDescription("Tree was constructed using " + method + " program")
+				.withInputWsObjects(Arrays.asList(inputData.getMsaRef()))
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withMethod("construct_tree_for_alignment")
+				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {
 			long objid = Long.parseLong(id);
 			data.withObjid(objid);
@@ -153,8 +168,22 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 	}
 	
 	private Map<String, String> loadAlignment(String token, String msaRef, long minNongapPercentage) throws Exception {
+		Map<String, String> ret = new LinkedHashMap<String, String>();
+		loadAlignment(token, msaRef, ret);
+		return AlignUtil.trimAlignment(ret, minNongapPercentage / 100.0);
+	}
+	
+	private void loadAlignment(String token, String msaRef, Map<String, String> ret) throws Exception {
 		final MSA msa = storage.getObjects(token, Arrays.asList(
 				new ObjectIdentity().withRef(msaRef))).get(0).getData().asClassInstance(MSA.class);
-		return AlignUtil.trimAlignment(msa.getAlignment() , minNongapPercentage / 100.0);
+		if (ret.size() > 0) {
+			long len = ret.values().iterator().next().length();
+			if (len != msa.getAlignmentLength())
+				throw new IllegalStateException("Parent and child MSAs have different aligned sequence " +
+						"lenths: " + len + " and " + msa.getAlignmentLength());
+		}
+		ret.putAll(msa.getAlignment());
+		if (msa.getParentMsaRef() != null)
+			loadAlignment(token, msa.getParentMsaRef(), ret);
 	}
 }

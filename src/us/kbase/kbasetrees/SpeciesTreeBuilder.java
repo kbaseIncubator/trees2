@@ -36,6 +36,7 @@ import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
 public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeParams> {
@@ -71,11 +72,19 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && inputData.getUseRibosomalS9Only() == 1L;
 		SpeciesTree tree = placeUserGenomes(token, inputData.getNewGenomes(), useCog103Only);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
-		saveResult(inputData.getOutWorkspace(), id, token, tree);
+		saveResult(inputData.getOutWorkspace(), id, token, tree, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, SpeciesTree res) throws Exception {
-		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res)).withType("KBaseTrees.SpeciesTree");
+	private void saveResult(String ws, String id, String token, SpeciesTree res,
+			ConstructSpeciesTreeParams inputData) throws Exception {
+		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
+				.withType("KBaseTrees.SpeciesTree")
+				.withProvenance(Arrays.asList(new ProvenanceAction()
+				.withDescription("Species tree was constructed using rps-blast program")
+				.withInputWsObjects(inputData.getNewGenomes())
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withMethod("construct_species_tree")
+				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {
 			long objid = Long.parseLong(id);
 			data.withObjid(objid);

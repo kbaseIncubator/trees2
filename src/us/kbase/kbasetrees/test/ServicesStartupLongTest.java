@@ -9,10 +9,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.rowset.serial.SerialException;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
 
+import us.kbase.common.service.ServerException;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UObject;
@@ -28,6 +31,7 @@ import us.kbase.kbasetrees.SpeciesTree;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
 public class ServicesStartupLongTest extends ServicesStartupLongTester {
@@ -73,6 +77,37 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 			String nodeLabel = tree.getDefaultNodeLabels().get(nodeId);
 			Assert.assertNotNull(nodeLabel, aln.get(nodeLabel));
 		}
+		List<ProvenanceAction> provs = getWsProvenance(defaultWokspace + "/" + treeId);
+		Assert.assertEquals(1, provs.size());
+		Assert.assertEquals("Tree was constructed using clustal program", provs.get(0).getDescription());
+		Map<String, String> aln3 = new LinkedHashMap<String, String>();
+		for (Map.Entry<String, String> entry : aln.entrySet()) {
+			String seq = "A" + entry.getValue().substring(1);
+			aln3.put(entry.getKey() + ".3", seq);
+		}
+		String msaId3 = "msa.3";
+		MSA msa3 = new MSA().withAlignment(aln3)
+				.withAlignmentLength((long)aln3.get(aln3.keySet().iterator().next()).length())
+				.withParentMsaRef(defaultWokspace + "/" + msaId);
+		try {
+			saveWsObject(defaultWokspace, "KBaseTrees.MSA", msaId3, msa3);
+		} catch (ServerException ex) {
+			System.err.println("Server error detailes: " + ex.getData());
+		}
+		String treeId3 = "tree.3";
+		String jobId3 = treesClient.constructTreeForAlignment(
+				new ConstructTreeForAlignmentParams().withMsaRef(defaultWokspace + "/" + msaId3)
+				.withOutWorkspace(defaultWokspace).withOutTreeId(treeId3));
+		waitForJob(jobId3);
+		Tree tree3 = getWsObject(defaultWokspace + "/" + treeId3, Tree.class);
+		for (String nodeId : treesClient.extractLeafNodeNames(tree3.getTree())) {
+			String nodeLabel = tree3.getDefaultNodeLabels().get(nodeId);
+			if (nodeLabel.endsWith(".3")) {
+				Assert.assertNotNull(nodeLabel, aln.get(nodeLabel.substring(0, nodeLabel.length() - 2)));
+			} else {
+				Assert.assertNotNull(nodeLabel, aln.get(nodeLabel));
+			}
+		}
 	}
 	
 	@Test
@@ -113,34 +148,6 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 	
 	/****************************************** Utility methods *********************************************/
 	
-	private static void saveWsObject(String wsName, String type, String objName, Object data) throws Exception {
-		wsClient.saveObjects(new SaveObjectsParams().withWorkspace(wsName)
-				.withObjects(Arrays.asList(new ObjectSaveData()
-				.withType(type).withName(objName).withData(new UObject(data)))));
-	}
-	
-	private static <T> T getWsObject(String ref, Class<T> type) throws Exception {
-		T ret = wsClient.getObjects(Arrays.asList(new ObjectIdentity().withRef(ref))).get(0).getData().asClassInstance(type);
-		return ret;
-	}
-	
-	private static void waitForJob(String jobId) throws Exception {
-		while (true) {
-			Tuple7<String, String, String, Long, String, Long, Long> status = ujsClient.getJobStatus(jobId);
-			boolean completed = status.getE6() == 1L;
-			if (!completed) {
-				Thread.sleep(1000);
-				continue;
-			}
-			boolean isError = status.getE7() == 1L;
-			if (isError) {
-				System.err.println("Detailed error: " + ujsClient.getDetailedError(jobId));
-				throw new IllegalStateException("Error in job execution (see console for detailes)");
-			}
-			break;
-		}
-	}
-
 	private static Map<String, String> loadProtSeqs() throws Exception {
 		Map<String, String> ret = new LinkedHashMap<String, String>();
 		for (Map.Entry<String, String> entry : loadProtAlignedSeqs().entrySet()) 
