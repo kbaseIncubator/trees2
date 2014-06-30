@@ -32,7 +32,17 @@ public class CdsUtil {
 	}
 	
 	
-	
+	protected void initParams(CdsImportTreeParameters p) {
+		if(p.getLinkNodesToBestFeature()==null) {
+			p.setLinkNodesToBestFeature(0L);
+		}
+		if(p.getLinkNodesToBestGenome()==null) {
+			p.setLinkNodesToBestGenome(0L);
+		}
+		if(p.getLinkNodesToBestGenomeName()==null) {
+			p.setLinkNodesToBestGenomeName(0L);
+		}
+	}
 
 	//if(p.getTargetWorkspaceId()==null && p.getTargetWorkspaceName()==null) {
 	//	throw new KBaseTreesException("To import tree data to your workspace, you must specify either a workspace name or ID; you provided none.");
@@ -46,6 +56,7 @@ public class CdsUtil {
 		List<String> tree_ids = new ArrayList<String>(params.size());
 		for(CdsImportTreeParameters p:params) {
 			tree_ids.add(p.getTreeId());
+			initParams(p);
 		}
 
 		Map<String,TreeInCdsData> trees = null;
@@ -60,19 +71,32 @@ public class CdsUtil {
 		// (2) for each tree, get the requested node mappings
 		for(CdsImportTreeParameters p:params) {
 			if(trees.containsKey(p.getTreeId())){
-				try {
-					getTreeNodeData(trees.get(p.getTreeId()),true,true,true,true,true);
-				} catch (IOException e) {
-					throw new KBaseTreesException("Error retriving tree data from the CDS ("+cdmi.getURL()+"): "+e.getMessage());
-				} catch (JsonClientException e) {
-					throw new KBaseTreesException("Error retriving tree data from the CDS ("+cdmi.getURL()+"): "+e.getMessage());
+				boolean includeExemplarFeatures = false;
+				boolean includeExemplarGenomes = false;
+				boolean includeExemplarGenomeNames = false;
+				if(p.getLinkNodesToBestFeature()>=1) {
+					includeExemplarFeatures = true;
 				}
+				if(p.getLinkNodesToBestGenome()>=1) {
+					includeExemplarGenomes = true;
+				}
+				if(p.getLinkNodesToBestGenomeName()>=1) {
+					includeExemplarGenomeNames = true;
+				}
+				try {
+					addNodeRefProtein(trees.get(p.getTreeId()), includeExemplarFeatures, includeExemplarGenomes, includeExemplarGenomeNames);
+				} catch (IOException e) {
+					throw new KBaseTreesException("Error retriving tree node data from the CDS ("+cdmi.getURL()+", tree:"+p.getTreeId()+"): "+e.getMessage());
+				} catch (JsonClientException e) {
+					throw new KBaseTreesException("Error retriving tree node data from the CDS ("+cdmi.getURL()+", tree:"+p.getTreeId()+"): "+e.getMessage());
+				}
+				
+				System.out.println(trees.get(p.getTreeId()));
 			} else {
 				throw new KBaseTreesException("Error: no tree data from the CDS ("+cdmi.getURL()+") for tree '"+p.getTreeId()+"' found.");
 			}
 			
 		}
-		
 		
 		//return null;
 	}
@@ -109,7 +133,6 @@ public class CdsUtil {
 					row.get(6),
 					newick));
 		}
-		
 		
 		// (2) get optional tree attribute information
 		if(withTreeAttributes) {
@@ -149,50 +172,205 @@ public class CdsUtil {
 	
 	
 	
-	/**
-	 * 
-	 * int level:  
-	 *   NONE (0)
-	 *   PROTIEN (1)
-	 *    - EXEMPLAR_FEATURE (10)
-	 *         -EXEMPLAR_GENOME (11)
-	 *              -EXEMPLAR_SPECIES (12)
-	 *    - FIRST_FEATURE (20)
-	 *         -FIRST_GENOME (21)
-	 *              -FIRST_SPECIES (22)
-	 *    - ALL_FEATURES (30)
-	 *         -ALL_GENOMES (31)
-	 *              -ALL_SPECIES (32)
-	 * 
-	 */
-	public void getTreeNodeData(TreeInCdsData tree,
-			boolean getProteinIds,
-			boolean getFeatureIds,
-			boolean getFeatureFunctions,
-			boolean getGenomeIds,
-			boolean getSpeciesNames) throws KBaseTreesException, IOException, JsonClientException {
-		
-		if(getProteinIds==false && getFeatureIds==false && getGenomeIds==false && getSpeciesNames==false) {
-			return;
-		}
+	public void addNodeRefProtein(
+			TreeInCdsData tree,
+			boolean includeExemplarFeatures,
+			boolean includeExemplarGenomes,
+			boolean includeExemplarGenomeNames) throws IOException, JsonClientException {
 		
 		String alnId = tree.getIsBuiltFrom_alignment_id();
-		Map<String,List<String>> protein_ids = new HashMap<String,List<String>>();
-		Map<String,List<String>> feature_ids = new HashMap<String,List<String>>();
-		Map<String,List<String>> feature_functions  = new HashMap<String,List<String>>();
-		Map<String,List<String>> genome_ids  = new HashMap<String,List<String>>();
-		Map<String,List<String>> species_names  = new HashMap<String,List<String>>();
+		if(alnId!=null) {
+			if(!alnId.trim().isEmpty()) {
+				
+				String objectNames        = "IncludesAlignmentRow AlignmentRow ContainsAlignedProtein";
+				String filterClause       = "IncludesAlignmentRow(from-link) in (?)";
+				List<String> queryParams  = Arrays.asList(alnId);
+				String fields             = "AlignmentRow(row-id) ContainsAlignedProtein(to-link)";
+				
+				if(includeExemplarFeatures) {
+					fields += " ContainsAlignedProtein(kb-feature-id)";
+				}
+				
+				List<List<String>> rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
+				List<String> nodeIdList = null; // list of row ID / feature ID pair 
+				List<String> featureIdList = null; // list of row ID / feature ID pair 
+				if(includeExemplarGenomes || includeExemplarGenomeNames) { 
+					nodeIdList = new ArrayList<String>(rows.size());
+					featureIdList = new ArrayList<String>(rows.size());
+				}
+				for(List<String> row: rows) {
+					tree.addKbRef(row.get(0), "p", row.get(1));
+					if(includeExemplarFeatures) {
+						if(!row.get(2).equals("")) {
+							tree.addKbRef(row.get(0), "f", row.get(2));
+						}
+					}
+					if(includeExemplarGenomes || includeExemplarGenomeNames) {
+						if(!row.get(2).isEmpty()) {
+							nodeIdList.add(row.get(0));
+							featureIdList.add(row.get(2));
+						}
+					}
+				}
+				
+				if(includeExemplarGenomes || includeExemplarGenomeNames) {
+					Map<String,FeatureDataBasic> featureData = getFeatureDataBasic(
+							featureIdList, 
+							includeExemplarGenomes,
+							includeExemplarGenomeNames,
+							false);
+					
+					for(int k=0; k<nodeIdList.size(); k++) {
+						FeatureDataBasic f = featureData.get(featureIdList.get(k));
+						if(f!=null) {
+							if(includeExemplarGenomes) {
+								tree.addKbRef(nodeIdList.get(k), "g", f.getGenomeId());
+							}
+							if(includeExemplarGenomeNames) {
+								tree.addKbRef(nodeIdList.get(k), "s", f.getGenomeScientificName());
+							}
+						}
+					}
+				}
+				
+				// we need to clean up because the canonical feature ids sometimes no longer exist! arg!!!
+				removeInvalidFeatures(tree,nodeIdList,featureIdList);
+			}
+		}
+	}
+	
+	/* if a node is marked as having in invalid feature in the list of features, then the entire
+	 * feature list for the specified node is booted!
+	 */
+	protected void removeInvalidFeatures(
+			TreeInCdsData tree,
+			List<String> node_ids,
+			List<String> feature_ids) throws IOException, JsonClientException {
+		List <String> invalidFeatureNodes = flagInvalidFeatureNodes(node_ids, feature_ids);
+		for(String f : invalidFeatureNodes) {
+			tree.removeKbRefOfType(f,"f");
+		}
+	}
+	
+	protected List<String> flagInvalidFeatureNodes(List<String> node_ids, List<String> feature_ids) throws IOException, JsonClientException {
+		String objectNames        = "Feature";
+		String filterClause       = "Feature(id) in "+getInClause(feature_ids.size());
+		List<String> queryParams  = feature_ids;
+		String fields             = "Feature(id)";
+		List<List<String>> rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
+		
+		Map<String,String> featureLookup = new HashMap<String,String>(rows.size());
+		List<String> invalidList = new ArrayList<String>();
+		for(List<String> row: rows) {
+			featureLookup.put(row.get(0), "");
+			System.out.println("found:"+row.get(0));
+		}
+		for(int k=0;k<node_ids.size();k++) {
+			if(feature_ids.get(k).isEmpty()) continue;
+			if(!featureLookup.containsKey(feature_ids.get(k))) {
+				invalidList.add(node_ids.get(k));
+				System.out.println("adding invalid node:"+feature_ids.get(k)+" found in "+node_ids.get(k));
+			}
+		}
+		return invalidList;
+	}
+	
+	
+	/*public void addMissingFeatures(
+			TreeInCdsData tree,
+			boolean includeExemplarFeatures,
+			boolean includeExemplarGenomes,
+			boolean includeExemplarGenomeNames) throws IOException, JsonClientException {
+		
+		String alnId = tree.getIsBuiltFrom_alignment_id();
+		if(alnId!=null) {
+			if(!alnId.trim().isEmpty()) {
+				
+				String objectNames        = "IncludesAlignmentRow AlignmentRow ContainsAlignedProtein";
+				String filterClause       = "IncludesAlignmentRow(from-link) in (?)";
+				List<String> queryParams  = Arrays.asList(alnId);
+				String fields             = "AlignmentRow(row-id) ContainsAlignedProtein(to-link)";
+				
+				if(includeExemplarFeatures) {
+					fields += " ContainsAlignedProtein(kb-feature-id)";
+				}
+				
+				List<List<String>> rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
+				List<String> nodeIdList = null; // list of row ID / feature ID pair 
+				List<String> featureIdList = null; // list of row ID / feature ID pair 
+				if(includeExemplarGenomes || includeExemplarGenomeNames) { 
+					nodeIdList = new ArrayList<String>(rows.size());
+					featureIdList = new ArrayList<String>(rows.size());
+				}
+				for(List<String> row: rows) {
+					tree.addKbRef(row.get(0), "p", row.get(1));
+					if(includeExemplarFeatures) {
+						tree.addKbRef(row.get(0), "f", row.get(2));
+					}
+					if(includeExemplarGenomes || includeExemplarGenomeNames) {
+						nodeIdList.add(row.get(0));
+						featureIdList.add(row.get(2));
+					}
+				}
+				
+				if(includeExemplarGenomes || includeExemplarGenomeNames) {
+					Map<String,FeatureDataBasic> featureData = getFeatureDataBasic(
+							featureIdList, 
+							includeExemplarGenomes,
+							includeExemplarGenomeNames,
+							false);
+					
+					for(int k=0; k<nodeIdList.size(); k++) {
+						FeatureDataBasic f = featureData.get(featureIdList.get(k));
+						if(f!=null) {
+							if(includeExemplarGenomes) {
+								tree.addKbRef(nodeIdList.get(k), "g", f.getGenomeId());
+							}
+							if(includeExemplarGenomeNames) {
+								tree.addKbRef(nodeIdList.get(k), "s", f.getGenomeScientificName());
+							}
+						}
+					}
+				}
+			}
+		}
+	}*/
+	
+	
+	
+	public void addNodeDataExemplarFeature(boolean includeExamplarGenome, boolean includeGenomeName) {
+		
+	}
+	
+	
+	public void addNodeDataOneFeature( boolean includeGenome, boolean includeGenomeName) {
+		
+	}
+	
+	
+	public void setDefaultLabel(String key) {
+		
+	}
+	
+	
+	public void getTreeNodeData(
+			TreeInCdsData tree,
+			int levelOfDetail
+				) throws KBaseTreesException, IOException, JsonClientException {
+		
+		
+		String alnId = tree.getIsBuiltFrom_alignment_id();
 		
 		if(alnId!=null) {
 			if(!alnId.trim().isEmpty()) {
 				
 				String objectNames        = "IncludesAlignmentRow AlignmentRow ContainsAlignedProtein";
-				
 				String filterClause       = "IncludesAlignmentRow(from-link) in (?)";
 				List<String> queryParams  = Arrays.asList(alnId);
 				String fields             = "AlignmentRow(row-id) ContainsAlignedProtein(to-link) ContainsAlignedProtein(kb-feature-id)";
 				
-				if(getFeatureIds) {
+				
+				/*if(getFeatureIds) {
 					objectNames += " IsProteinFor";
 					fields += " IsProteinFor(to-link)";
 				}
@@ -207,7 +385,7 @@ public class CdsUtil {
 				if(getSpeciesNames) {
 					objectNames += " Genome";
 					fields += " Genome(scientific-name)";
-				}
+				}*/
 				
 				List<List<String>> rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
 				for(List<String> row: rows) {
@@ -230,6 +408,40 @@ public class CdsUtil {
 	
 	
 	
+	public Map<String,FeatureDataBasic> getFeatureDataBasic(List<String>featureIds, 
+			boolean getGenomeId,
+			boolean getGenomeName,
+			boolean getFunction) throws IOException, JsonClientException {
+		
+		String objectNames        = "IsOwnedBy";
+		String filterClause       = "IsOwnedBy(from-link) in "+getInClause(featureIds.size());;
+		List<String> queryParams  = featureIds;
+		String fields             = "IsOwnedBy(from-link)";
+		
+		if(getGenomeId) {
+			fields += " IsOwnedBy(to-link)";
+		}
+		if(getGenomeName) {
+			objectNames += " Genome";
+			fields += " Genome(scientific-name)";
+		}
+		if(getFunction) {
+			objectNames = "Feature "+objectNames;
+			fields += " Feature(function)";
+		}
+		Map<String,FeatureDataBasic> result = new HashMap<String,FeatureDataBasic>(featureIds.size());
+		List<List<String>> rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
+		for(List<String> row: rows) {
+			FeatureDataBasic f = new FeatureDataBasic();
+			if(getGenomeId) { f.genomeId = row.get(1); }
+			if(getGenomeName) { f.genomeScientificName = row.get(2); }
+			if(getFunction) { f.function = row.get(3); }
+			result.put(row.get(0), f);
+		}
+		return result;
+	}
+	
+	
 	protected String getInClause(int n_records) {
 		StringBuilder b = new StringBuilder();
 		b.append("(");
@@ -244,8 +456,11 @@ public class CdsUtil {
 	public static void main(String[] args) throws KBaseTreesException {
 		CdsUtil cdsUtil = new CdsUtil();
 		List<CdsImportTreeParameters> params = Arrays.asList(
-				new CdsImportTreeParameters().withTreeId("kb|tree.1000000"),
-				new CdsImportTreeParameters().withTreeId("kb|tree.1000001")
+				new CdsImportTreeParameters().withTreeId("kb|tree.1000500")
+					.withLinkNodesToBestFeature(1L)
+					.withLinkNodesToBestGenome(1L)
+					.withLinkNodesToBestGenomeName(1L)
+				//,new CdsImportTreeParameters().withTreeId("kb|tree.1000001")
 				);
 		cdsUtil.getTreesForImport(params);
 	}

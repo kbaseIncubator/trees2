@@ -153,18 +153,41 @@ module KBaseTrees
     } Tree;
     
     
-    /* Data type that stores a view of a tree.
-        @optional node_labels node_attributes node_values
+    
+    /* note: we need to merge tree_node_id with node_id ... */
+    
+    /* may include leaves, nodes, and branches */
+    typedef string tree_elt_id;
+    typedef string tree_leaf_id;
+    typedef string tree_node_id;
+    typedef string tree_branch_id;
+    typedef string collapsed_node_flag;
+    typedef tuple<string substructure_label, string substructure_class> substructure;
+    typedef tuple<string value,string viz_type> viz_val_string;
+    typedef tuple<int value,string viz_type> viz_val_int;
+    typedef tuple<float value,string viz_type> viz_val_float;
+    
+    /*
+       something looks strange with this field:  it was removed so we can compile
+        mapping<tree_leaf_id tree_leaf_id, tuple<string substructure_label, string> substructure_by_leaf;
     */
-    /*typedef structure {
-        
-        ws_tree_id ws_tree_id;
-        
-        mapping <node_id,label> node_labels;
-        mapping <node_id,mapping<string,string>> node_attributes;
-        mapping <node_id,mapping<string,float>>  node_values;
-        
-    } TreeDecorator;*/
+    typedef structure {
+        ws_tree_id tree_id;
+        string viz_title;
+        list<string> string_dataset_labels;
+        list<string> string_dataset_viz_types;
+        list<string> int_dataset_labels;
+        list<string> int_dataset_viz_types;
+        list<string> float_dataset_labels;
+        list<string> float_dataset_viz_types;
+        mapping<tree_elt_id,list<viz_val_string>> tree_val_list_string;
+        mapping<tree_elt_id,list<viz_val_int>> tree_val_list_int;
+        mapping<tree_elt_id,list<viz_val_float>> tree_val_list_float;
+        mapping<tree_node_id,collapsed_node_flag> collapsed_by_node;
+        mapping<tree_node_id,substructure> substructure_by_node;
+        string rooted_flag;
+        node_id alt_root_id;
+    } TreeDecoration;
 
 
     typedef string row_id;
@@ -535,7 +558,8 @@ module KBaseTrees
         @optional ws_tree_name additional_tree_ws_metadata
         @optional ws_alignment_name additional_alignment_ws_metadata
         
-        @optional link_nodes_to_protein_sequence link_nodes_to_exemplar_feature link_nodes_to_exemplar_genome
+        @optional link_nodes_to_best_feature link_nodes_to_best_genome link_nodes_to_best_genome_name
+        @optional link_nodes_to_all_features link_nodes_to_all_genomes link_nodes_to_all_genome_names
         @optional default_label
     */
     typedef structure {
@@ -547,9 +571,13 @@ module KBaseTrees
         string ws_alignment_name;
         mapping <string,string> additional_alignment_ws_metadata;
         
-        boolean link_nodes_to_protein_sequence;
-        boolean link_nodes_to_exemplar_feature;
-        boolean link_nodes_to_exemplar_genome;
+        boolean link_nodes_to_best_feature;
+        boolean link_nodes_to_best_genome;
+        boolean link_nodes_to_best_genome_name;
+        
+        boolean link_nodes_to_all_features;
+        boolean link_nodes_to_all_genomes;
+        boolean link_nodes_to_all_genome_names;
         
         string default_label;
         
