@@ -116,7 +116,7 @@ public class TreeServerPlaying {
 		br.close();
 		System.out.println(sb.toString());
 		System.out.println(wc.registerTypespec(new RegisterTypespecParams()
-				.withSpec(sb.toString()).withNewTypes(Arrays.asList("SpeciesTree", "Tree", "MSA")).withDryrun(0L)));
+				.withSpec(sb.toString()).withNewTypes(Arrays.asList("SpeciesTree", "Tree", "MSA", "MSASet")).withDryrun(0L)));
 		System.out.println(wc.listModuleVersions(new ListModuleVersionsParams().withMod(module)));
 		System.out.println(wc.getModuleInfo(new GetModuleInfoParams().withMod(module)));
 		System.out.println(wc.releaseModule(module));
