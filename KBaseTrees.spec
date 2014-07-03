@@ -603,7 +603,29 @@ module KBaseTrees
         
     } CdsImportTreeParameters;
     
-    funcdef import_tree_from_cds(list <CdsImportTreeParameters> selection, string targetWsNameOrId) returns (list <string> ) authentication required;
+    
+    /* Information about an object, including user provided metadata.
+	
+		obj_id objid - the numerical id of the object.
+		obj_name name - the name of the object.
+		type_string type - the type of the object.
+		timestamp save_date - the save date of the object.
+		obj_ver ver - the version of the object.
+		username saved_by - the user that saved or copied the object.
+		ws_id wsid - the workspace containing the object.
+		ws_name workspace - the workspace containing the object.
+		string chsum - the md5 checksum of the object.
+		int size - the size of the object in bytes.
+		usermeta meta - arbitrary user-supplied metadata about
+			the object.
+
+	*/
+    typedef tuple<int objid, string name, string type,
+		string save_date, int version, string saved_by,
+		int wsid, string workspace, string chsum, int size, mapping<string,string> meta>
+		object_info;
+    
+    funcdef import_tree_from_cds(list <CdsImportTreeParameters> selection, string targetWsNameOrId) returns (list<object_info> info) authentication required;
     
     
     

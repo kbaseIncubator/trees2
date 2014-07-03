@@ -10,6 +10,7 @@ import java.util.Map;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
+import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UnauthorizedException;
 
 /**
@@ -488,16 +489,16 @@ public class KBaseTreesClient {
      * </pre>
      * @param   selection   instance of list of type {@link us.kbase.kbasetrees.CdsImportTreeParameters CdsImportTreeParameters}
      * @param   targetWsNameOrId   instance of String
-     * @return   instance of list of String
+     * @return   parameter "info" of list of original type "object_info" (Information about an object, including user provided metadata. obj_id objid - the numerical id of the object. obj_name name - the name of the object. type_string type - the type of the object. timestamp save_date - the save date of the object. obj_ver ver - the version of the object. username saved_by - the user that saved or copied the object. ws_id wsid - the workspace containing the object. ws_name workspace - the workspace containing the object. string chsum - the md5 checksum of the object. int size - the size of the object in bytes. usermeta meta - arbitrary user-supplied metadata about the object.) &rarr; tuple of size 11: parameter "objid" of Long, parameter "name" of String, parameter "type" of String, parameter "save_date" of String, parameter "version" of Long, parameter "saved_by" of String, parameter "wsid" of Long, parameter "workspace" of String, parameter "chsum" of String, parameter "size" of Long, parameter "meta" of mapping from String to String
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public List<String> importTreeFromCds(List<CdsImportTreeParameters> selection, String targetWsNameOrId) throws IOException, JsonClientException {
+    public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>> importTreeFromCds(List<CdsImportTreeParameters> selection, String targetWsNameOrId) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(selection);
         args.add(targetWsNameOrId);
-        TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.import_tree_from_cds", args, retType, true, true);
+        TypeReference<List<List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>>>> retType = new TypeReference<List<List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>>>>() {};
+        List<List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>>> res = caller.jsonrpcCall("KBaseTrees.import_tree_from_cds", args, retType, true, true);
         return res.get(0);
     }
 

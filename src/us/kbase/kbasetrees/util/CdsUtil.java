@@ -16,13 +16,17 @@ import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
 
+import us.kbase.kbasetrees.KBaseTreesServer;
 import us.kbase.kbasetrees.MSA;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.kbasetrees.CdsImportTreeParameters;
 import us.kbase.kbasetrees.exceptions.KBaseTreesException;
 import us.kbase.workspace.ProvenanceAction;
+import us.kbase.auth.AuthService;
+import us.kbase.auth.AuthToken;
 import us.kbase.cdmientityapi.CDMIEntityAPIClient;
 import us.kbase.common.service.JsonClientException;
+import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
 
 
@@ -172,7 +176,7 @@ public class CdsUtil {
 				}
 				Map<String,String> md = computeTreeMetadata(treeForImport);
 				tip.setTreeData(treeForImport, wsTreeName, md, Arrays.asList(treeProv));
-				
+				treesForImport.add(tip);
 				
 			} else {
 				throw new KBaseTreesException("Error: no tree data from the CDS ("+cdmi.getURL()+") for tree '"+p.getTreeId()+"' found.");
@@ -209,7 +213,7 @@ public class CdsUtil {
 		}
 		metadata.put("Leaf Count", Long.toString(leafCount));
 		metadata.put("Node Count", Long.toString(nodeCount));
-		return null;
+		return metadata;
 	}
 	public Map<String,TreeInCdsData> getTreeData(
 									List<String>tree_ids,
@@ -316,7 +320,8 @@ public class CdsUtil {
 				fields             = "WasAlignedBy(from-link) WasAlignedBy(to-link)";
 				List<List<String>> isTreeFrom_rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
 				for(List<String> row: isTreeFrom_rows) {
-					msas.get(row.get(0)).addMetaData("original-source",row.get(1));
+					// TODO handle source id and source name
+					//msas.get(row.get(0)).addMetaData("original-source",row.get(1));
 				}
 			}
 			if(withAttributes) {
@@ -326,6 +331,7 @@ public class CdsUtil {
 				List<List<String>> attribute_rows = cdmi.getAll(objectNames,filterClause,queryParams,fields,0L);
 				for(List<String> row: attribute_rows) {
 					msas.get(row.get(0)).getMsa().getAlignmentAttributes().put(row.get(1), row.get(2));
+					msas.get(row.get(0)).addMetaData(row.get(1),row.get(2));
 				}
 			}
 			
@@ -614,7 +620,7 @@ public class CdsUtil {
 		return b.toString();
 	}
 	
-	public static void main(String[] args) throws KBaseTreesException, IOException, JsonClientException {
+	public static void main(String[] args) throws Exception {
 		CdsUtil cdsUtil = new CdsUtil();
 		List<CdsImportTreeParameters> params = Arrays.asList(
 				new CdsImportTreeParameters()
@@ -627,7 +633,31 @@ public class CdsUtil {
 					.withLoadAlignmentForTree(1L)
 				//,new CdsImportTreeParameters().withTreeId("kb|tree.1000001")
 				);
-		cdsUtil.getTreesForImport(params,"myws");
+		//cdsUtil.getTreesForImport(params,"myws");
+		
+		AuthToken at = AuthService.login("user", "password").getToken();
+		
+		KBaseTreesServer kts = new KBaseTreesServer();
+		List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> results = 
+				kts.importTreeFromCds(params, "wstester1:trees", at);
+		for(Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>> r: results) {
+			System.out.println("============");
+			System.out.println(r.getE1());
+			System.out.println(r.getE2());
+			System.out.println(r.getE3());
+			System.out.println(r.getE4());
+			System.out.println(r.getE5());
+			System.out.println(r.getE6());
+			System.out.println(r.getE7());
+			System.out.println(r.getE8());
+			System.out.println(r.getE9());
+			System.out.println(r.getE10());
+		
+			for(Entry<String,String>e:r.getE11().entrySet()) {
+				System.out.println(e.getKey()+"=>"+e.getValue());
+			}
+		}
+		System.out.println("done");
 	}
 	
 }
