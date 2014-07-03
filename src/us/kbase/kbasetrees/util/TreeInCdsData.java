@@ -28,6 +28,8 @@ public class TreeInCdsData {
 	protected String isBuiltFrom_alignment_id;
 
 	protected Map<String,Map<String,List<String>>> kb_refs;
+
+	private Map<String, String> defaultNodeLabels;
 	
 	
 	public TreeInCdsData(String tree_id, String tree_data_type,
@@ -45,6 +47,7 @@ public class TreeInCdsData {
 		
 		this.hasTreeAttribute = new HashMap<String,String>();
 		kb_refs = new HashMap<String,Map<String,List<String>>>(ESTIMATED_NODE_COUNT);
+		defaultNodeLabels = new HashMap<String,String>(ESTIMATED_NODE_COUNT);
 	}
 
 	public void setIsTreeFrom_source(String isTreeFrom_source) {
@@ -163,6 +166,7 @@ public class TreeInCdsData {
 				+ isTreeFrom_source + ", \n\thasTreeAttribute=" + hasTreeAttribute
 				+ ", \n\tisBuiltFrom_alignment_id=" + isBuiltFrom_alignment_id
 				+ "]\n");
+		s.append("   ===kb refs:\n");
 		Iterator<Entry<String, Map<String, List<String>>>> it = kb_refs.entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<String, Map<String, List<String>>> pairs = (Entry<String, Map<String, List<String>>>)it.next();
@@ -178,13 +182,31 @@ public class TreeInCdsData {
 				s.append("]\n");
 			}
 		}
+
+		s.append("   ===labels:\n");
+		Iterator<Entry<String, String>> labels = defaultNodeLabels.entrySet().iterator();
+		while (labels.hasNext()) {
+			Entry<String, String> l = (Entry<String, String>)labels.next();
+			s.append("\t"+l.getKey()+" => "+l.getValue()+"\n");
+		}
 		
 		return s.toString();
-		
 	}
 
 	public void addTreeAttribute(String key, String value) {
 		this.hasTreeAttribute.put(key,value);
+	}
+
+	public Map<String, Map<String, List<String>>> getTree_kb_refs() {
+		return kb_refs;
+	}
+
+	
+	public void setDefaultNodeLabel(String nodeId, String label) {
+		this.defaultNodeLabels.put(nodeId,label);
+	}
+	public Map<String, String> getDefaultNodeLabels() {
+		return defaultNodeLabels;
 	}
 
 	

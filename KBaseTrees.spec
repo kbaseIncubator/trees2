@@ -215,8 +215,8 @@ module KBaseTrees
 		this object adds some new aligned sequences (it could be useful in case of
 		profile alignments where you don't need to insert new gaps in original msa).
 	@optional name description sequence_type
-	@optional trim_info alignment_attributes row_order
-	@optional source_id source_db
+	@optional trim_info alignment_attributes row_order 
+	@optional default_row_labels ws_refs kb_refs
 	@optional parent_msa_ref
     */
     typedef structure {
@@ -232,8 +232,9 @@ module KBaseTrees
         mapping <string,string> alignment_attributes;
         list <row_id> row_order;
         
-        string source_id;
-        string source_db;
+        mapping <node_id,label> default_row_labels;
+        mapping <node_id,mapping<ref_type,list<ws_obj_id>>> ws_refs;
+        mapping <node_id,mapping<ref_type,list<kbase_id>>> kb_refs;
         
         ws_alignment_id parent_msa_ref;
     } MSA;

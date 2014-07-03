@@ -56,7 +56,7 @@ public class TreeStructureUtil {
 			// so, we remove the parent and replace it with the first child node
 			for (Map.Entry<Long, Integer> pair : parentListTarget.entrySet()) {
 				PhylogenyNode parent = trees[k].getNode(pair.getKey());
-	                System.out.println("got something in this list: "+pair.getKey()+" -> "+pair.getValue());
+				System.out.println("got something in this list: "+pair.getKey()+" -> "+pair.getValue());
 				if(pair.getValue().intValue() == parent.getNumberOfDescendants()) {
 					// remove it.
 					for(int c=parent.getNumberOfDescendants()-1; c>0; c--) {
