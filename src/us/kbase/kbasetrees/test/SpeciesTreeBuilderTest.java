@@ -21,6 +21,7 @@ import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.ObjectStorage;
 import us.kbase.kbasetrees.SpeciesTree;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
+import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
@@ -83,6 +84,12 @@ public class SpeciesTreeBuilderTest {
 							List<ObjectIdentity> objectIds) throws Exception {
 						Genome genome = ref2genome.get(objectIds.get(0).getRef());
 						return Arrays.asList(new ObjectData().withData(new UObject(genome)));
+					}
+					@Override
+					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
+							String authToken, ListObjectsParams params)
+							throws Exception {
+						throw new IllegalStateException();
 					}
 				});
 

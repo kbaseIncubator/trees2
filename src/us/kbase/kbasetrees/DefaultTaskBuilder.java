@@ -9,6 +9,7 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.common.taskqueue.TaskRunner;
+import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
@@ -43,6 +44,14 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
 				client.setAuthAllowedForHttp(true);
 				return client.getObjects(objectIds);
+			}
+			
+			@Override
+			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
+					String authToken, ListObjectsParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
+				client.setAuthAllowedForHttp(true);
+				return client.listObjects(params);
 			}
 		};
 	}

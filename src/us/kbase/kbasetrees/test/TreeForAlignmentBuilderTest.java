@@ -25,6 +25,7 @@ import us.kbase.kbasetrees.MSA;
 import us.kbase.kbasetrees.ObjectStorage;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.kbasetrees.TreeForAlignmentBuilder;
+import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
@@ -57,6 +58,12 @@ public class TreeForAlignmentBuilderTest {
 					public List<ObjectData> getObjects(String authToken,
 							List<ObjectIdentity> objectIds) throws Exception {
 						return Arrays.asList(new ObjectData().withData(new UObject(input)));
+					}
+					@Override
+					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
+							String authToken, ListObjectsParams params)
+							throws Exception {
+						throw new IllegalStateException();
 					}
 				});
 		stb.run("token", new ConstructTreeForAlignmentParams().withTreeMethod(method).withMsaRef("ws/msa.1").withOutWorkspace("ws"), "", "ws/123");

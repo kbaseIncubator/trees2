@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,9 +24,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
@@ -34,6 +33,8 @@ import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
+import us.kbase.kbasetrees.util.WorkspaceUtil;
+import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
@@ -41,8 +42,12 @@ import us.kbase.workspace.SaveObjectsParams;
 
 public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeParams> {
 	
-	private static String MAX_EVALUE = "1e-05";
-	private static int MIN_COVERAGE = 50;
+	private static final String MAX_EVALUE = "1e-05";
+	private static final int MIN_COVERAGE = 50;
+	private static final String genomeWsName = "KBasePublicGenomesLoad";
+	private static final String genomeWsType = "KBaseGenomes.Genome";
+	
+	private Map<String, String> genomeKbToRefMap = null;
 	
 	@Override
 	public Class<ConstructSpeciesTreeParams> getInputDataType() {
@@ -100,7 +105,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return makeTree(concatCogAlignments(useCog103Only));
 	}
 	
-	private String makeTree(Map<String, String> aln) throws Exception {
+	public String makeTree(Map<String, String> aln) throws Exception {
 		File tempFile = File.createTempFile("aln", ".faa", tempDir);
 		try {
 			FastaWriter fw = new FastaWriter(tempFile);
@@ -194,7 +199,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return aln;
 	}
 	
-	private Map<String, String> concatCogAlignments(boolean useCog103Only) throws IOException {
+	public Map<String, String> concatCogAlignments(boolean useCog103Only) throws IOException {
 		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
 		for (String cogCode : loadCogsCodes(useCog103Only)) 
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
@@ -353,6 +358,50 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return ret;
 	}
 	
+	public Map<String, String> loadGenomeKbToNames() throws IOException {
+		File genomeNamesFile = new File(getCogsDir(), "genome_names.txt");
+		BufferedReader br = new BufferedReader(new FileReader(genomeNamesFile));
+		Map<String, String> ret = new LinkedHashMap<String, String>();
+		try {
+			while (true) {
+				String l = br.readLine();
+				if (l == null)
+					break;
+				if (l.isEmpty())
+					continue;
+				String[] parts = l.split("\t");
+				ret.put(parts[0], parts[1]);
+			}
+		} finally {
+			br.close();
+		}
+		return ret;
+	}
+	
+	public Map<String, String> loadGenomeKbToRefs(String token) throws Exception {
+		if (genomeKbToRefMap != null)
+			return genomeKbToRefMap;
+		Map<String, String> ret = new TreeMap<String, String>();
+		ObjectStorage ws = getStorage(); 
+		String wsName = genomeWsName;
+		String wsType = genomeWsType;
+		for (int partNum = 0; ; partNum++) {
+			int sizeOfPart = 0;
+			for (Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>> info : 
+				ws.listObjects(token, new ListObjectsParams().withWorkspaces(Arrays.asList(wsName))
+						.withType(wsType).withLimit(10000L).withSkip(partNum * 10000L))) {
+				String ref = WorkspaceUtil.getRefFromObjectInfo(info);
+				String objectName = info.getE2();
+				ret.put(objectName, ref);
+				sizeOfPart++;
+			}
+			if (sizeOfPart == 0)
+				break;
+		}
+		genomeKbToRefMap = ret;
+		return ret;
+	}
+
 	public SpeciesTree placeUserGenomes(String token, List<String> genomeRefList, 
 			boolean useCog103Only) throws Exception {
 		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
@@ -366,8 +415,8 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				throw new IllegalStateException("Error processing genome " + genomeRef + " (" + ex.getMessage() + ")", ex);
 			}
 		}
-		Map<String, Tuple2<String, String>> tax2kbase = new ObjectMapper().readValue(
-				new File(getCogsDir(), "tax2kbase.json"), new TypeReference<Map<String, Tuple2<String, String>>>() {});
+		Map<String, Tuple2 <String, String>> idMap = new TreeMap<String, Tuple2 <String, String>>();
+		Set<String> seeds = new LinkedHashSet<String>();
 		for (String cogCode : cogAlignments.keySet()) {
 			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
 				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
@@ -380,14 +429,28 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				String genomeRef = genomeRes.getGenomeRef();
 				String nodeName = "user" + (genomePos + 1);
 				cogAlignments.get(cogCode).put(nodeName, alignedSeq);
-				if (!tax2kbase.containsKey(nodeName))
-					tax2kbase.put(nodeName, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
+				seeds.add(nodeName);
+				if (!idMap.containsKey(nodeName))
+					idMap.put(nodeName, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
 			}
 		}
-		String treeText = makeTree(concatCogAlignments(cogAlignments));
+		Map<String, String> concat = concatCogAlignments(cogAlignments);
+		// Filtering
+		Map<String, String> kbToNames = loadGenomeKbToNames();
+		Map<String, String> kbToRefs = loadGenomeKbToRefs(token);
+		for (String genomeKb : concat.keySet()) {
+			if (seeds.contains(genomeKb))
+				continue;
+			String ref = kbToRefs.get(genomeKb);
+			if (ref == null)
+				throw new IllegalStateException("Can't find genome object for id: " + genomeKb);
+			String name = kbToNames.get(genomeKb);
+			idMap.put(genomeKb, new Tuple2<String, String>().withE1(ref).withE2(name));
+		}
+		String treeText = makeTree(concat);
 		return new SpeciesTree().withSpeciesTree(treeText)
 				.withAlignmentRef("").withCogs(loadCogsCodes(useCog103Only))
-				.withIdMap(tax2kbase);
+				.withIdMap(idMap);
 	}
 	
 	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, boolean useCog103Only,
