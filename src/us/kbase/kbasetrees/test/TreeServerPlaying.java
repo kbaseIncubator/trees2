@@ -13,7 +13,7 @@ import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.KBaseTreesClient;
-import us.kbase.kbasetrees.SpeciesTree;
+import us.kbase.kbasetrees.Tree;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.workspace.GetModuleInfoParams;
 import us.kbase.workspace.ListModuleVersionsParams;
@@ -76,10 +76,10 @@ public class TreeServerPlaying {
 				if (wasError == 0L) {
 					String wsRef = jscl.getResults(jobId).getWorkspaceids().get(0);
 					WorkspaceClient wc = createWorkspaceClient(userId, pwd);
-					SpeciesTree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withRef(wsRef)))
-							.get(0).getData().asClassInstance(SpeciesTree.class);
-					System.out.println("Tree (task " + taskNum + "): " + tree.getSpeciesTree().trim());
-					System.out.println("Labels (task " + taskNum + "): " + tree.getIdMap());
+					Tree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withRef(wsRef)))
+							.get(0).getData().asClassInstance(Tree.class);
+					System.out.println("Tree (task " + taskNum + "): " + tree.getTree().trim());
+					System.out.println("Labels (task " + taskNum + "): " + tree.getDefaultNodeLabels());
 				}
 				break;
 			}
@@ -116,7 +116,7 @@ public class TreeServerPlaying {
 		br.close();
 		System.out.println(sb.toString());
 		System.out.println(wc.registerTypespec(new RegisterTypespecParams()
-				.withSpec(sb.toString()).withNewTypes(Arrays.asList("SpeciesTree", "Tree", "MSA", "MSASet")).withDryrun(0L)));
+				.withSpec(sb.toString()).withNewTypes(Arrays.asList("Tree", "MSA", "MSASet")).withDryrun(0L)));
 		System.out.println(wc.listModuleVersions(new ListModuleVersionsParams().withMod(module)));
 		System.out.println(wc.getModuleInfo(new GetModuleInfoParams().withMod(module)));
 		System.out.println(wc.releaseModule(module));

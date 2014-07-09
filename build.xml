@@ -18,7 +18,7 @@
   <property name="deploycfg" value=""/>
 
   <property environment="env"/>
-  <condition property="commonjar" value="kbase/common/kbase-common-dev-1403729965-d71ca7c.jar">
+  <condition property="commonjar" value="kbase/common/kbase-common-0.0.3.jar">
     <or>
       <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
       <not>
@@ -105,6 +105,15 @@
     </copy>
     <!-- Make main jar file (includes dependencies, might want to make a stripped down version)-->
     <jar destfile="${dist}/${jar.file}" basedir="${classes}"/>
+    <!-- ################################# temp ################################# -->
+    <unzip dest="${classes}">
+        <fileset refid="serverlib"/>
+    </unzip>
+    <jar destfile="${dist}/SpeciesTreePreparation.jar" basedir="${classes}">
+      <manifest>
+        <attribute name="Main-Class" value="us.kbase.kbasetrees.prepare.SpeciesTreePreparation"/>
+      </manifest>
+    </jar>
   </target>
 
   <target name="war" depends="compile" description="build the WAR file. Assumes compile has been run">

@@ -44,6 +44,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	
 	private static final String MAX_EVALUE = "1e-05";
 	private static final int MIN_COVERAGE = 50;
+	private static final int DEFAULT_NEAREST_GENOME_COUNT = 100;
 	private static final String genomeWsName = "KBasePublicGenomesLoad";
 	private static final String genomeWsType = "KBaseGenomes.Genome";
 	
@@ -74,16 +75,23 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	@Override
 	public void run(String token, ConstructSpeciesTreeParams inputData,
 			String jobId, String outRef) throws Exception {
-		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && inputData.getUseRibosomalS9Only() == 1L;
-		SpeciesTree tree = placeUserGenomes(token, inputData.getNewGenomes(), useCog103Only);
+		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && 
+				inputData.getUseRibosomalS9Only() == 1L;
+		long nearestGenomeCount = inputData.getNearestGenomeCount() != null ? 
+				inputData.getNearestGenomeCount() : DEFAULT_NEAREST_GENOME_COUNT;
+		Tree tree = placeUserGenomes(token, inputData.getNewGenomes(), useCog103Only, false,
+				(int)nearestGenomeCount);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, SpeciesTree res,
+	private void saveResult(String ws, String id, String token, Tree res,
 			ConstructSpeciesTreeParams inputData) throws Exception {
+		Map<String, String> meta = new LinkedHashMap<String, String>();
+		meta.put("TreeType", "SpeciesTree");
 		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
-				.withType("KBaseTrees.SpeciesTree")
+				.withType("KBaseTrees.Tree")
+				.withMeta(meta)
 				.withProvenance(Arrays.asList(new ProvenanceAction()
 				.withDescription("Species tree was constructed using rps-blast program")
 				.withInputWsObjects(inputData.getNewGenomes())
@@ -137,29 +145,29 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		String binPath = getFastTreeBin().getAbsolutePath();
 		int procExitValue = -1;
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
-			try {
-				Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
-						"-fastest", input.getAbsolutePath()));
-				errBaos = new ByteArrayOutputStream();
-				cp = new CorrectProcess(p, result, "", errBaos, "");
-				p.waitFor();
-				errBaos.close();
-				procExitValue = p.exitValue();
-			} catch(Exception ex) {
-				try{ 
-					errBaos.close(); 
-				} catch (Exception ignore) {}
-				try{ 
-					if(cp!=null) 
-						cp.destroy(); 
-				} catch (Exception ignore) {}
-				err = ex;
-			}
-			if (errBaos != null) {
-				String err_text = new String(errBaos.toByteArray());
-				if (err_text.length() > 0)
-					err = new Exception("FastTree: " + err_text, err);
-			}
+		try {
+			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
+					"-fastest", input.getAbsolutePath()));
+			errBaos = new ByteArrayOutputStream();
+			cp = new CorrectProcess(p, result, "", errBaos, "");
+			cp.waitFor();
+			errBaos.close();
+			procExitValue = p.exitValue();
+		} catch(Exception ex) {
+			try{ 
+				errBaos.close(); 
+			} catch (Exception ignore) {}
+			try{ 
+				if(cp!=null) 
+					cp.destroy(); 
+			} catch (Exception ignore) {}
+			err = ex;
+		}
+		if (errBaos != null || result.size() == 0) {
+			String err_text = new String(errBaos.toByteArray());
+			if (err_text.length() > 0)
+				err = new Exception("FastTree: " + err_text, err);
+		}
 		if (procExitValue != 0) {
 			if (err == null)
 				err = new IllegalStateException("FastTree exit code: " + procExitValue);
@@ -359,7 +367,11 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	}
 	
 	public Map<String, String> loadGenomeKbToNames() throws IOException {
-		File genomeNamesFile = new File(getCogsDir(), "genome_names.txt");
+		return loadGenomeKbToNames(getCogsDir());
+	}
+	
+	public static Map<String, String> loadGenomeKbToNames(File cogsDir) throws IOException {	
+		File genomeNamesFile = new File(cogsDir, "genome_names.txt");
 		BufferedReader br = new BufferedReader(new FileReader(genomeNamesFile));
 		Map<String, String> ret = new LinkedHashMap<String, String>();
 		try {
@@ -402,8 +414,8 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return ret;
 	}
 
-	public SpeciesTree placeUserGenomes(String token, List<String> genomeRefList, 
-			boolean useCog103Only) throws Exception {
+	public Tree placeUserGenomes(String token, List<String> genomeRefList, 
+			boolean useCog103Only, boolean userGenomesOnly, int nearestGenomeCount) throws Exception {
 		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
 		for (String cogCode : loadCogsCodes(useCog103Only)) 
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
@@ -415,42 +427,99 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				throw new IllegalStateException("Error processing genome " + genomeRef + " (" + ex.getMessage() + ")", ex);
 			}
 		}
-		Map<String, Tuple2 <String, String>> idMap = new TreeMap<String, Tuple2 <String, String>>();
+		Map<String, String> idLabelMap = new TreeMap<String, String>();
+		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
 		Set<String> seeds = new LinkedHashSet<String>();
 		for (String cogCode : cogAlignments.keySet()) {
 			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
 				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
 				List<ProteinToCogAlignemt> alns = genomeRes.getCogToProteins().get(cogCode);
-				if (alns == null || alns.isEmpty()) {
-					//System.out.println(getClass().getName() + ": no cog " + cogCode + " for genome " + genomeRes.getGenomeRef());
+				if (alns == null || alns.isEmpty())
 					continue;
-				}
 				String alignedSeq = alns.get(0).getTrimmedFeatureSeq();
 				String genomeRef = genomeRes.getGenomeRef();
 				String nodeName = "user" + (genomePos + 1);
 				cogAlignments.get(cogCode).put(nodeName, alignedSeq);
 				seeds.add(nodeName);
-				if (!idMap.containsKey(nodeName))
-					idMap.put(nodeName, new Tuple2<String, String>().withE1(genomeRef).withE2(genomeRes.getGenomeName()));
+				if (!idLabelMap.containsKey(nodeName)) {
+					idLabelMap.put(nodeName, genomeRes.getGenomeName());
+					Map<String, List<String>> refMap = new TreeMap<String, List<String>>();
+					refMap.put("g", Arrays.<String>asList(genomeRef));
+					idRefMap.put(nodeName, refMap);
+				}
 			}
 		}
 		Map<String, String> concat = concatCogAlignments(cogAlignments);
 		// Filtering
+		Set<String> nearestNodes = new HashSet<String>();
+		if (!userGenomesOnly) {
+			List<Tuple2<String, Integer>> kbIdToMinDist = new ArrayList<Tuple2<String, Integer>>();
+			for (String kbId : concat.keySet()) {
+				if (seeds.contains(kbId))
+					continue;
+				char[] kbSeq = concat.get(kbId).toCharArray();
+				int minDist = -1;
+				for (String userId : concat.keySet()) {
+					if (!seeds.contains(userId))
+						continue;
+					char[] userSeq = concat.get(userId).toCharArray();
+					int dist = getDistance(kbSeq, userSeq);
+					minDist = (minDist < 0) ? dist : Math.min(dist, minDist);
+				}
+				kbIdToMinDist.add(new Tuple2<String, Integer>().withE1(kbId).withE2(minDist));
+			}
+			Collections.sort(kbIdToMinDist, new Comparator<Tuple2<String, Integer>>() {
+				@Override
+				public int compare(Tuple2<String, Integer> o1, Tuple2<String, Integer> o2) {
+					return o1.getE2().compareTo(o2.getE2());
+				}
+			});
+			if (kbIdToMinDist.size() > nearestGenomeCount)
+				kbIdToMinDist = kbIdToMinDist.subList(0, nearestGenomeCount);
+			for (Tuple2<String, Integer> entry : kbIdToMinDist)
+				nearestNodes.add(entry.getE1());
+		}
+		for (String kbId : new ArrayList<String>(concat.keySet())) {
+			if (!(seeds.contains(kbId) || nearestNodes.contains(kbId))) {
+				concat.remove(kbId);
+			}
+		}
 		Map<String, String> kbToNames = loadGenomeKbToNames();
 		Map<String, String> kbToRefs = loadGenomeKbToRefs(token);
+		Map<String, Map<String, List<String>>> idKbMap = new TreeMap<String, Map<String, List<String>>>();
 		for (String genomeKb : concat.keySet()) {
+			Map<String, List<String>> refMap = new TreeMap<String, List<String>>();
+			refMap.put("g", Arrays.asList(genomeKb));
+			idKbMap.put(genomeKb, refMap);
 			if (seeds.contains(genomeKb))
 				continue;
 			String ref = kbToRefs.get(genomeKb);
 			if (ref == null)
 				throw new IllegalStateException("Can't find genome object for id: " + genomeKb);
 			String name = kbToNames.get(genomeKb);
-			idMap.put(genomeKb, new Tuple2<String, String>().withE1(ref).withE2(name));
+			idLabelMap.put(genomeKb, name);
+			refMap = new TreeMap<String, List<String>>();
+			refMap.put("g", Arrays.asList(ref));
+			idRefMap.put(genomeKb, refMap);
 		}
 		String treeText = makeTree(concat);
-		return new SpeciesTree().withSpeciesTree(treeText)
-				.withAlignmentRef("").withCogs(loadCogsCodes(useCog103Only))
-				.withIdMap(idMap);
+		Map<String, String> props = new TreeMap<String, String>();
+		props.put("cog_codes", UObject.getMapper().writeValueAsString(loadCogsCodes(useCog103Only)));
+		return new Tree().withTree(treeText).withDefaultNodeLabels(idLabelMap)
+				.withLeafList(new ArrayList<String>(idLabelMap.keySet()))
+				.withWsRefs(idRefMap).withKbRefs(idKbMap)
+				.withTreeAttributes(props);
+	}
+	
+	private int getDistance(char[] s1, char[] s2) {
+		int ret = 0;
+		int len = s1.length;
+		if (len != s2.length)
+			throw new IllegalStateException();
+		for (int i = 0; i < len; i++)
+			if (s1[i] != s2[i])
+				ret++;
+		return ret;
 	}
 	
 	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, boolean useCog103Only,

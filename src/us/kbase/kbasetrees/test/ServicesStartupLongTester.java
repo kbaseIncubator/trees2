@@ -267,7 +267,7 @@ public class ServicesStartupLongTester {
 	/*********************** Modules/ws registration/creation ***********************/
 	
 	private static void registerModuleAndWorkspace() throws Exception {
-		registerSpec("KBaseTrees", new FileInputStream("KBaseTrees.spec"), "SpeciesTree", "Tree", "MSA");
+		registerSpec("KBaseTrees", new FileInputStream("KBaseTrees.spec"), "Tree", "MSA");
 		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(defaultWokspace).withGlobalread("r"));
 		registerSpec("KBaseGenomes", ServicesStartupLongTester.class.getResourceAsStream("KBaseGenomes.properties"),
 				"Genome", "ContigSet");

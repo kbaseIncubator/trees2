@@ -15,12 +15,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * <p>Original spec-file type: ConstructSpeciesTreeParams</p>
  * <pre>
- * Input data type for construct_species_tree method. Method produces object of SpeciesTree type.
+ * Input data type for construct_species_tree method. Method produces object of Tree type.
  *         new_genomes - (required) the list of genome references to use in constructing a tree
  *         out_workspace - (required) the workspace to deposit the completed tree
  *         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
  *         use_ribosomal_s9_only - (optional) 1 means only one protein family (Ribosomal S9) is used for 
  *             tree construction rather than all 49 improtant families, default value is 0.
+ *         nearest_genome_count - (optional) defines maximum number of public genomes nearest to
+ *             requested genomes that will show in output tree.
  * </pre>
  * 
  */
@@ -30,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "new_genomes",
     "out_workspace",
     "out_tree_id",
-    "use_ribosomal_s9_only"
+    "use_ribosomal_s9_only",
+    "nearest_genome_count"
 })
 public class ConstructSpeciesTreeParams {
 
@@ -42,6 +45,8 @@ public class ConstructSpeciesTreeParams {
     private java.lang.String outTreeId;
     @JsonProperty("use_ribosomal_s9_only")
     private Long useRibosomalS9Only;
+    @JsonProperty("nearest_genome_count")
+    private Long nearestGenomeCount;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("new_genomes")
@@ -104,6 +109,21 @@ public class ConstructSpeciesTreeParams {
         return this;
     }
 
+    @JsonProperty("nearest_genome_count")
+    public Long getNearestGenomeCount() {
+        return nearestGenomeCount;
+    }
+
+    @JsonProperty("nearest_genome_count")
+    public void setNearestGenomeCount(Long nearestGenomeCount) {
+        this.nearestGenomeCount = nearestGenomeCount;
+    }
+
+    public ConstructSpeciesTreeParams withNearestGenomeCount(Long nearestGenomeCount) {
+        this.nearestGenomeCount = nearestGenomeCount;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -116,7 +136,7 @@ public class ConstructSpeciesTreeParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((("ConstructSpeciesTreeParams"+" [newGenomes=")+ newGenomes)+", outWorkspace=")+ outWorkspace)+", outTreeId=")+ outTreeId)+", useRibosomalS9Only=")+ useRibosomalS9Only)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("ConstructSpeciesTreeParams"+" [newGenomes=")+ newGenomes)+", outWorkspace=")+ outWorkspace)+", outTreeId=")+ outTreeId)+", useRibosomalS9Only=")+ useRibosomalS9Only)+", nearestGenomeCount=")+ nearestGenomeCount)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

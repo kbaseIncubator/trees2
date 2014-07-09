@@ -9,27 +9,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.rowset.serial.SerialException;
-
 import junit.framework.Assert;
 
 import org.junit.Test;
 
 import us.kbase.common.service.ServerException;
-import us.kbase.common.service.Tuple2;
-import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
-import us.kbase.kbasetrees.ConstructMultipleAlignment;
+import us.kbase.kbasetrees.ConstructMultipleAlignmentParams;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.ConstructTreeForAlignmentParams;
 import us.kbase.kbasetrees.MSA;
-import us.kbase.kbasetrees.SpeciesTree;
 import us.kbase.kbasetrees.Tree;
-import us.kbase.workspace.ObjectIdentity;
+import us.kbase.workspace.CreateWorkspaceParams;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
@@ -48,7 +43,7 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 		String msaId = "msa.1";
 		Map<String, String> seqs = loadProtSeqs();
 		String jobId = treesClient.constructMultipleAlignment(
-				new ConstructMultipleAlignment().withGeneSequences(seqs)
+				new ConstructMultipleAlignmentParams().withGeneSequences(seqs)
 				.withOutWorkspace(defaultWokspace).withOutMsaId(msaId));
 		waitForJob(jobId);
 		MSA msa = getWsObject(defaultWokspace + "/" + msaId, MSA.class);
@@ -112,6 +107,25 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 	
 	@Test
 	public void testConstructSpeciesTree() throws Exception {
+		// Sync genome objects (just fake wrappers with kbase-id as name)
+		String wsName = "KBasePublicGenomesLoad";
+		String genomeWsType = "KBaseGenomes.Genome";
+		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(wsName).withGlobalread("r"));
+		List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
+		// (kb|g.2626:0.00128,kb|g.2627:0.00128,((kb|g.25423:0.00356,(((kb|g.1283:0.00055,kb|g.27370:0.00055)1.000:0.01782,(kb|g.1032:0.00054,kb|g.852:0.00072)1.000:0.00669)1.000:0.01927,(kb|g.20848:0.00055,kb|g.371:0.00055)1.000:0.00677)0.903:0.00356)1.000:0.00630,(kb|g.3779:0.00055,user1:0.00055)1.000:0.00299)0.469:0.00059);
+		List<String> genomeKbIds = Arrays.asList(
+				"kb|g.2626", "kb|g.2627", "kb|g.25423", "kb|g.1283", "kb|g.27370", 
+				"kb|g.1032", "kb|g.852", "kb|g.20848", "kb|g.371", "kb|g.3779");
+		for (String kbId : genomeKbIds) {
+			Map<String, Object> data = new LinkedHashMap<String, Object>(4);
+			data.put("id", kbId);
+			data.put("scientific_name", "");
+			data.put("domain", "");
+			data.put("genetic_code", 11L);
+			objects.add(new ObjectSaveData().withName(kbId).withType(genomeWsType).withData(new UObject(data)));
+		}
+		wsClient.saveObjects(new SaveObjectsParams().withWorkspace(wsName).withObjects(objects));
+		// Store test genome (real data)
 		FastaReader fr = new FastaReader(new File("data/test", "Shewanella_ANA_3_uid58347.fasta"));
 		List<Feature> features = new ArrayList<Feature>();
 		for (Map.Entry<String, String> entry : fr.readAll().entrySet())
@@ -126,22 +140,23 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 		String genomeRef = defaultWokspace + "/" + genomeId;
 		String jobId = treesClient.constructSpeciesTree(new ConstructSpeciesTreeParams().withNewGenomes(
 				Arrays.asList(genomeRef)).withOutWorkspace(defaultWokspace)
-				.withOutTreeId(spTreeId).withUseRibosomalS9Only(1L));
+				.withOutTreeId(spTreeId).withUseRibosomalS9Only(0L).withNearestGenomeCount(10L));
 		waitForJob(jobId);
-		SpeciesTree tree = getWsObject(defaultWokspace + "/" + spTreeId, SpeciesTree.class);
+		Tree tree = getWsObject(defaultWokspace + "/" + spTreeId, Tree.class);
 		try {
-			List<String> nodeIds = treesClient.extractLeafNodeNames(tree.getSpeciesTree());
-			Assert.assertEquals(1686, nodeIds.size());
+			List<String> nodeIds = treesClient.extractLeafNodeNames(tree.getTree());
+			Assert.assertEquals(11, nodeIds.size());
 			for (String nodeId : nodeIds) {
-				Tuple2<String, String> idName = tree.getIdMap().get(nodeId);
-				Assert.assertNotNull(idName);
+				String label = tree.getDefaultNodeLabels().get(nodeId);
+				Map<String, List<String>> refs = tree.getWsRefs().get(nodeId);
+				Assert.assertNotNull(label);
 				if (nodeId.startsWith("user")) {
-					Assert.assertEquals(genomeRef, idName.getE1());
-					Assert.assertEquals(genomeName, idName.getE2());
+					//TODO: resolve genomeRef before comparison: Assert.assertEquals(genomeRef, refs.get("g").get(0));
+					Assert.assertEquals(genomeName, label);
 				}
 			}
 		} catch (Exception ex) {
-			System.err.println(tree.getSpeciesTree());
+			System.err.println(tree.getTree());
 			throw ex;
 		}
 	}

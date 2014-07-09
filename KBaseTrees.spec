@@ -800,11 +800,11 @@ module KBaseTrees
     /* A tuple that gives very basic information about a single genome in a SpeciesTree - enough to decorate 
     the nodes with the species name, and fetch more genome information from the KBase datastores.
     */
-    typedef tuple<genome_ref ref, scientific_name name> genome_info;
+    /*typedef tuple<genome_ref ref, scientific_name name> genome_info;*/
 
     /* An id for a cluster of orthologous groups (COG). A species tree is built by aligning genomes
     based on several of these. */
-    typedef string cog_id;
+    /*typedef string cog_id;*/
 
     /* The structure of a tree itself.
 
@@ -813,26 +813,29 @@ module KBaseTrees
         alignment_ref - (optional) the reference to the alignment from which the tree was built
         cogs - the list of NCBI COG ids that were used to build the tree
     */
-    typedef structure {
+    /*typedef structure {
         newick_tree species_tree;
         mapping<node_name, genome_info> id_map;
         string alignment_ref;
         list<cog_id> cogs;
-    } SpeciesTree;
+    } SpeciesTree;*/
 
-    /* Input data type for construct_species_tree method. Method produces object of SpeciesTree type.
+    /* Input data type for construct_species_tree method. Method produces object of Tree type.
 
         new_genomes - (required) the list of genome references to use in constructing a tree
         out_workspace - (required) the workspace to deposit the completed tree
         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
         use_ribosomal_s9_only - (optional) 1 means only one protein family (Ribosomal S9) is used for 
             tree construction rather than all 49 improtant families, default value is 0.
+        nearest_genome_count - (optional) defines maximum number of public genomes nearest to
+            requested genomes that will show in output tree.
     */
     typedef structure {
         list<genome_ref> new_genomes;
         string out_workspace;
         string out_tree_id;
         int use_ribosomal_s9_only;
+        int nearest_genome_count;
     } ConstructSpeciesTreeParams;
 
     /* A string representing a job id for manipulating trees. This is an id for a job that is
@@ -861,11 +864,11 @@ module KBaseTrees
         int is_protein_mode;
         string out_workspace;
         string out_msa_id;
-    } ConstructMultipleAlignment;
+    } ConstructMultipleAlignmentParams;
 
 	/* Build a multiple sequence alignment based on gene sequences.
 	*/
-	funcdef construct_multiple_alignment(ConstructMultipleAlignment params) returns (job_id) authentication required;
+	funcdef construct_multiple_alignment(ConstructMultipleAlignmentParams params) returns (job_id) authentication required;
 	
 	/* Input data type for construct_tree_for_alignment method. Method produces object of Tree type.
 		

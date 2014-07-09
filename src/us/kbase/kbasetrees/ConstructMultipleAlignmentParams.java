@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: ConstructMultipleAlignment</p>
+ * <p>Original spec-file type: ConstructMultipleAlignmentParams</p>
  * <pre>
  * Input data type for construct_multiple_alignment method. Method produces object of MSA type.
  *         gene_sequences - (required) the mapping from gene ids to their sequences
@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "out_workspace",
     "out_msa_id"
 })
-public class ConstructMultipleAlignment {
+public class ConstructMultipleAlignmentParams {
 
     @JsonProperty("gene_sequences")
     private Map<String, String> geneSequences;
@@ -59,7 +59,7 @@ public class ConstructMultipleAlignment {
         this.geneSequences = geneSequences;
     }
 
-    public ConstructMultipleAlignment withGeneSequences(Map<String, String> geneSequences) {
+    public ConstructMultipleAlignmentParams withGeneSequences(Map<String, String> geneSequences) {
         this.geneSequences = geneSequences;
         return this;
     }
@@ -74,7 +74,7 @@ public class ConstructMultipleAlignment {
         this.alignmentMethod = alignmentMethod;
     }
 
-    public ConstructMultipleAlignment withAlignmentMethod(java.lang.String alignmentMethod) {
+    public ConstructMultipleAlignmentParams withAlignmentMethod(java.lang.String alignmentMethod) {
         this.alignmentMethod = alignmentMethod;
         return this;
     }
@@ -89,7 +89,7 @@ public class ConstructMultipleAlignment {
         this.isProteinMode = isProteinMode;
     }
 
-    public ConstructMultipleAlignment withIsProteinMode(Long isProteinMode) {
+    public ConstructMultipleAlignmentParams withIsProteinMode(Long isProteinMode) {
         this.isProteinMode = isProteinMode;
         return this;
     }
@@ -104,7 +104,7 @@ public class ConstructMultipleAlignment {
         this.outWorkspace = outWorkspace;
     }
 
-    public ConstructMultipleAlignment withOutWorkspace(java.lang.String outWorkspace) {
+    public ConstructMultipleAlignmentParams withOutWorkspace(java.lang.String outWorkspace) {
         this.outWorkspace = outWorkspace;
         return this;
     }
@@ -119,7 +119,7 @@ public class ConstructMultipleAlignment {
         this.outMsaId = outMsaId;
     }
 
-    public ConstructMultipleAlignment withOutMsaId(java.lang.String outMsaId) {
+    public ConstructMultipleAlignmentParams withOutMsaId(java.lang.String outMsaId) {
         this.outMsaId = outMsaId;
         return this;
     }
@@ -136,7 +136,7 @@ public class ConstructMultipleAlignment {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((("ConstructMultipleAlignment"+" [geneSequences=")+ geneSequences)+", alignmentMethod=")+ alignmentMethod)+", isProteinMode=")+ isProteinMode)+", outWorkspace=")+ outWorkspace)+", outMsaId=")+ outMsaId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("ConstructMultipleAlignmentParams"+" [geneSequences=")+ geneSequences)+", alignmentMethod=")+ alignmentMethod)+", isProteinMode=")+ isProteinMode)+", outWorkspace=")+ outWorkspace)+", outMsaId=")+ outMsaId)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

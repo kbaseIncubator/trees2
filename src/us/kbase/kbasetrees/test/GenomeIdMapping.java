@@ -14,7 +14,7 @@ import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.kbasetrees.KBaseTreesClient;
-import us.kbase.kbasetrees.SpeciesTree;
+import us.kbase.kbasetrees.Tree;
 import us.kbase.tree.TreeClient;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.WorkspaceClient;
@@ -85,12 +85,12 @@ public class GenomeIdMapping {
 	 * @throws IOException
 	 * @throws JsonClientException
 	 */
-	public static SpeciesTree fetchTree(String userName, String pwd, String workspace, String treeId) 
+	public static Tree fetchTree(String userName, String pwd, String workspace, String treeId) 
 			throws MalformedURLException, IOException, JsonClientException {
 		WorkspaceClient wc = TreeServerPlaying.createWorkspaceClient(userName, pwd);
 		
-		SpeciesTree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withWorkspace(workspace).withName(treeId)))
-				.get(0).getData().asClassInstance(SpeciesTree.class);
+		Tree tree = wc.getObjects(Arrays.asList(new ObjectIdentity().withWorkspace(workspace).withName(treeId)))
+				.get(0).getData().asClassInstance(Tree.class);
 		
 		return tree;
 	}
@@ -120,7 +120,7 @@ public class GenomeIdMapping {
 	 * @return
 	 * @throws Exception
 	 */
-	public static SpeciesTree relabelTreeNodes(String user, String password, SpeciesTree tree) throws Exception {
+	public static Tree relabelTreeNodes(String user, String password, Tree tree) throws Exception {
 		Map<String, Tuple2<String, String>> idMap = getGlobalTaxIdMapping();
 		
 		TreeClient treeClient = createTreeClient(user, password);
@@ -147,8 +147,8 @@ public class GenomeIdMapping {
 //			}
 //		}
 		
-		String relabeledTree = treeClient.replaceNodeNames(tree.getSpeciesTree().trim(), replacements);
-		tree.setSpeciesTree(relabeledTree);
+		String relabeledTree = treeClient.replaceNodeNames(tree.getTree().trim(), replacements);
+		tree.setTree(relabeledTree);
 
 		return tree;
 	}
@@ -187,7 +187,7 @@ public class GenomeIdMapping {
 		String treeId = "tree1395103422144";
 		
 		try {
-			SpeciesTree tree = fetchTree(userName, pwd, workspace, treeId);
+			Tree tree = fetchTree(userName, pwd, workspace, treeId);
 			tree = relabelTreeNodes(userName, pwd, tree);
 		} catch (Exception e) {
 			System.out.println(e);

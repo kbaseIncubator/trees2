@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.utils.AlignUtil;
-import us.kbase.kbasetrees.ConstructMultipleAlignment;
+import us.kbase.kbasetrees.ConstructMultipleAlignmentParams;
 import us.kbase.kbasetrees.MSA;
 import us.kbase.kbasetrees.MultipleAlignmentBuilder;
 import us.kbase.kbasetrees.ObjectStorage;
@@ -74,7 +74,7 @@ public class MultipleAlignmentBuilderTest {
 					}
 				});
 		Map<String, String> seqs = loadProtSeqs();
-		stb.run("token", new ConstructMultipleAlignment().withAlignmentMethod(method).withGeneSequences(seqs).withOutWorkspace("ws"), "", "ws/123");
+		stb.run("token", new ConstructMultipleAlignmentParams().withAlignmentMethod(method).withGeneSequences(seqs).withOutWorkspace("ws"), "", "ws/123");
 		MSA msa = retWrap[0];
 		for (String id : retWrap[0].getRowOrder()) {
 			String seq = retWrap[0].getAlignment().get(id);

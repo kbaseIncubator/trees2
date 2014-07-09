@@ -2,12 +2,10 @@ package us.kbase.kbasetrees;
 
 import java.util.List;
 import java.util.Map;
-
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
 import us.kbase.common.service.Tuple11;
-
 
 //BEGIN_HEADER
 import java.io.File;
@@ -907,11 +905,11 @@ public class KBaseTreesServer extends JsonServerServlet {
      * <pre>
      * Build a multiple sequence alignment based on gene sequences.
      * </pre>
-     * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructMultipleAlignment ConstructMultipleAlignment}
+     * @param   params   instance of type {@link us.kbase.kbasetrees.ConstructMultipleAlignmentParams ConstructMultipleAlignmentParams}
      * @return   instance of original type "job_id" (A string representing a job id for manipulating trees. This is an id for a job that is registered with the User and Job State service.)
      */
     @JsonServerMethod(rpc = "KBaseTrees.construct_multiple_alignment")
-    public String constructMultipleAlignment(ConstructMultipleAlignment params, AuthToken authPart) throws Exception {
+    public String constructMultipleAlignment(ConstructMultipleAlignmentParams params, AuthToken authPart) throws Exception {
         String returnVal = null;
         //BEGIN construct_multiple_alignment
         TaskQueue tq = getTaskQueue();

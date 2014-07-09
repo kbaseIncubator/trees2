@@ -23,11 +23,11 @@ import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
-public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultipleAlignment> {
+public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultipleAlignmentParams> {
 
 	@Override
-	public Class<ConstructMultipleAlignment> getInputDataType() {
-		return ConstructMultipleAlignment.class;
+	public Class<ConstructMultipleAlignmentParams> getInputDataType() {
+		return ConstructMultipleAlignmentParams.class;
 	}
 
 	public MultipleAlignmentBuilder init(File tempDir, File dataDir, ObjectStorage ws) {
@@ -35,7 +35,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 	}
 
 	@Override
-	public String getOutRef(ConstructMultipleAlignment inputData) {
+	public String getOutRef(ConstructMultipleAlignmentParams inputData) {
 		String objId = inputData.getOutMsaId();
 		if (objId == null)
 			objId = "msa" + System.currentTimeMillis();
@@ -61,7 +61,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 	}
 	
 	@Override
-	public void run(String token, ConstructMultipleAlignment inputData,
+	public void run(String token, ConstructMultipleAlignmentParams inputData,
 			String jobId, String outRef) throws Exception {
 		Map<Integer, String> numToId = new TreeMap<Integer, String>();
 		File inputFasta = File.createTempFile("msaInput", ".fa", getTempDir());
@@ -147,7 +147,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 	}
 	
 	private void saveResult(String ws, String id, String token, MSA res, String method,
-			ConstructMultipleAlignment inputData) throws Exception {
+			ConstructMultipleAlignmentParams inputData) throws Exception {
 		Map<String, String> seqs = inputData.getGeneSequences();
 		inputData.setGeneSequences(null);
 		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
