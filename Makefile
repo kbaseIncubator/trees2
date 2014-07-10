@@ -11,7 +11,7 @@ MAX_MEMORY = 4000
 PERL_SERVICE_NAME = Tree
 PERL_SERVICE_PSGI_FILE = Tree.psgi
 PERL_SERVICE_PORT = 7121
-PERL_WORKERS = 7121
+PERL_WORKERS = 2
 
 
 ##################################################################################
