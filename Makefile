@@ -228,7 +228,7 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	mkdir -pv service
 	echo '#!/bin/sh' > ./service/start_service
 	echo "./start_perl_service" >> ./service/start_service
-	echo "export KB_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deployment.cfg" >> ./service/start_service
+	echo "export KB_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./service/start_service
 	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
 	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
