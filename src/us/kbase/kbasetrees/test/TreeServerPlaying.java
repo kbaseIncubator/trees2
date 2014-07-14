@@ -9,10 +9,12 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import us.kbase.auth.AuthService;
 import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.KBaseTreesClient;
+import us.kbase.kbasetrees.SpeciesTreeBuilder;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.workspace.GetModuleInfoParams;
@@ -32,6 +34,22 @@ public class TreeServerPlaying {
 		//test();
 		//runOneThread(0, true);
 		reg();
+		//createSpeciesTree();
+	}
+	
+	private static void createSpeciesTree() throws Exception {
+		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(new File("temp_files"), 
+				new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
+		List<String> genomeRefs = Arrays.asList(new String[] {
+				wsId + "/Shewanella_ANA_3_uid58347.genome",
+				wsId + "/Shewanella_MR_7_uid58343.genome", 
+				wsId + "/Shewanella_MR_4_uid58345.genome",
+				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
+		});
+		String token = AuthService.login(userId, pwd).getTokenString();
+		stb.run(token, new ConstructSpeciesTreeParams().withNewGenomes(genomeRefs)
+				.withUseRibosomalS9Only(0L).withOutWorkspace(wsId).withNearestGenomeCount(100L), 
+				"", wsId + "/sptree1");
 	}
 	
 	private static void test() throws Exception {

@@ -13,6 +13,7 @@ import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaWriter;
+import us.kbase.kbasetrees.util.TreeStructureUtil;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
@@ -62,6 +63,7 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 			method = method.toLowerCase();
 		}
 		String treeText = makeTree(numbersToAln, method);
+		treeText = TreeStructureUtil.rerootTreeToMidpoint(treeText);
 		Tree tree = new Tree().withTree(treeText).withDefaultNodeLabels(numbersToOrignalNodeNames);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree, method, inputData);

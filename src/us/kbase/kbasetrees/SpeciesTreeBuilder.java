@@ -24,6 +24,10 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
+
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
@@ -33,6 +37,7 @@ import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
+import us.kbase.kbasetrees.util.TreeStructureUtil;
 import us.kbase.kbasetrees.util.WorkspaceUtil;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectIdentity;
@@ -42,6 +47,7 @@ import us.kbase.workspace.SaveObjectsParams;
 
 public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeParams> {
 	
+	private static final String SPECIES_TREE_TYPE = "SpeciesTree";
 	private static final String MAX_EVALUE = "1e-05";
 	private static final int MIN_COVERAGE = 50;
 	private static final int DEFAULT_NEAREST_GENOME_COUNT = 100;
@@ -88,7 +94,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	private void saveResult(String ws, String id, String token, Tree res,
 			ConstructSpeciesTreeParams inputData) throws Exception {
 		Map<String, String> meta = new LinkedHashMap<String, String>();
-		meta.put("TreeType", "SpeciesTree");
+		meta.put("type", SPECIES_TREE_TYPE);
 		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
 				.withType("KBaseTrees.Tree")
 				.withMeta(meta)
@@ -429,7 +435,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		}
 		Map<String, String> idLabelMap = new TreeMap<String, String>();
 		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
-		Set<String> seeds = new LinkedHashSet<String>();
+		Set<String> seeds = new HashSet<String>();
 		for (String cogCode : cogAlignments.keySet()) {
 			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
 				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
@@ -503,12 +509,14 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 			idRefMap.put(genomeKb, refMap);
 		}
 		String treeText = makeTree(concat);
+		// Rerooting
+        treeText = TreeStructureUtil.rerootTreeToMidpoint(treeText);
 		Map<String, String> props = new TreeMap<String, String>();
 		props.put("cog_codes", UObject.getMapper().writeValueAsString(loadCogsCodes(useCog103Only)));
 		return new Tree().withTree(treeText).withDefaultNodeLabels(idLabelMap)
 				.withLeafList(new ArrayList<String>(idLabelMap.keySet()))
 				.withWsRefs(idRefMap).withKbRefs(idKbMap)
-				.withTreeAttributes(props);
+				.withTreeAttributes(props).withType(SPECIES_TREE_TYPE);
 	}
 	
 	private int getDistance(char[] s1, char[] s2) {

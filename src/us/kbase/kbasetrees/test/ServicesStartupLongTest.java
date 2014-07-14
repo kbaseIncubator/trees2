@@ -112,7 +112,6 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 		String genomeWsType = "KBaseGenomes.Genome";
 		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(wsName).withGlobalread("r"));
 		List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
-		// (kb|g.2626:0.00128,kb|g.2627:0.00128,((kb|g.25423:0.00356,(((kb|g.1283:0.00055,kb|g.27370:0.00055)1.000:0.01782,(kb|g.1032:0.00054,kb|g.852:0.00072)1.000:0.00669)1.000:0.01927,(kb|g.20848:0.00055,kb|g.371:0.00055)1.000:0.00677)0.903:0.00356)1.000:0.00630,(kb|g.3779:0.00055,user1:0.00055)1.000:0.00299)0.469:0.00059);
 		List<String> genomeKbIds = Arrays.asList(
 				"kb|g.2626", "kb|g.2627", "kb|g.25423", "kb|g.1283", "kb|g.27370", 
 				"kb|g.1032", "kb|g.852", "kb|g.20848", "kb|g.371", "kb|g.3779");
@@ -142,7 +141,8 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 				Arrays.asList(genomeRef)).withOutWorkspace(defaultWokspace)
 				.withOutTreeId(spTreeId).withUseRibosomalS9Only(0L).withNearestGenomeCount(10L));
 		waitForJob(jobId);
-		Tree tree = getWsObject(defaultWokspace + "/" + spTreeId, Tree.class);
+		String treeRef = defaultWokspace + "/" + spTreeId;
+		Tree tree = getWsObject(treeRef, Tree.class);
 		try {
 			List<String> nodeIds = treesClient.extractLeafNodeNames(tree.getTree());
 			Assert.assertEquals(11, nodeIds.size());
@@ -151,7 +151,9 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 				Map<String, List<String>> refs = tree.getWsRefs().get(nodeId);
 				Assert.assertNotNull(label);
 				if (nodeId.startsWith("user")) {
-					//TODO: resolve genomeRef before comparison: Assert.assertEquals(genomeRef, refs.get("g").get(0));
+					ProvenanceAction prv = getWsProvenance(treeRef).get(0);
+					String resolvedGenomeRef = prv.getResolvedWsObjects().get(0);
+					Assert.assertEquals(resolvedGenomeRef, refs.get("g").get(0));
 					Assert.assertEquals(genomeName, label);
 				}
 			}

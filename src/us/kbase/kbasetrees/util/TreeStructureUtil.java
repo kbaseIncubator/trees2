@@ -1,8 +1,10 @@
 package us.kbase.kbasetrees.util;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -97,6 +99,18 @@ public class TreeStructureUtil {
 				node.setName(Double.toString(node.getBranchData().getConfidence(0).getValue()));
 			}
 		}
+	}
+	
+	public static String rerootTreeToMidpoint(String treeText) throws IOException {
+        NHXParser parser = new NHXParser();
+        parser.setSource(treeText);
+        Phylogeny [] trees = parser.parse();
+        StringBuilder changedTrees = new StringBuilder();
+        for(Phylogeny tree : trees) {
+        	PhylogenyMethods.midpointRoot(tree);
+        	changedTrees.append(tree.toNewHampshire());
+        }
+        return changedTrees.toString();
 	}
 	
 }
