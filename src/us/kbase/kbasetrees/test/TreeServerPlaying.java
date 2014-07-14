@@ -117,8 +117,7 @@ public class TreeServerPlaying {
 	public static WorkspaceClient createWorkspaceClient(String user, String password)
 			throws UnauthorizedException, IOException, MalformedURLException {
 		WorkspaceClient wc = new WorkspaceClient(new URL(ws2url), user, password);
-		wc.setIsInsecureHttpConnectionAllowed(true);
-		wc.setAllSSLCertificatesTrusted(true);
+		wc.setAuthAllowedForHttp(true);
 		return wc;
 	}
 

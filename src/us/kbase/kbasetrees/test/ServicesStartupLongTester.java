@@ -102,8 +102,7 @@ public class ServicesStartupLongTester {
 		System.out.println("Started test workspace server on port " + wsPort);
 		try {
 			wsClient = new WorkspaceClient(new URL(wsUrl), user, p1);
-			wsClient.setIsInsecureHttpConnectionAllowed(true);
-			wsClient.setAllSSLCertificatesTrusted(true);
+			wsClient.setAuthAllowedForHttp(true);
 		} catch (UnauthorizedException ue) {
 			throw new TestException("Unable to login with test.user1: " + user +
 					"\nPlease check the credentials in the test configuration.", ue);

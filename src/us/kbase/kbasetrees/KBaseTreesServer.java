@@ -780,8 +780,7 @@ public class KBaseTreesServer extends JsonServerServlet {
         
         CdsUtil cds = new CdsUtil(new URL(defaultCdmiUrl));
         WorkspaceClient ws = new WorkspaceClient(new URL(defaultWsUrl), authPart);
-		ws.setIsInsecureHttpConnectionAllowed(true);
-		ws.setAllSSLCertificatesTrusted(true);
+		ws.setAuthAllowedForHttp(true);
         List <TreeImportPackage> tips = cds.getTreesForImport(selection, targetWsNameOrId);
         List<ObjectSaveData> msaData = new ArrayList<ObjectSaveData>(tips.size());
         List<ObjectSaveData> treeData = new ArrayList<ObjectSaveData>(tips.size());

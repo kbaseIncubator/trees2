@@ -34,8 +34,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
 					String authToken, SaveObjectsParams params) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setIsInsecureHttpConnectionAllowed(true);
-				client.setAllSSLCertificatesTrusted(true);
+				client.setAuthAllowedForHttp(true);
 				return client.saveObjects(params);
 			}
 			
@@ -43,8 +42,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<ObjectData> getObjects(String authToken,
 					List<ObjectIdentity> objectIds) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setIsInsecureHttpConnectionAllowed(true);
-				client.setAllSSLCertificatesTrusted(true);
+				client.setAuthAllowedForHttp(true);
 				return client.getObjects(objectIds);
 			}
 			
@@ -52,8 +50,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
 					String authToken, ListObjectsParams params) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setIsInsecureHttpConnectionAllowed(true);
-				client.setAllSSLCertificatesTrusted(true);
+				client.setAuthAllowedForHttp(true);
 				return client.listObjects(params);
 			}
 		};
