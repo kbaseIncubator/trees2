@@ -71,7 +71,8 @@ public class TreeServerPlaying {
 	
 	private static void runOneThread(int taskNum, boolean riboOnly) throws Exception {
 		KBaseTreesClient cl = new KBaseTreesClient(new URL("http://140.221.85.58:8284/"), userId, pwd);
-		cl.setAuthAllowedForHttp(true);
+		cl.setIsInsecureHttpConnectionAllowed(true);
+		cl.setAllSSLCertificatesTrusted(true);
 		String workspace = wsId;
 		List<String> genomeRefs = Arrays.asList(new String[] {
 				wsId + "/Shewanella_ANA_3_uid58347.genome",
@@ -108,14 +109,16 @@ public class TreeServerPlaying {
 	
 	private static UserAndJobStateClient createJobClient(String user, String password) throws Exception {
 		UserAndJobStateClient ret = new UserAndJobStateClient(new URL(jobSrvUrl), user, password);
-		ret.setAuthAllowedForHttp(true);
+		ret.setIsInsecureHttpConnectionAllowed(true);
+		ret.setAllSSLCertificatesTrusted(true);
 		return ret;
 	}
 
 	public static WorkspaceClient createWorkspaceClient(String user, String password)
 			throws UnauthorizedException, IOException, MalformedURLException {
 		WorkspaceClient wc = new WorkspaceClient(new URL(ws2url), user, password);
-		wc.setAuthAllowedForHttp(true);
+		wc.setIsInsecureHttpConnectionAllowed(true);
+		wc.setAllSSLCertificatesTrusted(true);
 		return wc;
 	}
 

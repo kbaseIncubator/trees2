@@ -165,7 +165,8 @@ public class KBaseTreesServer extends JsonServerServlet {
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
 		try {
 			UserAndJobStateClient ret = new UserAndJobStateClient(new URL(jobSrvUrl), new AuthToken(token));
-			ret.setAuthAllowedForHttp(true);
+			ret.setIsInsecureHttpConnectionAllowed(true);
+			ret.setAllSSLCertificatesTrusted(true);
 			return ret;
 		} catch (TokenFormatException e) {
 			throw new JsonClientException(e.getMessage(), e);
@@ -779,7 +780,8 @@ public class KBaseTreesServer extends JsonServerServlet {
         
         CdsUtil cds = new CdsUtil(new URL(defaultCdmiUrl));
         WorkspaceClient ws = new WorkspaceClient(new URL(defaultWsUrl), authPart);
-        ws.setAuthAllowedForHttp(true);
+		ws.setIsInsecureHttpConnectionAllowed(true);
+		ws.setAllSSLCertificatesTrusted(true);
         List <TreeImportPackage> tips = cds.getTreesForImport(selection, targetWsNameOrId);
         List<ObjectSaveData> msaData = new ArrayList<ObjectSaveData>(tips.size());
         List<ObjectSaveData> treeData = new ArrayList<ObjectSaveData>(tips.size());

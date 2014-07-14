@@ -102,7 +102,8 @@ public class ServicesStartupLongTester {
 		System.out.println("Started test workspace server on port " + wsPort);
 		try {
 			wsClient = new WorkspaceClient(new URL(wsUrl), user, p1);
-			wsClient.setAuthAllowedForHttp(true);
+			wsClient.setIsInsecureHttpConnectionAllowed(true);
+			wsClient.setAllSSLCertificatesTrusted(true);
 		} catch (UnauthorizedException ue) {
 			throw new TestException("Unable to login with test.user1: " + user +
 					"\nPlease check the credentials in the test configuration.", ue);
@@ -117,14 +118,16 @@ public class ServicesStartupLongTester {
 		System.out.println("Started test trees server on port " + wsPort);
 		try {
 			treesClient = new KBaseTreesClient(new URL("http://localhost:" + treesPort), user, p1);
-			treesClient.setAuthAllowedForHttp(true);
+			treesClient.setIsInsecureHttpConnectionAllowed(true);
+			treesClient.setAllSSLCertificatesTrusted(true);
 		} catch (UnauthorizedException ue) {
 			throw new TestException("Unable to login with test.user1: " + user +
 					"\nPlease check the credentials in the test configuration.", ue);
 		}
 		try {
 			ujsClient = new UserAndJobStateClient(new URL(ujsUrl), user, p1);
-			ujsClient.setAuthAllowedForHttp(true);
+			ujsClient.setIsInsecureHttpConnectionAllowed(true);
+			ujsClient.setAllSSLCertificatesTrusted(true);
 		} catch (UnauthorizedException ue) {
 			throw new TestException("Unable to login with test.user1: " + user +
 					"\nPlease check the credentials in the test configuration.", ue);

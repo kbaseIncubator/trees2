@@ -98,7 +98,8 @@ public class GenomeIdMapping {
 	public static KBaseTreesClient createKBaseTreesClient(String user, String password) 
 			throws UnauthorizedException, MalformedURLException, IOException {
 		KBaseTreesClient treeClient = new KBaseTreesClient(new URL(TREE_URL), user, password);
-		treeClient.setAuthAllowedForHttp(true);
+		treeClient.setIsInsecureHttpConnectionAllowed(true);
+		treeClient.setAllSSLCertificatesTrusted(true);
 		return treeClient;
 	}
 	
