@@ -427,10 +427,14 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
 		List<GenomeToCogsAlignment> userData = new ArrayList<GenomeToCogsAlignment>();
 		for (String genomeRef : genomeRefList) {
+			Genome genome = null;
 			try {
-				userData.add(alignGenomeProteins(token, genomeRef, useCog103Only, cogAlignments));
+				genome = storage.getObjects(token, Arrays.asList(
+						new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
+				userData.add(alignGenomeProteins(token, genomeRef, genome, useCog103Only, cogAlignments));
 			} catch (Exception ex) {
-				throw new IllegalStateException("Error processing genome " + genomeRef + " (" + ex.getMessage() + ")", ex);
+				String genomeName = genome == null ? genomeRef : genome.getScientificName();
+				throw new IllegalStateException("Error processing genome " + genomeName + " (" + ex.getMessage() + ")", ex);
 			}
 		}
 		Map<String, String> idLabelMap = new TreeMap<String, String>();
@@ -530,10 +534,8 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return ret;
 	}
 	
-	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, boolean useCog103Only,
-			final Map<String, Map<String, String>> cogAlignments) throws Exception {
-		final Genome genome = storage.getObjects(token, Arrays.asList(
-				new ObjectIdentity().withRef(genomeRef))).get(0).getData().asClassInstance(Genome.class);
+	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, final Genome genome,
+			boolean useCog103Only, final Map<String, Map<String, String>> cogAlignments) throws Exception {
 		String genomeName = genome.getScientificName();
 		File fastaFile = File.createTempFile("proteome", ".fasta", tempDir);
 		File dbFile = null;
