@@ -24,7 +24,7 @@ import us.kbase.workspace.RegisterTypespecParams;
 import us.kbase.workspace.WorkspaceClient;
 
 public class TreeServerPlaying {
-	private static String ws2url = "http://dev04.berkeley.kbase.us:7058";
+	private static String ws2url = "https://kbase.us/services/ws/";  //"http://dev04.berkeley.kbase.us:7058";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
 	private static String userId = "nardevuser1";
 	private static String pwd = "*****";
@@ -33,18 +33,18 @@ public class TreeServerPlaying {
 	public static void main(String[] args) throws Exception {
 		//test();
 		//runOneThread(0, true);
-		reg();
-		//createSpeciesTree();
+		//reg();
+		createSpeciesTree();
 	}
 	
 	private static void createSpeciesTree() throws Exception {
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(new File("temp_files"), 
 				new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
 		List<String> genomeRefs = Arrays.asList(new String[] {
-				wsId + "/Shewanella_ANA_3_uid58347.genome",
+				wsId + "/Shewanella_ANA_3.genome",
 				wsId + "/Shewanella_MR_7_uid58343.genome", 
-				wsId + "/Shewanella_MR_4_uid58345.genome",
-				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
+				//wsId + "/Shewanella_MR_4_uid58345.genome",
+				//wsId + "/Shewanella_baltica_BA175_uid52601.genome",
 		});
 		String token = AuthService.login(userId, pwd).getTokenString();
 		stb.run(token, new ConstructSpeciesTreeParams().withNewGenomes(genomeRefs)

@@ -693,4 +693,22 @@ public class KBaseTreesClient {
         List<String> res = caller.jsonrpcCall("KBaseTrees.construct_tree_for_alignment", args, retType, true, true);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: find_close_genomes</p>
+     * <pre>
+     * Find closely related public genomes based on COG of ribosomal s9 subunits.
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.FindCloseGenomesParams FindCloseGenomesParams}
+     * @return   instance of list of original type "genome_ref" (A convenience type representing a genome id reference. This might be a kbase_id (in the case of a CDM genome) or, more likely, a workspace reference of the structure "ws/obj/ver")
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public List<String> findCloseGenomes(FindCloseGenomesParams params) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.find_close_genomes", args, retType, true, true);
+        return res.get(0);
+    }
 }

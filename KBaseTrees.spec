@@ -889,7 +889,23 @@ module KBaseTrees
         string out_tree_id;
 	} ConstructTreeForAlignmentParams;
 
-    /* Build a tree based on MSA object.
-    */
+	/* Build a tree based on MSA object.
+	*/
 	funcdef construct_tree_for_alignment(ConstructTreeForAlignmentParams params) returns (job_id) authentication required; 
+
+    /* Input data type for construct_species_tree method. Method produces object of Tree type.
+
+        query_genome - (required) query genome reference
+        max_mismatch_percent - (optional) defines maximum mismatch percentage when compare aminoacids from user genome with 
+            public genomes (defualt value is 5).
+    */
+    typedef structure {
+        genome_ref query_genome;
+        int max_mismatch_percent;
+    } FindCloseGenomesParams;
+
+	/*
+	Find closely related public genomes based on COG of ribosomal s9 subunits. 
+	*/
+	funcdef find_close_genomes(FindCloseGenomesParams params) returns (list<genome_ref>) authentication required;
 };

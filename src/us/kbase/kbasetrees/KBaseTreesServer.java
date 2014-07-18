@@ -32,7 +32,6 @@ import us.kbase.tree.TreeClient;
 import us.kbase.userandjobstate.InitProgress;
 import us.kbase.userandjobstate.Results;
 import us.kbase.userandjobstate.UserAndJobStateClient;
-import us.kbase.workspace.ListWorkspacesParams;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.common.service.UObject;
@@ -66,6 +65,7 @@ public class KBaseTreesServer extends JsonServerServlet {
 
     //BEGIN_CLASS_HEADER
     private static TaskQueue taskHolder = null;
+    private static TaskQueueConfig taskConfig = null;
     
 	private static final String defaultWsUrl = "http://dev04.berkeley.kbase.us:7058";
 	//private static final String defaultWsUrl = "https://kbase.us/services/ws/";
@@ -106,8 +106,8 @@ public class KBaseTreesServer extends JsonServerServlet {
 		}
     }
     
-    public static synchronized TaskQueue getTaskQueue() throws Exception {
-    	if (taskHolder == null) {
+    public static synchronized TaskQueueConfig getTaskConfig() throws Exception {
+    	if (taskConfig == null) {
     		int threadCount = 1;
     		File queueDbDir = new File(".");
     		String wsUrl = defaultWsUrl;
@@ -145,10 +145,17 @@ public class KBaseTreesServer extends JsonServerServlet {
     						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(Arrays.asList(outRef)));
 				}
 			};
-			taskHolder = new TaskQueue(new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, 
-					allConfigProps), new SpeciesTreeBuilder(), new MultipleAlignmentBuilder(),
+			taskConfig = new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, allConfigProps);
+    	}
+    	return taskConfig;
+    }
+    
+    public static synchronized TaskQueue getTaskQueue() throws Exception {
+    	if (taskHolder == null) {
+    		TaskQueueConfig cfg = getTaskConfig();
+			taskHolder = new TaskQueue(cfg, new SpeciesTreeBuilder(), new MultipleAlignmentBuilder(),
 					new TreeForAlignmentBuilder());
-			System.out.println("Initial queue size: " + TaskQueue.getDbConnection(queueDbDir).collect(
+			System.out.println("Initial queue size: " + TaskQueue.getDbConnection(cfg.getQueueDbDir()).collect(
 					"select count(*) from " + TaskQueue.QUEUE_TABLE_NAME, new us.kbase.common.utils.DbConn.SqlLoader<Integer>() {
 				public Integer collectRow(java.sql.ResultSet rs) throws java.sql.SQLException { return rs.getInt(1); }
 			}));
@@ -934,6 +941,24 @@ public class KBaseTreesServer extends JsonServerServlet {
         TaskQueue tq = getTaskQueue();
         returnVal = tq.addTask(params, authPart.toString());
         //END construct_tree_for_alignment
+        return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: find_close_genomes</p>
+     * <pre>
+     * Find closely related public genomes based on COG of ribosomal s9 subunits.
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.FindCloseGenomesParams FindCloseGenomesParams}
+     * @return   instance of list of original type "genome_ref" (A convenience type representing a genome id reference. This might be a kbase_id (in the case of a CDM genome) or, more likely, a workspace reference of the structure "ws/obj/ver")
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.find_close_genomes")
+    public List<String> findCloseGenomes(FindCloseGenomesParams params, AuthToken authPart) throws Exception {
+        List<String> returnVal = null;
+        //BEGIN find_close_genomes
+        TaskQueueConfig config = getTaskConfig();
+        returnVal = CloseGenomesFinder.findGenomes(authPart.toString(), params, config);
+        //END find_close_genomes
         return returnVal;
     }
 

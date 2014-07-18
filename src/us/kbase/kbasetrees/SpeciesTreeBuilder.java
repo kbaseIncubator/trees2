@@ -16,17 +16,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
-import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyMethods;
 
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
@@ -422,6 +417,91 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 
 	public Tree placeUserGenomes(String token, List<String> genomeRefList, 
 			boolean useCog103Only, boolean userGenomesOnly, int nearestGenomeCount) throws Exception {
+		Map<String, String> idLabelMap = new TreeMap<String, String>();
+		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
+		Set<String> seeds = new HashSet<String>();
+
+		Map<String, String> concat = placeUserGenomesIntoAlignment(token,
+				genomeRefList, useCog103Only, idLabelMap, idRefMap, seeds);
+		
+		// Filtering
+		Set<String> nearestNodes = new HashSet<String>();
+		if (!userGenomesOnly) {
+			List<Tuple2<String, Integer>> kbIdToMinDist = sortPublicGenomesByMismatches(
+					seeds, concat);
+			if (kbIdToMinDist.size() > nearestGenomeCount)
+				kbIdToMinDist = kbIdToMinDist.subList(0, nearestGenomeCount);
+			for (Tuple2<String, Integer> entry : kbIdToMinDist)
+				nearestNodes.add(entry.getE1());
+		}
+		for (String kbId : new ArrayList<String>(concat.keySet())) {
+			if (!(seeds.contains(kbId) || nearestNodes.contains(kbId))) {
+				concat.remove(kbId);
+			}
+		}
+		Map<String, String> kbToNames = loadGenomeKbToNames();
+		Map<String, String> kbToRefs = loadGenomeKbToRefs(token);
+		Map<String, Map<String, List<String>>> idKbMap = new TreeMap<String, Map<String, List<String>>>();
+		for (String genomeKb : new ArrayList<String>(concat.keySet())) {
+			Map<String, List<String>> refMap = new TreeMap<String, List<String>>();
+			refMap.put("g", Arrays.asList(genomeKb));
+			idKbMap.put(genomeKb, refMap);
+			if (seeds.contains(genomeKb))
+				continue;
+			String ref = kbToRefs.get(genomeKb);
+			if (ref == null) {
+				System.err.println("[trees] SpeciesTreeBuilder: Can't find genome object for id: " + genomeKb);
+				concat.remove(genomeKb);
+				continue;
+			}
+			String name = kbToNames.get(genomeKb);
+			idLabelMap.put(genomeKb, name);
+			refMap = new TreeMap<String, List<String>>();
+			refMap.put("g", Arrays.asList(ref));
+			idRefMap.put(genomeKb, refMap);
+		}
+		String treeText = makeTree(concat);
+		// Rerooting
+        treeText = TreeStructureUtil.rerootTreeToMidpoint(treeText);
+		Map<String, String> props = new TreeMap<String, String>();
+		props.put("cog_codes", UObject.getMapper().writeValueAsString(loadCogsCodes(useCog103Only)));
+		return new Tree().withTree(treeText).withDefaultNodeLabels(idLabelMap)
+				.withLeafList(new ArrayList<String>(idLabelMap.keySet()))
+				.withWsRefs(idRefMap).withKbRefs(idKbMap)
+				.withTreeAttributes(props).withType(SPECIES_TREE_TYPE);
+	}
+
+	public List<Tuple2<String, Integer>> sortPublicGenomesByMismatches(
+			Set<String> seeds, Map<String, String> concat) {
+		List<Tuple2<String, Integer>> kbIdToMinDist = new ArrayList<Tuple2<String, Integer>>();
+		for (String kbId : concat.keySet()) {
+			if (seeds.contains(kbId))
+				continue;
+			char[] kbSeq = concat.get(kbId).toCharArray();
+			int minDist = -1;
+			for (String userId : concat.keySet()) {
+				if (!seeds.contains(userId))
+					continue;
+				char[] userSeq = concat.get(userId).toCharArray();
+				int dist = getDistance(kbSeq, userSeq);
+				minDist = (minDist < 0) ? dist : Math.min(dist, minDist);
+			}
+			kbIdToMinDist.add(new Tuple2<String, Integer>().withE1(kbId).withE2(minDist));
+		}
+		Collections.sort(kbIdToMinDist, new Comparator<Tuple2<String, Integer>>() {
+			@Override
+			public int compare(Tuple2<String, Integer> o1, Tuple2<String, Integer> o2) {
+				return o1.getE2().compareTo(o2.getE2());
+			}
+		});
+		return kbIdToMinDist;
+	}
+
+	public Map<String, String> placeUserGenomesIntoAlignment(String token,
+			List<String> genomeRefList, boolean useCog103Only,
+			Map<String, String> idLabelMap,
+			Map<String, Map<String, List<String>>> idRefMap, Set<String> seeds)
+			throws IOException {
 		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
 		for (String cogCode : loadCogsCodes(useCog103Only)) 
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
@@ -437,9 +517,6 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				throw new IllegalStateException("Error processing genome " + genomeName + " (" + ex.getMessage() + ")", ex);
 			}
 		}
-		Map<String, String> idLabelMap = new TreeMap<String, String>();
-		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
-		Set<String> seeds = new HashSet<String>();
 		for (String cogCode : cogAlignments.keySet()) {
 			for (int genomePos = 0; genomePos < userData.size(); genomePos++) {
 				GenomeToCogsAlignment genomeRes = userData.get(genomePos);
@@ -460,67 +537,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 			}
 		}
 		Map<String, String> concat = concatCogAlignments(cogAlignments);
-		// Filtering
-		Set<String> nearestNodes = new HashSet<String>();
-		if (!userGenomesOnly) {
-			List<Tuple2<String, Integer>> kbIdToMinDist = new ArrayList<Tuple2<String, Integer>>();
-			for (String kbId : concat.keySet()) {
-				if (seeds.contains(kbId))
-					continue;
-				char[] kbSeq = concat.get(kbId).toCharArray();
-				int minDist = -1;
-				for (String userId : concat.keySet()) {
-					if (!seeds.contains(userId))
-						continue;
-					char[] userSeq = concat.get(userId).toCharArray();
-					int dist = getDistance(kbSeq, userSeq);
-					minDist = (minDist < 0) ? dist : Math.min(dist, minDist);
-				}
-				kbIdToMinDist.add(new Tuple2<String, Integer>().withE1(kbId).withE2(minDist));
-			}
-			Collections.sort(kbIdToMinDist, new Comparator<Tuple2<String, Integer>>() {
-				@Override
-				public int compare(Tuple2<String, Integer> o1, Tuple2<String, Integer> o2) {
-					return o1.getE2().compareTo(o2.getE2());
-				}
-			});
-			if (kbIdToMinDist.size() > nearestGenomeCount)
-				kbIdToMinDist = kbIdToMinDist.subList(0, nearestGenomeCount);
-			for (Tuple2<String, Integer> entry : kbIdToMinDist)
-				nearestNodes.add(entry.getE1());
-		}
-		for (String kbId : new ArrayList<String>(concat.keySet())) {
-			if (!(seeds.contains(kbId) || nearestNodes.contains(kbId))) {
-				concat.remove(kbId);
-			}
-		}
-		Map<String, String> kbToNames = loadGenomeKbToNames();
-		Map<String, String> kbToRefs = loadGenomeKbToRefs(token);
-		Map<String, Map<String, List<String>>> idKbMap = new TreeMap<String, Map<String, List<String>>>();
-		for (String genomeKb : concat.keySet()) {
-			Map<String, List<String>> refMap = new TreeMap<String, List<String>>();
-			refMap.put("g", Arrays.asList(genomeKb));
-			idKbMap.put(genomeKb, refMap);
-			if (seeds.contains(genomeKb))
-				continue;
-			String ref = kbToRefs.get(genomeKb);
-			if (ref == null)
-				throw new IllegalStateException("Can't find genome object for id: " + genomeKb);
-			String name = kbToNames.get(genomeKb);
-			idLabelMap.put(genomeKb, name);
-			refMap = new TreeMap<String, List<String>>();
-			refMap.put("g", Arrays.asList(ref));
-			idRefMap.put(genomeKb, refMap);
-		}
-		String treeText = makeTree(concat);
-		// Rerooting
-        treeText = TreeStructureUtil.rerootTreeToMidpoint(treeText);
-		Map<String, String> props = new TreeMap<String, String>();
-		props.put("cog_codes", UObject.getMapper().writeValueAsString(loadCogsCodes(useCog103Only)));
-		return new Tree().withTree(treeText).withDefaultNodeLabels(idLabelMap)
-				.withLeafList(new ArrayList<String>(idLabelMap.keySet()))
-				.withWsRefs(idRefMap).withKbRefs(idKbMap)
-				.withTreeAttributes(props).withType(SPECIES_TREE_TYPE);
+		return concat;
 	}
 	
 	private int getDistance(char[] s1, char[] s2) {

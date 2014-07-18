@@ -3,6 +3,7 @@ package us.kbase.kbasetrees.test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -11,8 +12,10 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.ServerException;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
@@ -22,6 +25,7 @@ import us.kbase.kbasegenomes.Genome;
 import us.kbase.kbasetrees.ConstructMultipleAlignmentParams;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.ConstructTreeForAlignmentParams;
+import us.kbase.kbasetrees.FindCloseGenomesParams;
 import us.kbase.kbasetrees.MSA;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.workspace.CreateWorkspaceParams;
@@ -107,34 +111,8 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 	
 	@Test
 	public void testConstructSpeciesTree() throws Exception {
-		// Sync genome objects (just fake wrappers with kbase-id as name)
-		String wsName = "KBasePublicGenomesLoad";
-		String genomeWsType = "KBaseGenomes.Genome";
-		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(wsName).withGlobalread("r"));
-		List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
-		List<String> genomeKbIds = Arrays.asList(
-				"kb|g.2626", "kb|g.2627", "kb|g.25423", "kb|g.1283", "kb|g.27370", 
-				"kb|g.1032", "kb|g.852", "kb|g.20848", "kb|g.371", "kb|g.3779");
-		for (String kbId : genomeKbIds) {
-			Map<String, Object> data = new LinkedHashMap<String, Object>(4);
-			data.put("id", kbId);
-			data.put("scientific_name", "");
-			data.put("domain", "");
-			data.put("genetic_code", 11L);
-			objects.add(new ObjectSaveData().withName(kbId).withType(genomeWsType).withData(new UObject(data)));
-		}
-		wsClient.saveObjects(new SaveObjectsParams().withWorkspace(wsName).withObjects(objects));
-		// Store test genome (real data)
-		FastaReader fr = new FastaReader(new File("data/test", "Shewanella_ANA_3_uid58347.fasta"));
-		List<Feature> features = new ArrayList<Feature>();
-		for (Map.Entry<String, String> entry : fr.readAll().entrySet())
-			features.add(new Feature().withId(entry.getKey()).withProteinTranslation(entry.getValue())
-					.withType("cds"));
 		String genomeName = "Shewanella_ANA_3_uid58347";
 		String genomeId = genomeName + ".genome";
-		Genome genome = new Genome().withScientificName(genomeName)
-				.withFeatures(features).withId(genomeId).withDomain("Bacteria").withGeneticCode(11L);
-		saveWsObject(defaultWokspace, "KBaseGenomes.Genome", genomeId, genome);
 		String spTreeId = "sptree.1";
 		String genomeRef = defaultWokspace + "/" + genomeId;
 		String jobId = treesClient.constructSpeciesTree(new ConstructSpeciesTreeParams().withNewGenomes(
@@ -161,6 +139,51 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 			System.err.println(tree.getTree());
 			throw ex;
 		}
+	}
+	
+	@Test
+	public void testFindCloseGenomes() throws Exception {
+		String genomeName = "Shewanella_ANA_3_uid58347";
+		String genomeId = genomeName + ".genome";
+		String genomeRef = defaultWokspace + "/" + genomeId;
+		List<String> list = treesClient.findCloseGenomes(new FindCloseGenomesParams().withQueryGenome(genomeRef));
+		Assert.assertEquals(10, list.size());
+	}
+	
+	@BeforeClass
+	public static void prepareTestGenome() throws Exception {
+		// Store test genome (real data)
+		FastaReader fr = new FastaReader(new File("data/test", "Shewanella_ANA_3_uid58347.fasta"));
+		List<Feature> features = new ArrayList<Feature>();
+		for (Map.Entry<String, String> entry : fr.readAll().entrySet())
+			features.add(new Feature().withId(entry.getKey()).withProteinTranslation(entry.getValue())
+					.withType("cds"));
+		String genomeName = "Shewanella_ANA_3_uid58347";
+		String genomeObjId = genomeName + ".genome";
+		Genome genome = new Genome().withScientificName(genomeName)
+				.withFeatures(features).withId(genomeObjId).withDomain("Bacteria").withGeneticCode(11L);
+		saveWsObject(defaultWokspace, "KBaseGenomes.Genome", genomeObjId, genome);
+	}
+
+	@BeforeClass
+	public static void prepareFakePublicGenomes() throws IOException, JsonClientException {
+		// Sync genome objects (just fake wrappers with kbase-id as name)
+		String wsName = "KBasePublicGenomesLoad";
+		String genomeWsType = "KBaseGenomes.Genome";
+		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(wsName).withGlobalread("r"));
+		List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
+		List<String> genomeKbIds = Arrays.asList(
+				"kb|g.2626", "kb|g.2627", "kb|g.25423", "kb|g.1283", "kb|g.27370", 
+				"kb|g.1032", "kb|g.852", "kb|g.20848", "kb|g.371", "kb|g.3779");
+		for (String kbId : genomeKbIds) {
+			Map<String, Object> data = new LinkedHashMap<String, Object>(4);
+			data.put("id", kbId);
+			data.put("scientific_name", "");
+			data.put("domain", "");
+			data.put("genetic_code", 11L);
+			objects.add(new ObjectSaveData().withName(kbId).withType(genomeWsType).withData(new UObject(data)));
+		}
+		wsClient.saveObjects(new SaveObjectsParams().withWorkspace(wsName).withObjects(objects));
 	}
 	
 	/****************************************** Utility methods *********************************************/

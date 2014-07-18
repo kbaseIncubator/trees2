@@ -67,7 +67,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 		return this;
 	}
 
-	private static File getDirParam(Map<String, String> configParams, String param) {
+	public static File getDirParam(Map<String, String> configParams, String param) {
 		String tempDirPath = configParams.get(param);
 		if (tempDirPath == null)
 			throw new IllegalStateException("Parameter " + param + " is not defined in configuration");
