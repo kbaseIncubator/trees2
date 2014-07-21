@@ -22,6 +22,7 @@ import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
+import us.kbase.workspace.SubObjectIdentity;
 
 public class MultipleAlignmentBuilderTest {
 
@@ -71,6 +72,10 @@ public class MultipleAlignmentBuilderTest {
 							String authToken, ListObjectsParams params)
 							throws Exception {
 						throw new IllegalStateException();
+					}
+					@Override
+					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+						throw new IllegalStateException("Unsupported method");
 					}
 				});
 		Map<String, String> seqs = loadProtSeqs();

@@ -711,4 +711,22 @@ public class KBaseTreesClient {
         List<List<String>> res = caller.jsonrpcCall("KBaseTrees.find_close_genomes", args, retType, true, true);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: guess_taxonomy_path</p>
+     * <pre>
+     * Search for taxonomy path from closely related public genomes (approach similar to find_close_genomes).
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.GuessTaxonomyPathParams GuessTaxonomyPathParams}
+     * @return   instance of String
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String guessTaxonomyPath(GuessTaxonomyPathParams params) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("KBaseTrees.guess_taxonomy_path", args, retType, true, true);
+        return res.get(0);
+    }
 }

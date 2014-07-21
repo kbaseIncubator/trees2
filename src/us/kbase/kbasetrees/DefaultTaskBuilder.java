@@ -13,6 +13,7 @@ import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
+import us.kbase.workspace.SubObjectIdentity;
 import us.kbase.workspace.WorkspaceClient;
 
 public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
@@ -53,6 +54,13 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 				client.setAuthAllowedForHttp(true);
 				return client.listObjects(params);
 			}
+			
+			@Override
+		    public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
+				client.setAuthAllowedForHttp(true);
+				return client.getObjectSubset(objectIds);
+		    }
 		};
 	}
 

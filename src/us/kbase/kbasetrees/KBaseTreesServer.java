@@ -962,6 +962,24 @@ public class KBaseTreesServer extends JsonServerServlet {
         return returnVal;
     }
 
+    /**
+     * <p>Original spec-file function name: guess_taxonomy_path</p>
+     * <pre>
+     * Search for taxonomy path from closely related public genomes (approach similar to find_close_genomes).
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.GuessTaxonomyPathParams GuessTaxonomyPathParams}
+     * @return   instance of String
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.guess_taxonomy_path")
+    public String guessTaxonomyPath(GuessTaxonomyPathParams params, AuthToken authPart) throws Exception {
+        String returnVal = null;
+        //BEGIN guess_taxonomy_path
+        TaskQueueConfig config = getTaskConfig();
+        returnVal = CloseGenomesFinder.guessTaxonomy(authPart.toString(), params, config);
+        //END guess_taxonomy_path
+        return returnVal;
+    }
+
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.out.println("Usage: <program> <server_port>");

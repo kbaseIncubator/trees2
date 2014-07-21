@@ -893,7 +893,7 @@ module KBaseTrees
 	*/
 	funcdef construct_tree_for_alignment(ConstructTreeForAlignmentParams params) returns (job_id) authentication required; 
 
-    /* Input data type for construct_species_tree method. Method produces object of Tree type.
+    /* Input data type for find_close_genomes method. Method produces list of refereces to public genomes similar to query.
 
         query_genome - (required) query genome reference
         max_mismatch_percent - (optional) defines maximum mismatch percentage when compare aminoacids from user genome with 
@@ -908,4 +908,17 @@ module KBaseTrees
 	Find closely related public genomes based on COG of ribosomal s9 subunits. 
 	*/
 	funcdef find_close_genomes(FindCloseGenomesParams params) returns (list<genome_ref>) authentication required;
+	
+	/* Input data type for guess_taxonomy_path method. Method produces taxonomy path string.
+
+        query_genome - (required) query genome reference
+    */
+    typedef structure {
+        genome_ref query_genome;
+    } GuessTaxonomyPathParams;
+	
+	/*
+	Search for taxonomy path from closely related public genomes (approach similar to find_close_genomes). 
+	*/
+	funcdef guess_taxonomy_path(GuessTaxonomyPathParams params) returns (string) authentication required;
 };

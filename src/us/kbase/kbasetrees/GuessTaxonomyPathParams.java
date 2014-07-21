@@ -12,27 +12,22 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * <p>Original spec-file type: FindCloseGenomesParams</p>
+ * <p>Original spec-file type: GuessTaxonomyPathParams</p>
  * <pre>
- * Input data type for find_close_genomes method. Method produces list of refereces to public genomes similar to query.
+ * Input data type for guess_taxonomy_path method. Method produces taxonomy path string.
  *         query_genome - (required) query genome reference
- *         max_mismatch_percent - (optional) defines maximum mismatch percentage when compare aminoacids from user genome with 
- *             public genomes (defualt value is 5).
  * </pre>
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "query_genome",
-    "max_mismatch_percent"
+    "query_genome"
 })
-public class FindCloseGenomesParams {
+public class GuessTaxonomyPathParams {
 
     @JsonProperty("query_genome")
     private String queryGenome;
-    @JsonProperty("max_mismatch_percent")
-    private Long maxMismatchPercent;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("query_genome")
@@ -45,23 +40,8 @@ public class FindCloseGenomesParams {
         this.queryGenome = queryGenome;
     }
 
-    public FindCloseGenomesParams withQueryGenome(String queryGenome) {
+    public GuessTaxonomyPathParams withQueryGenome(String queryGenome) {
         this.queryGenome = queryGenome;
-        return this;
-    }
-
-    @JsonProperty("max_mismatch_percent")
-    public Long getMaxMismatchPercent() {
-        return maxMismatchPercent;
-    }
-
-    @JsonProperty("max_mismatch_percent")
-    public void setMaxMismatchPercent(Long maxMismatchPercent) {
-        this.maxMismatchPercent = maxMismatchPercent;
-    }
-
-    public FindCloseGenomesParams withMaxMismatchPercent(Long maxMismatchPercent) {
-        this.maxMismatchPercent = maxMismatchPercent;
         return this;
     }
 
@@ -77,7 +57,7 @@ public class FindCloseGenomesParams {
 
     @Override
     public String toString() {
-        return ((((((("FindCloseGenomesParams"+" [queryGenome=")+ queryGenome)+", maxMismatchPercent=")+ maxMismatchPercent)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((("GuessTaxonomyPathParams"+" [queryGenome=")+ queryGenome)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

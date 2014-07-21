@@ -428,7 +428,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		Set<String> nearestNodes = new HashSet<String>();
 		if (!userGenomesOnly) {
 			List<Tuple2<String, Integer>> kbIdToMinDist = sortPublicGenomesByMismatches(
-					seeds, concat);
+					seeds, concat, false);
 			if (kbIdToMinDist.size() > nearestGenomeCount)
 				kbIdToMinDist = kbIdToMinDist.subList(0, nearestGenomeCount);
 			for (Tuple2<String, Integer> entry : kbIdToMinDist)
@@ -472,7 +472,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	}
 
 	public List<Tuple2<String, Integer>> sortPublicGenomesByMismatches(
-			Set<String> seeds, Map<String, String> concat) {
+			Set<String> seeds, Map<String, String> concat, boolean stopOnZeroDist) {
 		List<Tuple2<String, Integer>> kbIdToMinDist = new ArrayList<Tuple2<String, Integer>>();
 		for (String kbId : concat.keySet()) {
 			if (seeds.contains(kbId))
@@ -485,8 +485,12 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				char[] userSeq = concat.get(userId).toCharArray();
 				int dist = getDistance(kbSeq, userSeq);
 				minDist = (minDist < 0) ? dist : Math.min(dist, minDist);
+				if (stopOnZeroDist && minDist == 0)
+					break;
 			}
 			kbIdToMinDist.add(new Tuple2<String, Integer>().withE1(kbId).withE2(minDist));
+			if (stopOnZeroDist && minDist == 0)
+				break;
 		}
 		Collections.sort(kbIdToMinDist, new Comparator<Tuple2<String, Integer>>() {
 			@Override

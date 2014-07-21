@@ -29,6 +29,7 @@ import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
+import us.kbase.workspace.SubObjectIdentity;
 
 public class SpeciesTreeBuilderTest {
 	
@@ -107,6 +108,10 @@ public class SpeciesTreeBuilderTest {
 									.withE7(1L).withE1(i + 1L).withE5(1L).withE2(kbId));
 						}
 						return ret;
+					}					
+					@Override
+					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+						throw new IllegalStateException("Unsupported method");
 					}
 				});
 		genomeKbIds.addAll(stb.loadGenomeKbToNames().keySet());
