@@ -46,7 +46,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	private static final String MAX_EVALUE = "1e-05";
 	private static final int MIN_COVERAGE = 50;
 	private static final int DEFAULT_NEAREST_GENOME_COUNT = 100;
-	private static final String genomeWsName = "KBasePublicGenomesLoad";
+	private static final String genomeWsName = "KBasePublicGenomesV3";
 	private static final String genomeWsType = "KBaseGenomes.Genome";
 	
 	private Map<String, String> genomeKbToRefMap = null;
