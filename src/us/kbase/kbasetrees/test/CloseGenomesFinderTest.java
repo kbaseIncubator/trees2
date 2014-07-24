@@ -51,7 +51,8 @@ public class CloseGenomesFinderTest {
 		final List<String> genomeKbIds = new ArrayList<String>(SpeciesTreeBuilder.loadGenomeKbToNames(cogDir).keySet());
 		Map<String, String> allCfg = new LinkedHashMap<String, String>();
 		allCfg.put("temp.dir", "data");
-		return CloseGenomesFinder.findGenomes("token", new FindCloseGenomesParams().withQueryGenome(genomeRef), new File("temp_files"), new File("data"),
+		return CloseGenomesFinder.findGenomes("token", new FindCloseGenomesParams().withQueryGenome(genomeRef), 
+				new File("temp_files"), new File("data"), null,
 				new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(

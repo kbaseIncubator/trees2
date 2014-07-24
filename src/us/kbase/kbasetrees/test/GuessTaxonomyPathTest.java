@@ -57,7 +57,7 @@ public class GuessTaxonomyPathTest {
 		String token = AuthService.login(user, pwd).getTokenString();
 		final ObjectStorage devStorage = SpeciesTreeBuilder.createDefaultObjectStorage(wsUrl);
 		return CloseGenomesFinder.guessTaxonomy(token, new GuessTaxonomyPathParams().withQueryGenome(genomeRef), 
-				new File("temp_files"), new File("data"), new ObjectStorage() {
+				new File("temp_files"), new File("data"), null, new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
 							String authToken, SaveObjectsParams params) throws Exception {

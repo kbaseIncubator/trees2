@@ -20,20 +20,20 @@ public class CloseGenomesFinder {
 			TaskQueueConfig config) throws Exception {
 		Map<String, String> configParams = config.getAllConfigProps();
 		return findGenomes(token, params, DefaultTaskBuilder.getDirParam(configParams, "scratch"), 
-				DefaultTaskBuilder.getDirParam(configParams, "data.dir"),
+				DefaultTaskBuilder.getDirParam(configParams, "data.dir"), configParams.get("public.genomes.ws"),
 				DefaultTaskBuilder.createDefaultObjectStorage(config.getWsUrl()));
 	}
 
 	public static List<String> findGenomes(String token, FindCloseGenomesParams params, 
-			File tempDir, File dataDir, ObjectStorage ws) throws Exception {
-		return findGenomes(token, params, tempDir, dataDir, ws, false);
+			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws) throws Exception {
+		return findGenomes(token, params, tempDir, dataDir, genomeWsName, ws, false);
 	}
 
 	private static List<String> findGenomes(String token, FindCloseGenomesParams params, 
-			File tempDir, File dataDir, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
+			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
 		long maxDist = params.getMaxMismatchPercent() == null ? 5L : params.getMaxMismatchPercent();
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder();
-		stb.init(tempDir, dataDir, ws);
+		stb.init(tempDir, dataDir, genomeWsName, ws);
 		Map<String, String> idLabelMap = new TreeMap<String, String>();
 		Map<String, Map<String, List<String>>> idRefMap = 
 				new TreeMap<String, Map<String, List<String>>>();
@@ -68,23 +68,23 @@ public class CloseGenomesFinder {
 			TaskQueueConfig config) throws Exception {
 		Map<String, String> configParams = config.getAllConfigProps();
 		return guessTaxonomy(token, params, DefaultTaskBuilder.getDirParam(configParams, "scratch"), 
-				DefaultTaskBuilder.getDirParam(configParams, "data.dir"),
+				DefaultTaskBuilder.getDirParam(configParams, "data.dir"), configParams.get("public.genomes.ws"),
 				DefaultTaskBuilder.createDefaultObjectStorage(config.getWsUrl()));
 
 	}
 	
 	public static String guessTaxonomy(String token, GuessTaxonomyPathParams params, 
-			File tempDir, File dataDir, ObjectStorage ws) throws Exception {
-		String ret = guessTaxonomy(token, params, tempDir, dataDir, ws, true);
+			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws) throws Exception {
+		String ret = guessTaxonomy(token, params, tempDir, dataDir, genomeWsName, ws, true);
 		if (ret == null)
-			ret = guessTaxonomy(token, params, tempDir, dataDir, ws, false);
+			ret = guessTaxonomy(token, params, tempDir, dataDir, genomeWsName, ws, false);
 		return ret;
 	}
 
 	public static String guessTaxonomy(String token, GuessTaxonomyPathParams params, 
-			File tempDir, File dataDir, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
+			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
 		List<String> genomeRefs = findGenomes(token, new FindCloseGenomesParams().
-				withQueryGenome(params.getQueryGenome()), tempDir, dataDir, ws, stopOnZeroDist);
+				withQueryGenome(params.getQueryGenome()), tempDir, dataDir, genomeWsName, ws, stopOnZeroDist);
 		String ret = null;
 		String key = "taxonomy";
 		for (String genomeRef : genomeRefs) {

@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
+import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaReader;
@@ -46,18 +47,32 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	private static final String MAX_EVALUE = "1e-05";
 	private static final int MIN_COVERAGE = 50;
 	private static final int DEFAULT_NEAREST_GENOME_COUNT = 100;
-	private static final String genomeWsName = "KBasePublicGenomesV3";
+	private static final String defaultGenomeWsName = "KBasePublicGenomesV3";
 	private static final String genomeWsType = "KBaseGenomes.Genome";
 	
 	private Map<String, String> genomeKbToRefMap = null;
+	private String genomeWsName = null;
 	
 	@Override
 	public Class<ConstructSpeciesTreeParams> getInputDataType() {
 		return ConstructSpeciesTreeParams.class;
 	}
+	
+	@Override
+	public void init(TaskQueueConfig queueCfg, Map<String, String> configParams) {
+		super.init(queueCfg, configParams);
+		String genomeWsName = configParams.get("public.genomes.ws");
+		this.genomeWsName = genomeWsName == null ? defaultGenomeWsName : genomeWsName;
+	}
 
 	public SpeciesTreeBuilder init(File tempDir, File dataDir, ObjectStorage ws) {
-		return (SpeciesTreeBuilder)super.init(tempDir, dataDir, ws);
+		return init(tempDir, dataDir, null, ws);
+	}
+	
+	public SpeciesTreeBuilder init(File tempDir, File dataDir, String genomeWsName, ObjectStorage ws) {
+		super.init(tempDir, dataDir, ws);
+		this.genomeWsName = genomeWsName == null ? defaultGenomeWsName : genomeWsName;
+		return this;
 	}
 
 	@Override

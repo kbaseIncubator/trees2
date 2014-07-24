@@ -34,15 +34,14 @@ import us.kbase.workspace.SubObjectIdentity;
 public class SpeciesTreeBuilderTest {
 	
 	public static void main(String[] args) throws Exception {
-		String ws2url = "http://140.221.84.209:7058/";
+		String ws2url = "https://kbase.us/services/ws/";
 		String userId = "nardevuser1";
-		String pwd = "*****";
+		String pwd = "nardevuser2";
 		String wsId = "nardevuser1:home";
 		List<String> genomeRefs = Arrays.asList(new String[] {
-				wsId + "/Shewanella_ANA_3_uid58347.genome",
+				wsId + "/Shewanella_ANA_3.genome",
 				wsId + "/Shewanella_MR_7_uid58343.genome", 
-				wsId + "/Shewanella_MR_4_uid58345.genome",
-				wsId + "/Shewanella_baltica_BA175_uid52601.genome",
+				wsId + "/Burkholderia_383_uid58073.genome",
 		});
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
 				new File("temp_files"), new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
