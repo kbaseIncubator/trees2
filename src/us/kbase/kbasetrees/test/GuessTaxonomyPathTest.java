@@ -54,10 +54,11 @@ public class GuessTaxonomyPathTest {
 		String wsUrl = cfg.get("workspace.srv.url");
 		String user = cfg.get("test.user1");
 		String pwd = cfg.get("test.pwd1");
+		String genomeWsName = cfg.get("public.genomes.ws");
 		String token = AuthService.login(user, pwd).getTokenString();
 		final ObjectStorage devStorage = SpeciesTreeBuilder.createDefaultObjectStorage(wsUrl);
 		return CloseGenomesFinder.guessTaxonomy(token, new GuessTaxonomyPathParams().withQueryGenome(genomeRef), 
-				new File("temp_files"), new File("data"), null, new ObjectStorage() {
+				new File("temp_files"), new File("data"), genomeWsName, new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
 							String authToken, SaveObjectsParams params) throws Exception {
