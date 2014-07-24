@@ -168,7 +168,7 @@ public class ServicesStartupLongTest extends ServicesStartupLongTester {
 	@BeforeClass
 	public static void prepareFakePublicGenomes() throws IOException, JsonClientException {
 		// Sync genome objects (just fake wrappers with kbase-id as name)
-		String wsName = "KBasePublicGenomesLoad";
+		String wsName = "KBasePublicGenomesV3";
 		String genomeWsType = "KBaseGenomes.Genome";
 		wsClient.createWorkspace(new CreateWorkspaceParams().withWorkspace(wsName).withGlobalread("r"));
 		List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
