@@ -259,7 +259,7 @@ build-perl-service-start-stop-scripts:
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
 	echo "  $(TARGET)/lib/$(PERL_SERVICE_PSGI_FILE)" >> ./start_perl_service
-	echo "echo $(SERVICE_NAME) service is listening on port $(PERL_SERVICE_PORT).\n" >> ./start_perl_service
+	echo "echo $(SERVICE_NAME) service is listening on port $(PERL_SERVICE_PORT)." >> ./start_perl_service
 	# Second, create a debug start script that is not daemonized
 	echo '#!/bin/sh' > ./debug_start_perl_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_perl_service
@@ -273,8 +273,11 @@ build-perl-service-start-stop-scripts:
 	echo "echo trying to stop $(SERVICE) service." >> ./stop_perl_service
 	echo "pid_file=$(PID_FILE)" >> ./stop_perl_service
 	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_perl_service
-	echo "\techo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"\n\texit 1\nfi" >> ./stop_perl_service
-	echo "pid=\$$(cat \$$pid_file)\nkill \$$pid\n" >> ./stop_perl_service
+	echo "    echo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"" >> ./stop_perl_service
+	echo "    exit 1" >> ./stop_perl_service
+	echo "fi" >> ./stop_perl_service
+	echo "pid=\$$(cat \$$pid_file)" >> ./stop_perl_service
+	echo "kill \$$pid" >> ./stop_perl_service
 	chmod +x start_perl_service stop_perl_service debug_start_perl_service
 	mkdir -pv service
 	mv -f start_perl_service service/start_perl_service
