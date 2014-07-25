@@ -55,7 +55,7 @@ endif
 
 .PHONY : clean-swig
 
-all: perl-lib java-lib
+all: perl-lib
 
 
 swig:

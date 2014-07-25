@@ -93,7 +93,7 @@ build-docs: compile-typespec
 # building the CPP libs amounts to calling another makefile in the KBTree_cpp_lib directory
 cpp-lib:
 	cd lib/KBTree_cpp_lib; make all DEPLOY_RUNTIME=$(DEPLOY_RUNTIME);
-	cd lib/KBTree_cpp_lib; make deploy-java DEPLOY_RUNTIME=$(DEPLOY_RUNTIME)
+	#cd lib/KBTree_cpp_lib; make deploy-java DEPLOY_RUNTIME=$(DEPLOY_RUNTIME)
 
 
 ## NOTE: next two targets assume you have the api-mods-aug2013 branch of dev container, which
