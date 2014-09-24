@@ -73,7 +73,7 @@ public class SpeciesTreePreparation {
 		pw2.close();
 	}
 
-	private static Map<String, String> loadTestCfg() throws Exception {
+	public static Map<String, String> loadTestCfg() throws Exception {
 		return new Ini(new File("test.cfg")).get("trees");
 	}
 }

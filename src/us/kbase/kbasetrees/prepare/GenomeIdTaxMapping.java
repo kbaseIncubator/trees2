@@ -4,9 +4,16 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import us.kbase.auth.AuthService;
+import us.kbase.auth.AuthToken;
+import us.kbase.common.service.Tuple2;
+import us.kbase.kbasetrees.util.WorkspaceUtil;
+import us.kbase.workspace.WorkspaceClient;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -44,10 +51,30 @@ public class GenomeIdTaxMapping {
 	}
 	
 	public static void main(String[] args) throws Exception {
+		Map<String, String> testCfg = SpeciesTreePreparation.loadTestCfg();
+		String user = testCfg.get("test.user1");
+		String pwd = testCfg.get("test.pwd1");
+		String token = AuthService.login(user, pwd).getTokenString();
+		WorkspaceClient wc = new WorkspaceClient(new URL(testCfg.get("workspace.srv.url")), new AuthToken(token));
+		wc.setIsInsecureHttpConnectionAllowed(true);
+		String genomeWsName = testCfg.get("public.genomes.ws");
+		loadMapGenomeRefToTaxIdAndGenomeId(wc, genomeWsName);
+	}
+	
+	public static Map<String, Tuple2<Integer, String>> loadMapGenomeRefToTaxIdAndGenomeId(WorkspaceClient wc, String genomeWsName) throws Exception {
+		Map<String, String> genomeNameToRef = new HashMap<String, String>();
+		for (Tuple2<String, String> entry : WorkspaceUtil.listAllObjectsRefAndName(wc, genomeWsName, "KBaseGenomes.Genome"))
+			genomeNameToRef.put(entry.getE2(), entry.getE1());
+		return loadMapGenomeRefToTaxId(genomeNameToRef);
+	}
+	
+	private static Map<String, Tuple2<Integer,String>> loadMapGenomeRefToTaxId(Map<String, String> genomeNameToRef) throws Exception {
 		boolean done = false;
-		int itemsPerPage = 13000;
+		int itemsPerPage = 10000;
 		int pageNum = 1;
 
+		int qnt = 0;
+		Map<String, Tuple2<Integer, String>> ret = new LinkedHashMap<String, Tuple2<Integer, String>>();
 		/* Pull all pages of results from the Search service
 		 * The last page will either be empty, or contain less than the 'itemsPerPage' limit.
 		 */
@@ -67,21 +94,29 @@ public class GenomeIdTaxMapping {
 				try {
 					taxIdNum = Integer.parseInt(taxId);
 				} catch (NumberFormatException ex) {
-					continue;
+					System.err.println("Error parsing tax-id: " + taxId);
+					//continue;
+					taxIdNum = 0;
 				}
 				if (taxIdOldToNew.containsKey(taxIdNum))
 					taxIdNum = taxIdOldToNew.get(taxIdNum);
-				
-				int taxVersion = taxIdAndVersion.length == 1 ? -1 : Integer.parseInt(taxIdAndVersion[1]);
+				String ref = genomeNameToRef.get(genome.getGenomeId());
+				/*int taxVersion = taxIdAndVersion.length == 1 ? -1 : Integer.parseInt(taxIdAndVersion[1]);
 				System.out.println("Genome: taxid=" + taxIdNum + ", taxver=" + taxVersion + ", " +
 						"id=" + genome.getGenomeId() + ", name=" + genome.getScientificName() +
-						", domain=" + genome.getDomain());
+						", domain=" + genome.getDomain() + ", ref=" + ref);*/
+				if (ref != null) {
+					qnt++;
+					ret.put(ref, new Tuple2<Integer, String>().withE1(taxIdNum).withE2(genome.getGenomeId()));
+				}
 			}
 			if (result.getItemCount() < itemsPerPage)
 				done = true;
 			else
 				pageNum++;
 		}
+		System.out.println("Count: " + qnt);
+		return ret;
 	}
 
 	public static class SearchResult {
@@ -155,9 +190,11 @@ public class GenomeIdTaxMapping {
 		private String objectType;
 		@JsonProperty("scientific_name")
 		private String scientificName;
-		private String taxonomy;
+		private Object taxonomy;
 		@JsonProperty("object_id")
 		private String objectId;
+		@JsonProperty("workspace_name")
+		private String workspaceName;
 	    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 		public String getGenomeSource() {
 			return genomeSource;
@@ -219,12 +256,24 @@ public class GenomeIdTaxMapping {
 		public void setScientificName(String scientificName) {
 			this.scientificName = scientificName;
 		}
-		public String getTaxonomy() {
+		public Object getTaxonomy() {
 			return taxonomy;
 		}
-		public void setTaxonomy(String taxonomy) {
+		public void setTaxonomy(Object taxonomy) {
 			this.taxonomy = taxonomy;
 		}	
+		public String getObjectId() {
+			return objectId;
+		}
+		public void setObjectId(String objectId) {
+			this.objectId = objectId;
+		}
+		public String getWorkspaceName() {
+			return workspaceName;
+		}
+		public void setWorkspaceName(String workspaceName) {
+			this.workspaceName = workspaceName;
+		}
 	    @JsonAnyGetter
 	    public Map<String, Object> getAdditionalProperties() {
 	        return this.additionalProperties;
