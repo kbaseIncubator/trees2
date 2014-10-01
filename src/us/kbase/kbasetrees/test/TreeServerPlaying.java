@@ -13,9 +13,13 @@ import us.kbase.auth.AuthService;
 import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
+import us.kbase.kbasetrees.ConstructTreeForAlignmentParams;
+import us.kbase.kbasetrees.DefaultTaskBuilder;
 import us.kbase.kbasetrees.KBaseTreesClient;
+import us.kbase.kbasetrees.ObjectStorage;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
 import us.kbase.kbasetrees.Tree;
+import us.kbase.kbasetrees.TreeForAlignmentBuilder;
 import us.kbase.userandjobstate.UserAndJobStateClient;
 import us.kbase.workspace.GetModuleInfoParams;
 import us.kbase.workspace.ListModuleVersionsParams;
@@ -24,17 +28,19 @@ import us.kbase.workspace.RegisterTypespecParams;
 import us.kbase.workspace.WorkspaceClient;
 
 public class TreeServerPlaying {
-	private static String ws2url = "https://kbase.us/services/ws/";  //"http://dev04.berkeley.kbase.us:7058";
+	//private static String ws2url = "https://kbase.us/services/ws/";
+	private static String ws2url = "http://dev04.berkeley.kbase.us:7058";
 	private static final String jobSrvUrl = "http://140.221.84.180:7083";
 	private static String userId = "nardevuser1";
-	private static String pwd = "*****";
+	private static String pwd = "nardevuser2";
 	private static String wsId = "nardevuser1:home";
 
 	public static void main(String[] args) throws Exception {
 		//test();
 		//runOneThread(0, true);
 		//reg();
-		createSpeciesTree();
+		//createSpeciesTree();
+		createTreeForMSA();
 	}
 	
 	private static void createSpeciesTree() throws Exception {
@@ -50,6 +56,26 @@ public class TreeServerPlaying {
 		stb.run(token, new ConstructSpeciesTreeParams().withNewGenomes(genomeRefs)
 				.withUseRibosomalS9Only(0L).withOutWorkspace(wsId).withNearestGenomeCount(100L), 
 				"", wsId + "/sptree1");
+	}
+	
+	private static void createTreeForMSA() throws Exception {
+		String domainName = "pfam00325";
+		String msaName = domainName + ".domain.msa";
+		String ws = "KBasePublicGeneDomains";
+		String msaRef = ws + "/" + msaName;
+		ObjectStorage storage = DefaultTaskBuilder.createDefaultObjectStorage(ws2url);
+		TreeForAlignmentBuilder builder = new TreeForAlignmentBuilder().init(new File("temp_files"), 
+				new File("data"), storage);
+		String token = AuthService.login(userId, pwd).getTokenString();
+		String treeId = msaName + ".tree";
+		long time = System.currentTimeMillis();
+		builder.run(token, new ConstructTreeForAlignmentParams().withMsaRef(msaRef)
+				.withTreeMethod("FastTree").withOutWorkspace(ws).withOutTreeId(treeId), "", ws + "/" + treeId);
+		System.out.println("Time: " + (System.currentTimeMillis() - time) + " ms");
+		Tree tree = storage.getObjects(token, Arrays.asList(new ObjectIdentity().withRef(ws + "/" + treeId)))
+				.get(0).getData().asClassInstance(Tree.class);
+		System.out.println(tree.getTree());
+		System.out.println(tree.getDefaultNodeLabels());
 	}
 	
 	private static void test() throws Exception {
