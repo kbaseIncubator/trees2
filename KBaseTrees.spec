@@ -921,4 +921,16 @@ module KBaseTrees
 	Search for taxonomy path from closely related public genomes (approach similar to find_close_genomes). 
 	*/
 	funcdef guess_taxonomy_path(GuessTaxonomyPathParams params) returns (string) authentication required;
+
+    /* A workspace ID that references a GenomeSet data object.
+        @id ws KBaseSearch.GenomeSet
+    */
+    typedef string ws_genomeset_id;
+		
+    typedef structure {
+        ws_tree_id tree_ref;
+        ws_genomeset_id genomeset_ref;
+    } BuildGenomeSetFromTreeParams;
+	
+	funcdef build_genome_set_from_tree(BuildGenomeSetFromTreeParams params) returns (ws_genomeset_id genomeset_ref) authentication required;
 };

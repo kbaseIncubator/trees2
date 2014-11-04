@@ -169,6 +169,14 @@ public class KBaseTreesServer extends JsonServerServlet {
 		return new Ini(new File(configPath)).get(specServiceName);
     }
     
+    private static String getWorkspaceUrl() throws Exception {
+		String wsUrl = defaultWsUrl;
+		Map<String, String> allConfigProps = loadConfig();
+		if (allConfigProps.containsKey(CFG_PROP_WS_SRV_URL))
+			wsUrl = allConfigProps.get(CFG_PROP_WS_SRV_URL);
+		return wsUrl;
+    }
+    
 	private static UserAndJobStateClient createJobClient(String jobSrvUrl, String token) throws IOException, JsonClientException {
 		try {
 			UserAndJobStateClient ret = new UserAndJobStateClient(new URL(jobSrvUrl), new AuthToken(token));
@@ -786,7 +794,7 @@ public class KBaseTreesServer extends JsonServerServlet {
         //BEGIN import_tree_from_cds
         
         CdsUtil cds = new CdsUtil(new URL(defaultCdmiUrl));
-        WorkspaceClient ws = new WorkspaceClient(new URL(defaultWsUrl), authPart);
+        WorkspaceClient ws = new WorkspaceClient(new URL(getWorkspaceUrl()), authPart);
 		ws.setAuthAllowedForHttp(true);
         List <TreeImportPackage> tips = cds.getTreesForImport(selection, targetWsNameOrId);
         List<ObjectSaveData> msaData = new ArrayList<ObjectSaveData>(tips.size());
@@ -977,6 +985,22 @@ public class KBaseTreesServer extends JsonServerServlet {
         TaskQueueConfig config = getTaskConfig();
         returnVal = CloseGenomesFinder.guessTaxonomy(authPart.toString(), params, config);
         //END guess_taxonomy_path
+        return returnVal;
+    }
+
+    /**
+     * <p>Original spec-file function name: build_genome_set_from_tree</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.BuildGenomeSetFromTreeParams BuildGenomeSetFromTreeParams}
+     * @return   parameter "genomeset_ref" of original type "ws_genomeset_id" (A workspace ID that references a GenomeSet data object. @id ws KBaseSearch.GenomeSet)
+     */
+    @JsonServerMethod(rpc = "KBaseTrees.build_genome_set_from_tree")
+    public String buildGenomeSetFromTree(BuildGenomeSetFromTreeParams params, AuthToken authPart) throws Exception {
+        String returnVal = null;
+        //BEGIN build_genome_set_from_tree
+        returnVal = GenomeSetBuilder.buildGenomeSetFromTree(getWorkspaceUrl(), authPart.toString(), params.getTreeRef(), params.getGenomesetRef());
+        //END build_genome_set_from_tree
         return returnVal;
     }
 
