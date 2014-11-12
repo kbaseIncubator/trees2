@@ -15,14 +15,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: ConstructMultipleAlignmentParams</p>
  * <pre>
  * Input data type for construct_multiple_alignment method. Method produces object of MSA type.
- *         gene_sequences - (required) the mapping from gene ids to their sequences
+ *         gene_sequences - (optional) the mapping from gene ids to their sequences; either gene_sequences
+ *             or featureset_ref should be defined.
+ * featureset_ref - (optional) reference to FeatureSet object; either gene_sequences or
+ *             featureset_ref should be defined.
  *         alignment_method - (optional) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
- *                 Mafft (default is Clustal).
+ * Mafft (default is Clustal).
  *         is_protein_mode - (optional) 1 in case sequences are amino acids, 0 in case of nucleotides 
- *                 (default value is 1).
+ * (default value is 1).
  *         out_workspace - (required) the workspace to deposit the completed alignment
  *         out_msa_id - (optional) the name of the newly constructed msa (will be random if not present 
- *                 or null)
+ * or null)
  * </pre>
  * 
  */
@@ -30,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "gene_sequences",
+    "featureset_ref",
     "alignment_method",
     "is_protein_mode",
     "out_workspace",
@@ -39,6 +43,8 @@ public class ConstructMultipleAlignmentParams {
 
     @JsonProperty("gene_sequences")
     private Map<String, String> geneSequences;
+    @JsonProperty("featureset_ref")
+    private java.lang.String featuresetRef;
     @JsonProperty("alignment_method")
     private java.lang.String alignmentMethod;
     @JsonProperty("is_protein_mode")
@@ -61,6 +67,21 @@ public class ConstructMultipleAlignmentParams {
 
     public ConstructMultipleAlignmentParams withGeneSequences(Map<String, String> geneSequences) {
         this.geneSequences = geneSequences;
+        return this;
+    }
+
+    @JsonProperty("featureset_ref")
+    public java.lang.String getFeaturesetRef() {
+        return featuresetRef;
+    }
+
+    @JsonProperty("featureset_ref")
+    public void setFeaturesetRef(java.lang.String featuresetRef) {
+        this.featuresetRef = featuresetRef;
+    }
+
+    public ConstructMultipleAlignmentParams withFeaturesetRef(java.lang.String featuresetRef) {
+        this.featuresetRef = featuresetRef;
         return this;
     }
 
@@ -136,7 +157,7 @@ public class ConstructMultipleAlignmentParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((("ConstructMultipleAlignmentParams"+" [geneSequences=")+ geneSequences)+", alignmentMethod=")+ alignmentMethod)+", isProteinMode=")+ isProteinMode)+", outWorkspace=")+ outWorkspace)+", outMsaId=")+ outMsaId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((("ConstructMultipleAlignmentParams"+" [geneSequences=")+ geneSequences)+", featuresetRef=")+ featuresetRef)+", alignmentMethod=")+ alignmentMethod)+", isProteinMode=")+ isProteinMode)+", outWorkspace=")+ outWorkspace)+", outMsaId=")+ outMsaId)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

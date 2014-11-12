@@ -847,9 +847,17 @@ module KBaseTrees
     */
     funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
 
-    /* Input data type for construct_multiple_alignment method. Method produces object of MSA type.
+    /* A workspace ID that references a FeatureSet data object.
+        @id ws KBaseSearch.FeatureSet
+    */
+	typedef string ws_featureset_id;
 
-        gene_sequences - (required) the mapping from gene ids to their sequences
+    /* Input data type for construct_multiple_alignment method. Method produces object of MSA type.
+		
+        gene_sequences - (optional) the mapping from gene ids to their sequences; either gene_sequences
+            or featureset_ref should be defined.
+		featureset_ref - (optional) reference to FeatureSet object; either gene_sequences or
+            featureset_ref should be defined.
         alignment_method - (optional) alignment program, one of: Muscle, Clustal, ProbCons, T-Coffee, 
         	Mafft (default is Clustal).
         is_protein_mode - (optional) 1 in case sequences are amino acids, 0 in case of nucleotides 
@@ -860,6 +868,7 @@ module KBaseTrees
     */
     typedef structure {
         mapping<string, string> gene_sequences;
+        ws_featureset_id featureset_ref; 
         string alignment_method;
         int is_protein_mode;
         string out_workspace;
@@ -869,7 +878,7 @@ module KBaseTrees
 	/* Build a multiple sequence alignment based on gene sequences.
 	*/
 	funcdef construct_multiple_alignment(ConstructMultipleAlignmentParams params) returns (job_id) authentication required;
-	
+		
 	/* Input data type for construct_tree_for_alignment method. Method produces object of Tree type.
 		
 		msa_ref - (required) reference to MSA input object.

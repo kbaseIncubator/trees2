@@ -25,6 +25,7 @@ import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
 import us.kbase.kbasetrees.ObjectStorage;
 import us.kbase.kbasetrees.Tree;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
+import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
@@ -110,6 +111,11 @@ public class SpeciesTreeBuilderTest {
 					}					
 					@Override
 					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+						throw new IllegalStateException("Unsupported method");
+					}
+					@Override
+					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> getObjectInfoNew(
+							String authToken, GetObjectInfoNewParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 				});
