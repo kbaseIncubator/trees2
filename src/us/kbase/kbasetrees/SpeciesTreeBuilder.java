@@ -95,7 +95,24 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				inputData.getUseRibosomalS9Only() == 1L;
 		long nearestGenomeCount = inputData.getNearestGenomeCount() != null ? 
 				inputData.getNearestGenomeCount() : DEFAULT_NEAREST_GENOME_COUNT;
-		Tree tree = placeUserGenomes(token, inputData.getNewGenomes(), useCog103Only, false,
+		List<String> genomeRefs = inputData.getNewGenomes();
+		if (genomeRefs == null) {
+			String genomeSetRef = inputData.getGenomesetRef();
+			if (genomeSetRef == null)
+				throw new IllegalStateException("Either new_genomes or genomeset_ref field should be defined");
+			@SuppressWarnings("unchecked")
+			Map<String, Object> genomeSet = storage.getObjects(token, Arrays.asList(
+					new ObjectIdentity().withRef(genomeSetRef))).get(0).getData().asClassInstance(Map.class);
+			@SuppressWarnings("unchecked")
+			Map<String, Object> genomeSetElements = (Map<String, Object>)genomeSet.get("elements");
+			genomeRefs = new ArrayList<String>();
+		    for (String key : genomeSetElements.keySet()) {
+				@SuppressWarnings("unchecked")
+		    	Map<String, Object> genomeSetElem = (Map<String, Object>)genomeSetElements.get(key);
+		    	genomeRefs.add((String)genomeSetElem.get("ref"));
+		    }
+		}
+		Tree tree = placeUserGenomes(token, genomeRefs, useCog103Only, false,
 				(int)nearestGenomeCount);
 		String id = outRef.substring(outRef.indexOf('/') + 1);
 		saveResult(inputData.getOutWorkspace(), id, token, tree, inputData);
@@ -105,12 +122,14 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 			ConstructSpeciesTreeParams inputData) throws Exception {
 		Map<String, String> meta = new LinkedHashMap<String, String>();
 		meta.put("type", SPECIES_TREE_TYPE);
+		List<String> inputWsObjects = inputData.getNewGenomes() != null ?
+				inputData.getNewGenomes() : Arrays.asList(inputData.getGenomesetRef());
 		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
 				.withType("KBaseTrees.Tree")
 				.withMeta(meta)
 				.withProvenance(Arrays.asList(new ProvenanceAction()
 				.withDescription("Species tree was constructed using rps-blast program")
-				.withInputWsObjects(inputData.getNewGenomes())
+				.withInputWsObjects(inputWsObjects)
 				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
 				.withMethod("construct_species_tree")
 				.withMethodParams(Arrays.asList(new UObject(inputData)))));

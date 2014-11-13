@@ -110,6 +110,16 @@ module KBaseTrees
     */
     typedef string ws_genome_id;
     
+    /* A workspace ID that references a GenomeSet data object.
+        @id ws KBaseSearch.GenomeSet
+    */
+    typedef string ws_genomeset_id;
+
+    /* A workspace ID that references a FeatureSet data object.
+        @id ws KBaseSearch.FeatureSet
+    */
+    typedef string ws_featureset_id;
+
     /* */
     typedef string node_id;
     
@@ -822,7 +832,10 @@ module KBaseTrees
 
     /* Input data type for construct_species_tree method. Method produces object of Tree type.
 
-        new_genomes - (required) the list of genome references to use in constructing a tree
+        new_genomes - (optional) the list of genome references to use in constructing a tree; either
+            new_genomes or genomeset_ref field should be defined.
+        genomeset_ref - (optional) reference to genomeset object; either new_genomes or genomeset_ref
+            field should be defined.
         out_workspace - (required) the workspace to deposit the completed tree
         out_tree_id - (optional) the name of the newly constructed tree (will be random if not present or null)
         use_ribosomal_s9_only - (optional) 1 means only one protein family (Ribosomal S9) is used for 
@@ -832,6 +845,7 @@ module KBaseTrees
     */
     typedef structure {
         list<genome_ref> new_genomes;
+        ws_genomeset_id genomeset_ref;
         string out_workspace;
         string out_tree_id;
         int use_ribosomal_s9_only;
@@ -847,10 +861,6 @@ module KBaseTrees
     */
     funcdef construct_species_tree(ConstructSpeciesTreeParams input) returns (job_id) authentication required;
 
-    /* A workspace ID that references a FeatureSet data object.
-        @id ws KBaseSearch.FeatureSet
-    */
-	typedef string ws_featureset_id;
 
     /* Input data type for construct_multiple_alignment method. Method produces object of MSA type.
 		
@@ -931,10 +941,6 @@ module KBaseTrees
 	*/
 	funcdef guess_taxonomy_path(GuessTaxonomyPathParams params) returns (string) authentication required;
 
-    /* A workspace ID that references a GenomeSet data object.
-        @id ws KBaseSearch.GenomeSet
-    */
-    typedef string ws_genomeset_id;
 		
     typedef structure {
         ws_tree_id tree_ref;
