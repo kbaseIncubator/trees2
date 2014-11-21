@@ -19,6 +19,8 @@ import us.kbase.common.utils.Alignment;
 import us.kbase.common.utils.ClustalParser;
 import us.kbase.common.utils.CorrectProcess;
 import us.kbase.common.utils.FastaWriter;
+import us.kbase.workspace.GetObjectInfoNewParams;
+import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
@@ -77,10 +79,33 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		Alignment aln = null;
 		try {
 			FastaWriter fw = new FastaWriter(inputFasta);
-			for (Map.Entry<String, String> entry : inputData.getGeneSequences().entrySet()) {
-				int num = numToId.size() + 1;
-				numToId.put(num, entry.getKey());
-				fw.write("" + num, entry.getValue());
+			if (inputData.getGeneSequences() != null) {
+				for (Map.Entry<String, String> entry : inputData.getGeneSequences().entrySet()) {
+					int num = numToId.size() + 1;
+					numToId.put(num, entry.getKey());
+					fw.write("" + num, entry.getValue());
+				}
+			} else if (inputData.getFeaturesetRef() != null) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> elements = (Map<String, Object>)storage.getObjects(token, Arrays.asList(new ObjectIdentity().withRef(
+						inputData.getFeaturesetRef()))).get(0).getData().asClassInstance(Map.class).get("elements");
+				for (String key : elements.keySet()) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> elem = ((Map<String, Map<String, Object>>)elements.get(key)).get("data");
+					String id = (String)elem.get("id");
+					if (elem.containsKey("genome_ref")) {
+						String genomeRef = (String)elem.get("genome_ref");
+						String genome_obj_name = storage.getObjectInfoNew(token, new GetObjectInfoNewParams().withObjects(
+								Arrays.asList(new ObjectIdentity().withRef(genomeRef)))).get(0).getE2();
+						id = genome_obj_name + '/' + id;
+					}
+					String seq = (String)elem.get("protein_translation");
+					int num = numToId.size() + 1;
+					numToId.put(num, id);
+					fw.write("" + num, seq);
+				}
+			} else {
+				throw new IllegalStateException("Either gene_sequences or featureset_ref should be defined in input parameters");
 			}
 			fw.close();
 			resultFile = File.createTempFile("msaOutput", ".aln", getTempDir());

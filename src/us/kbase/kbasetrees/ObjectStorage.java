@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import us.kbase.common.service.Tuple11;
+import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
@@ -21,4 +22,7 @@ public interface ObjectStorage {
     		String authToken, ListObjectsParams params) throws Exception;
 
     public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception;
+    
+    public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>> getObjectInfoNew(
+    		String authToken, GetObjectInfoNewParams params) throws Exception;
 }

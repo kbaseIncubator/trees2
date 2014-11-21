@@ -10,6 +10,7 @@ import us.kbase.common.service.Tuple11;
 import us.kbase.common.taskqueue.TaskQueueConfig;
 import us.kbase.common.taskqueue.TaskRunner;
 import us.kbase.workspace.ListObjectsParams;
+import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
@@ -35,7 +36,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
 					String authToken, SaveObjectsParams params) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.saveObjects(params);
 			}
 			
@@ -43,7 +44,7 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<ObjectData> getObjects(String authToken,
 					List<ObjectIdentity> objectIds) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.getObjects(objectIds);
 			}
 			
@@ -51,15 +52,23 @@ public abstract class DefaultTaskBuilder<T> implements TaskRunner<T> {
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
 					String authToken, ListObjectsParams params) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.listObjects(params);
 			}
 			
 			@Override
 		    public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
 				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.getObjectSubset(objectIds);
+		    }
+
+			@Override
+		    public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>> getObjectInfoNew(
+		    		String authToken, GetObjectInfoNewParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
+				client.setIsInsecureHttpConnectionAllowed(true);
+				return client.getObjectInfoNew(params);
 		    }
 		};
 	}

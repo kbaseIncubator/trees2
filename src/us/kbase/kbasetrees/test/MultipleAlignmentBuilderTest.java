@@ -18,6 +18,7 @@ import us.kbase.kbasetrees.ConstructMultipleAlignmentParams;
 import us.kbase.kbasetrees.MSA;
 import us.kbase.kbasetrees.MultipleAlignmentBuilder;
 import us.kbase.kbasetrees.ObjectStorage;
+import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
@@ -75,6 +76,11 @@ public class MultipleAlignmentBuilderTest {
 					}
 					@Override
 					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+						throw new IllegalStateException("Unsupported method");
+					}
+					@Override
+					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> getObjectInfoNew(
+							String authToken, GetObjectInfoNewParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 				});

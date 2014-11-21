@@ -729,4 +729,21 @@ public class KBaseTreesClient {
         List<String> res = caller.jsonrpcCall("KBaseTrees.guess_taxonomy_path", args, retType, true, true);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: build_genome_set_from_tree</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbasetrees.BuildGenomeSetFromTreeParams BuildGenomeSetFromTreeParams}
+     * @return   parameter "genomeset_ref" of original type "ws_genomeset_id" (A workspace ID that references a GenomeSet data object. @id ws KBaseSearch.GenomeSet)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String buildGenomeSetFromTree(BuildGenomeSetFromTreeParams params) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("KBaseTrees.build_genome_set_from_tree", args, retType, true, true);
+        return res.get(0);
+    }
 }
