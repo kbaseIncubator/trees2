@@ -42,9 +42,6 @@
     <include name="jackson/jackson-databind-2.2.3.jar"/>
     <include name="${commonjar}"/>
     <include name="forester/forester_1030.jar"/>
-
-    <!-- jars for workspace integration tests -->
-    <include name="kbase/workspace/WorkspaceService-0.2.0.jar"/>
     <include name="joda/joda-time-2.2.jar"/>
     <include name="kbase/shock/shock-client-0.0.6.jar"/>
     <include name="apache_commons/commons-logging-1.1.1.jar"/>
@@ -66,8 +63,14 @@
     <include name="derby/derby-10.10.1.1.jar"/>
   </fileset>
 
+  <fileset dir="${jarsdir}" id="testlib">
+    <!-- jars for workspace integration tests -->
+    <include name="kbase/workspace/WorkspaceService-0.2.0.jar"/>
+  </fileset>
+
   <path id="compile.classpath">
     <fileset refid="serverlib"/>
+    <fileset refid="testlib"/>
   </path>
 
   <path id="test.classpath">
