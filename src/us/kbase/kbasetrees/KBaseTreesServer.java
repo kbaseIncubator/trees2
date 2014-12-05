@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.ArrayList;
@@ -142,7 +143,8 @@ public class KBaseTreesServer extends JsonServerServlet {
 				public void completeJob(String job, String token, String status,
 						String error, String wsUrl, String outRef) throws Exception {
     				createJobClient(finalUjsUrl, token).completeJob(job, token, status, error, 
-    						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(Arrays.asList(outRef)));
+    						new Results().withWorkspaceurl(finalWsUrl).withWorkspaceids(
+    								outRef == null ? Collections.<String>emptyList() : Arrays.asList(outRef)));
 				}
 			};
 			taskConfig = new TaskQueueConfig(threadCount, queueDbDir, jobStatuses, wsUrl, allConfigProps);
