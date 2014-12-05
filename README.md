@@ -5,7 +5,8 @@ Phylogenetic Tree and Multiple Sequence Alignment (MSA) Services
 Overview
 ----------
 This service provides a set of methods for querying, manipulating, and analyzing multiple
-sequence alignments and phylogenetic trees.
+sequence alignments and phylogenetic trees.  It also has functions to build alignments and
+trees.
 
 Authors
 ---------
