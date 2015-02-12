@@ -47,6 +47,8 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	private static final String MAX_EVALUE = "1e-05";
 	private static final int MIN_COVERAGE = 50;
 	private static final int DEFAULT_NEAREST_GENOME_COUNT = 100;
+    private static final int MIN_NEAREST_GENOME_COUNT = 1;
+	private static final int MAX_NEAREST_GENOME_COUNT = 200;
 	private static final String defaultGenomeWsName = "KBasePublicGenomesV3";
 	private static final String genomeWsType = "KBaseGenomes.Genome";
 	
@@ -95,6 +97,10 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				inputData.getUseRibosomalS9Only() == 1L;
 		long nearestGenomeCount = inputData.getNearestGenomeCount() != null ? 
 				inputData.getNearestGenomeCount() : DEFAULT_NEAREST_GENOME_COUNT;
+		if (nearestGenomeCount < MIN_NEAREST_GENOME_COUNT)
+		    throw new IllegalStateException("Neighbor public genome count can not be less than " + MIN_NEAREST_GENOME_COUNT);
+		if (nearestGenomeCount > MAX_NEAREST_GENOME_COUNT)
+		    throw new IllegalStateException("Neighbor public genome count can not be more than " + MAX_NEAREST_GENOME_COUNT);
 		List<String> genomeRefs = inputData.getNewGenomes();
 		if (genomeRefs == null) {
 			String genomeSetRef = inputData.getGenomesetRef();
