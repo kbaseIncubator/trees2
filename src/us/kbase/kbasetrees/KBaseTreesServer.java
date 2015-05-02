@@ -5,6 +5,7 @@ import java.util.Map;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonServerMethod;
 import us.kbase.common.service.JsonServerServlet;
+import us.kbase.common.service.JsonServerSyslog;
 import us.kbase.common.service.Tuple11;
 
 //BEGIN_HEADER
@@ -72,7 +73,7 @@ public class KBaseTreesServer extends JsonServerServlet {
 	//private static final String defaultWsUrl = "https://kbase.us/services/ws/";
 	private static final String defaultCdmiUrl = "https://kbase.us/services/cdmi_api/";
     private static final String defaultUjsUrl = "https://kbase.us/services/userandjobstate/";
-    private static final String specServiceName = "trees";
+    private static final String specServiceName = "trees2";
     
     public static final String SYS_PROP_KB_DEPLOYMENT_CONFIG = "KB_DEPLOYMENT_CONFIG";
     
@@ -250,7 +251,7 @@ public class KBaseTreesServer extends JsonServerServlet {
         super("KBaseTrees" + registerConfigFile(configFile));
 	}
 	
-	public static String getServiceVersion() { 
+	public static String getStaticServiceVersion() { 
 		return "1.0";
 	}
 	
@@ -1007,10 +1008,16 @@ public class KBaseTreesServer extends JsonServerServlet {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
+        if (args.length == 1) {
+            new KBaseTreesServer().startupServer(Integer.parseInt(args[0]));
+        } else if (args.length == 3) {
+            JsonServerSyslog.setStaticUseSyslog(false);
+            JsonServerSyslog.setStaticMlogFile(args[1] + ".log");
+            new KBaseTreesServer().processRpcCall(new File(args[0]), new File(args[1]), args[2]);
+        } else {
             System.out.println("Usage: <program> <server_port>");
+            System.out.println("   or: <program> <context_json_file> <output_json_file> <token>");
             return;
         }
-        new KBaseTreesServer().startupServer(Integer.parseInt(args[0]));
     }
 }

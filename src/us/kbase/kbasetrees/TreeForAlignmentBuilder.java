@@ -76,7 +76,7 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 				.withProvenance(Arrays.asList(new ProvenanceAction()
 				.withDescription("Tree was constructed using " + method + " program")
 				.withInputWsObjects(Arrays.asList(inputData.getMsaRef()))
-				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getStaticServiceVersion())
 				.withMethod("construct_tree_for_alignment")
 				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {

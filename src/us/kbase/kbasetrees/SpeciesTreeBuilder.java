@@ -136,7 +136,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				.withProvenance(Arrays.asList(new ProvenanceAction()
 				.withDescription("Species tree was constructed using rps-blast program")
 				.withInputWsObjects(inputWsObjects)
-				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getStaticServiceVersion())
 				.withMethod("construct_species_tree")
 				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {

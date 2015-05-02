@@ -180,7 +180,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 				.withProvenance(Arrays.asList(new ProvenanceAction()
 				.withDescription("MSA was constructed using " + method + " program (sequences " +
 						"are not present in method parameters, just remove gaps from aligned ones)")
-				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getServiceVersion())
+				.withService("KBaseTrees").withServiceVer(KBaseTreesServer.getStaticServiceVersion())
 				.withMethod("construct_multiple_alignment")
 				.withMethodParams(Arrays.asList(new UObject(inputData)))));
 		try {

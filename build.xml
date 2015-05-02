@@ -16,9 +16,11 @@
 
   <property name="jarsdir" value=""/>
   <property name="deploycfg" value=""/>
+  <property name="jarpath" value=""/>
+  <property name="jobscriptpath" value=""/>
 
   <property environment="env"/>
-  <condition property="commonjar" value="kbase/common/kbase-common-0.0.3.jar">
+  <condition property="commonjar" value="kbase/common/kbase-common-dev-module_builder-1430527950-9cb897c.jar">
     <or>
       <equals arg1="${env.JENKINS_JAVA_COMMON_JARFILE}" arg2=""/>
       <not>
@@ -138,6 +140,40 @@
     </war>
     <delete dir="${war.lib}"/>
     <delete dir="${classes}"/>
+  </target>
+
+  <target name="jobscript" description="build script file">
+    <fail message="Property &quot;jarsdir&quot; needs to be set">
+       <condition>
+         <equals arg1="${jarsdir}" arg2=""/>
+       </condition>
+    </fail>
+    <fail message="Property &quot;deploycfg&quot; needs to be set">
+       <condition>
+         <equals arg1="${deploycfg}" arg2=""/>
+       </condition>
+    </fail>
+    <fail message="Property &quot;jarpath&quot; needs to be set">
+       <condition>
+         <equals arg1="${jarpath}" arg2=""/>
+       </condition>
+    </fail>
+    <fail message="Property &quot;jobscriptpath&quot; needs to be set">
+       <condition>
+         <equals arg1="${jobscriptpath}" arg2=""/>
+       </condition>
+    </fail>
+    <pathconvert targetos="unix" property="lib.classpath" refid="compile.classpath"/>
+    <echo file="${jobscriptpath}">#!/bin/sh
+if [ -z "$KB_DEPLOYMENT_CONFIG" ]
+then
+    export KB_DEPLOYMENT_CONFIG=${deploycfg}
+fi
+export JAVA_HOME=${env.JAVA_HOME}
+export PATH=${env.JAVA_HOME}/bin:$PATH
+java -cp ${jarpath}:${lib.classpath} us.kbase.kbasetrees.KBaseTreesServer $1 $2 $3
+    </echo>
+    <chmod file="${jobscriptpath}" perm="a+x"/>
   </target>
 
   <target name="preparejunitreportdir" if="env.JENKINS_REPORT_DIR">

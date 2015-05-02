@@ -1,6 +1,6 @@
 ##################################################################################
 # Service name variables for the new Java-based service and the old Perl-based service
-SERVICE = trees
+SERVICE = trees2
 
 SERVICE_NAME = KBaseTrees
 SERVICE_PORT = 7047
@@ -66,7 +66,7 @@ compile-typespec: setup-lib-dir
 		--client Bio::KBase::$(SERVICE_NAME)::Client \
 		--py biokbase/$(SERVICE_NAME)/Client \
 		--js javascript/$(SERVICE_NAME)/Client \
-		--url https://kbase.us/services/trees \
+		--url https://kbase.us/services/trees2 \
 		$(SERVICE_NAME).spec lib
 	rm -f lib/KBaseTrees*.py
 	rm -f lib/KBaseTrees*.pm
@@ -145,7 +145,7 @@ deploy: deploy-all
 deploy-all: deploy-client deploy-service deploy-scripts deploy-docs
 	echo "OK... Done deploying ALL artifacts (includes clients, docs, scripts and service) of $(SERVICE)."
 	
-deploy-client:
+deploy-client: jar
 	mkdir -p $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/biokbase/$(SERVICE_NAME)
 	mkdir -p $(TARGET)/lib/javascript/$(SERVICE_NAME)
@@ -155,7 +155,8 @@ deploy-client:
 	cp lib/Bio/KBase/$(SERVICE_NAME)/Util.pm $(TARGET)/lib/Bio/KBase/$(SERVICE_NAME)/.
 	cp lib/biokbase/$(SERVICE_NAME)/* $(TARGET)/lib/biokbase/$(SERVICE_NAME)/.
 	cp lib/javascript/$(SERVICE_NAME)/* $(TARGET)/lib/javascript/$(SERVICE_NAME)/.
-	-cp dist/KBaseTrees.jar $(TARGET)/lib/.
+	cp dist/KBaseTrees.jar $(TARGET)/lib/jars/kbase/.
+	ant -Djarsdir=$(TARGET)/lib/jars -Ddeploycfg=$(SERVICE_DIR)/deploy.cfg -Djarpath=$(TARGET)/lib/jars/kbase/KBaseTrees.jar -Djobscriptpath=$(TARGET)/bin/run_$(SERVICE_NAME)_async_job.sh jobscript
 	echo "deployed clients of $(SERVICE)."
 	
 ## perl script directory and local dev container bin directory
@@ -232,7 +233,7 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	echo "./start_perl_service" >> ./service/start_service
 	echo "export KB_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./service/start_service
 	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
-	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
+	 --domain $(SERVICE_NAME)2 --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
 	 --threads $(THREADPOOL_SIZE) --Xms $(MEMORY) --Xmx $(MAX_MEMORY)\
 	 --noparallelgc --properties KB_DEPLOYMENT_CONFIG=\$$KB_DEPLOYMENT_CONFIG"\
@@ -240,10 +241,10 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	echo '#!/bin/sh' > ./service/stop_service
 	echo "./stop_perl_service" >> ./service/stop_service
 	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
-	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
+	 --domain $(SERVICE_NAME)2 --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --port $(SERVICE_PORT)" >> ./service/stop_service
 	echo '#!/bin/sh' > ./service/stop_domain
-	echo "$(ASADMIN) stop-domain --domaindir $(SERVICE_DIR)/glassfish_domain $(SERVICE_NAME)"\
+	echo "$(ASADMIN) stop-domain --domaindir $(SERVICE_DIR)/glassfish_domain $(SERVICE_NAME)2"\
 	 >> ./service/stop_domain
 	chmod +x service/start_service service/stop_service service/stop_domain
 
@@ -259,7 +260,7 @@ build-perl-service-start-stop-scripts:
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
 	echo "  $(TARGET)/lib/$(PERL_SERVICE_PSGI_FILE)" >> ./start_perl_service
-	echo "echo $(SERVICE_NAME) service is listening on port $(PERL_SERVICE_PORT)." >> ./start_perl_service
+	echo "echo $(SERVICE_NAME)2 service is listening on port $(PERL_SERVICE_PORT)." >> ./start_perl_service
 	# Second, create a debug start script that is not daemonized
 	echo '#!/bin/sh' > ./debug_start_perl_service
 	echo 'export PERL5LIB=$$PERL5LIB:$(TARGET)/lib' >> ./debug_start_perl_service
@@ -273,7 +274,7 @@ build-perl-service-start-stop-scripts:
 	echo "echo trying to stop $(SERVICE) service." >> ./stop_perl_service
 	echo "pid_file=$(PID_FILE)" >> ./stop_perl_service
 	echo "if [ ! -f \$$pid_file ] ; then " >> ./stop_perl_service
-	echo "    echo \"No pid file: \$$pid_file found for service $(SERVICE_NAME).\"" >> ./stop_perl_service
+	echo "    echo \"No pid file: \$$pid_file found for service $(SERVICE_NAME)2.\"" >> ./stop_perl_service
 	echo "    exit 1" >> ./stop_perl_service
 	echo "fi" >> ./stop_perl_service
 	echo "pid=\$$(cat \$$pid_file)" >> ./stop_perl_service
