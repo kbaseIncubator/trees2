@@ -138,9 +138,12 @@ test-java:  prepare-thrirdparty-bins
 	ant test -Djarsdir=$(TOP_DIR)/modules/jars/lib/jars
 
 
+# for some dev_container reason, this cannot be included at the beginning of the makefile
+include $(TOP_DIR)/tools/Makefile.common.rules
+
 ##################################################################################
 # here are the standard KBase deployment targets (deploy, deploy-all, deploy-client, deploy-scripts, & deploy-service)
-deploy: deploy-all
+deploy: deploy-all deploy-cfg
 
 deploy-all: deploy-client deploy-service deploy-scripts deploy-docs
 	echo "OK... Done deploying ALL artifacts (includes clients, docs, scripts and service) of $(SERVICE)."
@@ -230,7 +233,9 @@ build-service-start-stop-scripts: build-perl-service-start-stop-scripts
 	mkdir -pv service
 	echo '#!/bin/sh' > ./service/start_service
 	echo "./start_perl_service" >> ./service/start_service
-	echo "export KB_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./service/start_service
+	echo 'if [ -z "$$KB_DEPLOYMENT_CONFIG" ]; then' >> ./service/start_service
+	echo '    export KB_DEPLOYMENT_CONFIG=$(TARGET)/deployment.cfg' >> ./service/start_service
+	echo 'fi' >> ./service/start_service
 	echo "$(SERVICE_DIR)/glassfish_administer_service.py --admin $(ASADMIN)\
 	 --domain $(SERVICE_NAME) --domain-dir $(SERVICE_DIR)/glassfish_domain\
 	 --war $(SERVICE_DIR)/KBaseTreesService.war --port $(SERVICE_PORT)\
@@ -255,6 +260,10 @@ build-perl-service-start-stop-scripts:
 	echo "export FILE_TYPE_DEF_FILE=$(FILE_TYPE_DEF_FILE)" >> ./start_perl_service
 	echo "export TREE_DEPLOYMENT_CONFIG=$(SERVICE_DIR)/deploy.cfg" >> ./start_perl_service
 	echo "export TREE_DEPLOYMENT_SERVICE_NAME=$(SERVICE)" >> ./start_perl_service
+	echo "if [ -z "$$KB_DEPLOYMENT_CONFIG" ]; then" >> ./start_perl_service
+	echo "    export KB_DEPLOYMENT_CONFIG=$(TARGET)/deployment.cfg" >> ./start_perl_service
+	echo "    export TREE_DEPLOYMENT_CONFIG=$(TARGET)/deployment.cfg" >> ./start_perl_service
+	echo "fi" >> ./start_perl_service
 	echo "$(DEPLOY_RUNTIME)/bin/starman --listen :$(PERL_SERVICE_PORT) --pid $(PID_FILE)  --workers $(PERL_WORKERS) --daemonize \\" >> ./start_perl_service
 	echo "  --access-log $(ACCESS_LOG_FILE) \\" >>./start_perl_service
 	echo "  --error-log $(ERR_LOG_FILE) \\" >> ./start_perl_service
