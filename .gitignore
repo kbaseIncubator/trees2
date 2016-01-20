@@ -46,3 +46,4 @@ Thumbs.db
 /junitreports
 /classes
 test_local
+lib/src/git.properties
