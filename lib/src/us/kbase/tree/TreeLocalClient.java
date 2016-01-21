@@ -8,11 +8,6 @@ import java.util.List;
 import java.util.Map;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.JsonLocalClientCaller;
-import us.kbase.kbasetrees.AbundanceParams;
-import us.kbase.kbasetrees.AbundanceResult;
-import us.kbase.kbasetrees.AlignmentMetaData;
-import us.kbase.kbasetrees.FilterParams;
-import us.kbase.kbasetrees.TreeMetaData;
 
 /**
  * <p>Original spec-file module name: Tree</p>
@@ -268,50 +263,6 @@ public class TreeLocalClient extends JsonLocalClientCaller {
     }
 
     /**
-     * <p>Original spec-file function name: get_tree_data</p>
-     * <pre>
-     * Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
-     * data may not be available for trees which are not built from alignments.  Also note that this method
-     * computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
-     * lists.  If you do not need this full meta information structure, it may be faster to directly query the
-     * CDS for just the field you need using the CDMI.
-     * </pre>
-     * @param   treeIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.TreeMetaData TreeMetaData}
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public Map<String,TreeMetaData> getTreeData(List<String> treeIds) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        args.add(treeIds);
-        TypeReference<List<Map<String,TreeMetaData>>> retType = new TypeReference<List<Map<String,TreeMetaData>>>() {};
-        List<Map<String,TreeMetaData>> res = jsonrpcCall("Tree.get_tree_data", args, retType, true, false);
-        return res.get(0);
-    }
-
-    /**
-     * <p>Original spec-file function name: get_alignment_data</p>
-     * <pre>
-     * Get meta data associated with each of the trees indicated in the list by tree id.  Note that some meta
-     * data may not be available for trees which are not built from alignments.  Also note that this method
-     * computes the number of nodes and leaves for each tree, so may be slow for very large trees or very long
-     * lists.  If you do not need this full meta information structure, it may be faster to directly query the
-     * CDS for just the field you need using the CDMI.
-     * </pre>
-     * @param   alignmentIds   instance of list of original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".)
-     * @return   instance of mapping from original type "kbase_id" (A KBase ID is a string starting with the characters "kb|".  KBase IDs are typed. The types are designated using a short string. For instance," g" denotes a genome, "tree" denotes a Tree, and "aln" denotes a sequence alignment. KBase IDs may be hierarchical.  For example, if a KBase genome identifier is "kb|g.1234", a protein encoding gene within that genome may be represented as "kb|g.1234.peg.771".) to type {@link us.kbase.tree.AlignmentMetaData AlignmentMetaData}
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public Map<String,AlignmentMetaData> getAlignmentData(List<String> alignmentIds) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        args.add(alignmentIds);
-        TypeReference<List<Map<String,AlignmentMetaData>>> retType = new TypeReference<List<Map<String,AlignmentMetaData>>>() {};
-        List<Map<String,AlignmentMetaData>> res = jsonrpcCall("Tree.get_alignment_data", args, retType, true, false);
-        return res.get(0);
-    }
-
-    /**
      * <p>Original spec-file function name: get_tree_ids_by_feature</p>
      * <pre>
      * Given a list of feature ids in kbase, the protein sequence of each feature (if the sequence exists)
@@ -447,57 +398,6 @@ public class TreeLocalClient extends JsonLocalClientCaller {
         args.add(treeId);
         TypeReference<List<Map<String,String>>> retType = new TypeReference<List<Map<String,String>>>() {};
         List<Map<String,String>> res = jsonrpcCall("Tree.get_leaf_to_feature_map", args, retType, true, false);
-        return res.get(0);
-    }
-
-    /**
-     * <p>Original spec-file function name: compute_abundance_profile</p>
-     * <pre>
-     * Given an input KBase tree built from a sequence alignment, a metagenomic sample, and a protein family, this method
-     * will tabulate the number of reads that match to every leaf of the input tree.  First, a set of assembled reads from
-     * a metagenomic sample are pulled from the KBase communities service which have been determined to be a likely hit
-     * to the specified protein family.  Second, the sequences aligned to generate the tree are retrieved.  Third, UCLUST [1]
-     * is used to map reads to target sequences of the tree.  Finally, for each leaf in the tree, the number of hits matching
-     * the input search criteria is tabulated and returned.  See the defined objects 'abundance_params' and 'abundance_result'
-     * for additional details on specifying the input parameters and handling the results.
-     * [1] Edgar, R.C. (2010) Search and clustering orders of magnitude faster than BLAST, Bioinformatics 26(19), 2460-2461.
-     * </pre>
-     * @param   abundanceParams   instance of type {@link us.kbase.tree.AbundanceParams AbundanceParams}
-     * @return   parameter "abundance_result" of type {@link us.kbase.tree.AbundanceResult AbundanceResult}
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public AbundanceResult computeAbundanceProfile(AbundanceParams abundanceParams) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        args.add(abundanceParams);
-        TypeReference<List<AbundanceResult>> retType = new TypeReference<List<AbundanceResult>>() {};
-        List<AbundanceResult> res = jsonrpcCall("Tree.compute_abundance_profile", args, retType, true, false);
-        return res.get(0);
-    }
-
-    /**
-     * <p>Original spec-file function name: filter_abundance_profile</p>
-     * <pre>
-     * ORDER OF OPERATIONS:
-     * 1) using normalization scope, defines whether process should occur per column or globally over every column
-     * 2) using normalization type, normalize by dividing values by the option indicated
-     * 3) apply normalization post process if set (ie take log of the result)
-     * 4) apply the cutoff_value threshold to all records, eliminating any that are not above the specified threshold
-     * 5) apply the cutoff_number_of_records (always applies per_column!!!), discarding any record that are not in the top N record values for that column
-     * - if a value is not a valid number, it is ignored
-     * </pre>
-     * @param   abundanceData   instance of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
-     * @param   filterParams   instance of type {@link us.kbase.tree.FilterParams FilterParams}
-     * @return   parameter "abundance_data_processed" of original type "abundance_data" (map the name of the profile with the profile data) &rarr; mapping from String to original type "abundance_profile" (map an id to a number (e.g. feature_id mapped to a log2 normalized abundance value)) &rarr; mapping from String to Double
-     * @throws IOException if an IO exception occurs
-     * @throws JsonClientException if a JSON RPC exception occurs
-     */
-    public Map<String,Map<String,Double>> filterAbundanceProfile(Map<String,Map<String,Double>> abundanceData, FilterParams filterParams) throws IOException, JsonClientException {
-        List<Object> args = new ArrayList<Object>();
-        args.add(abundanceData);
-        args.add(filterParams);
-        TypeReference<List<Map<String,Map<String,Double>>>> retType = new TypeReference<List<Map<String,Map<String,Double>>>>() {};
-        List<Map<String,Map<String,Double>>> res = jsonrpcCall("Tree.filter_abundance_profile", args, retType, true, false);
         return res.get(0);
     }
 
