@@ -36,5 +36,6 @@
 	<classpathentry kind="lib" path="../jars/lib/jars/derby/derby-10.10.1.1.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/kbase/genomes/kbase-genomes-20140411.jar"/>
 	<classpathentry kind="lib" path="../jars/lib/jars/kbase/workspace/WorkspaceClient-0.2.0.jar"/>
+	<classpathentry kind="lib" path="../jars/lib/jars/apache_commons/commons-compress-1.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

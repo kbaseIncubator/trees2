@@ -279,10 +279,14 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		}
 		return concat;
 	}
-	
+
 	public File formatRpsDb(List<File> scorematFiles) throws Exception {
-		File tempInputFile = File.createTempFile("rps", ".db", tempDir);
-		PrintWriter pw = new PrintWriter(tempInputFile);
+        File tempInputFile = File.createTempFile("rps", ".db", tempDir);
+        return formatRpsDb(scorematFiles, tempInputFile);
+	}
+
+	public File formatRpsDb(List<File> scorematFiles, File dbFile) throws Exception {
+		PrintWriter pw = new PrintWriter(dbFile);
 		for (File f : scorematFiles) {
 			pw.println(f.getAbsolutePath());
 		}
@@ -294,7 +298,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		int procExitValue = -1;
 		try {
 			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
-					"-in", tempInputFile.getAbsolutePath(), "-threshold", "9.82", 
+					"-in", dbFile.getAbsolutePath(), "-threshold", "9.82", 
 					"-scale", "100.0", "-dbtype", "rps", "-index", "true"));
 			errBaos = new ByteArrayOutputStream();
 			cp = new CorrectProcess(p, null, "formatrpsdb", errBaos, "");
@@ -321,17 +325,21 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				err = new IllegalStateException("FastTree exit code: " + procExitValue);
 			throw err;
 		}
-		return tempInputFile;
+		return dbFile;
 	}
-	
+
 	public File runRpsBlast(File dbFile, File fastaQuery) throws Exception {
-		File tempOutputFile = File.createTempFile("rps", ".tab", tempDir);
+        File tempOutputFile = File.createTempFile("rps", ".tab", tempDir);
+        return runRpsBlast(dbFile, fastaQuery, tempOutputFile);
+	}
+
+	public File runRpsBlast(File dbFile, File fastaQuery, File outputFile) throws Exception {
 		CorrectProcess cp = null;
 		ByteArrayOutputStream errBaos = null;
 		Exception err = null;
 		String binPath = getRpsBlastBin().getAbsolutePath();
 		int procExitValue = -1;
-		FileOutputStream fos = new FileOutputStream(tempOutputFile);
+		FileOutputStream fos = new FileOutputStream(outputFile);
 		try {
 			Process p = Runtime.getRuntime().exec(CorrectProcess.arr(binPath,
 					"-db", dbFile.getAbsolutePath(), "-query", fastaQuery.getAbsolutePath(), 
@@ -364,7 +372,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				err = new IllegalStateException("FastTree exit code: " + procExitValue);
 			throw err;
 		}
-		return tempOutputFile;
+		return outputFile;
 	}
 	
 	public void processRpsOutput(File results, RpsBlastCallback callback) throws Exception {
