@@ -30,38 +30,20 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import us.kbase.common.service.Tuple11;
-import us.kbase.common.service.Tuple2;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.common.utils.FastaWriter;
 import us.kbase.kbasegenomes.Feature;
 import us.kbase.kbasegenomes.Genome;
-import us.kbase.kbasetrees.test.GenomeIdMapping;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.SubObjectIdentity;
 import us.kbase.workspace.WorkspaceClient;
 import us.kbase.workspace.WorkspaceIdentity;
 
 public class TreePeparation {
-	
-	// Keith's data (from "cog+speciestree.MO.may2011.tar.gz")
-	private static final String cogDir = "/Users/rsutormin/Work/2014-03-11_species_tree";
-
-	// NCBI taxonomy data (nodes.dmp, names.dmp) from ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
-	private static final String taxDir = "/Users/rsutormin/Work/2013-12-14_ncbi_tax";
-	
-	// From ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/fasta.tar.gz
-	private static final String smpDir = "/Users/rsutormin/Work/2014-03-17_trees/smp";
-	
-	// From ftp://ftp.ncbi.nih.gov/pub/mmdb/cdd/cdd.tar.gz	
-	private static final String cddAlnDir = "/Users/rsutormin/Work/2014-03-17_trees/faa";
 	
 	public static final String cddUrlPrefix = "ftp://ftp.ncbi.nlm.nih.gov/pub/mmdb/cdd";
 
@@ -77,8 +59,9 @@ public class TreePeparation {
 	}
 	
 	public static void main(String[] args) throws Exception {
-	    File workDir = new File("test_local/workdir/init");
-        File dataDir = new File("test_local/workdir/data");
+	    File rootDir = args.length > 0 ? new File(args[0]) : new File("test_local/workdir");
+	    File workDir = new File(rootDir, "init");
+        File dataDir = new File(rootDir, "data");
 	    untarCdd(workDir, false);
         untarCdd(workDir, true);
         loadGenomesFromWS("https://kbase.us/services/ws", "KBasePublicGenomesV5", workDir);
@@ -308,6 +291,7 @@ public class TreePeparation {
                     fw = new FastaWriter(outputFile);
                     for (String key : featureIdToSeq.keySet())
                         fw.write(key, featureIdToSeq.get(key));
+                    fw.close();
                 } catch (Exception ex) {
                     if (fw != null)
                         try {
@@ -407,8 +391,27 @@ public class TreePeparation {
 	    }
 	    return targetFile;
 	}
-	
-	private static void listSmpDescriptions() throws Exception {
+
+	private static List<Integer> loadCogCodes() throws IOException {
+	    return loadCogCodes(TreePeparation.class.getResourceAsStream("cog_list.properties"));
+	}
+
+	private static List<Integer> loadCogCodes(InputStream is) throws IOException {
+	    List<Integer> cogCodes = new ArrayList<Integer>();
+	    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+	    while (true) {
+	        String l = br.readLine();
+	        if (l == null)
+	            break;
+	        if (l.trim().length() == 0)
+	            continue;
+	        cogCodes.add(Integer.parseInt(l.trim()));
+	    }
+	    br.close();
+	    return cogCodes;
+	}
+
+	/*private static void listSmpDescriptions() throws Exception {
 	    File workDir = new File("data/cogs");
         File inputList = new File(workDir, "cog_list.txt");
 	    List<Integer> cogCodes = loadCogCodes(inputList);
@@ -560,30 +563,11 @@ public class TreePeparation {
 		}
 		System.out.println("Summary\t" + oldTrimSum + "\t" + newTrimSum);
 	}
-
-	private static List<Integer> loadCogCodes() throws IOException {
-	    return loadCogCodes(TreePeparation.class.getResourceAsStream("cog_list.properties"));
-	}
-
-	private static List<Integer> loadCogCodes(File inputList) throws IOException {
-	    return loadCogCodes(new FileInputStream(inputList));
-	}
 	
-    private static List<Integer> loadCogCodes(InputStream is) throws IOException {
-		List<Integer> cogCodes = new ArrayList<Integer>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		while (true) {
-			String l = br.readLine();
-			if (l == null)
-				break;
-			if (l.trim().length() == 0)
-				continue;
-			cogCodes.add(Integer.parseInt(l.trim()));
-		}
-		br.close();
-		return cogCodes;
-	}
-	
+    private static List<Integer> loadCogCodes(File inputList) throws IOException {
+        return loadCogCodes(new FileInputStream(inputList));
+    }
+
 	private static Map<Integer, String> loadTrimmedAlignment(File f) throws IOException {
 		Map<Integer, String> ret = new TreeMap<Integer, String>();
 		BufferedReader br = new BufferedReader(new FileReader(f));
@@ -635,5 +619,5 @@ public class TreePeparation {
 		} finally {
 			br.close();
 		}
-	}
+	}*/
 }
