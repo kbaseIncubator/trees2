@@ -150,7 +150,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 
 	
 	public String makeTreeForBasicCogs(boolean useCog103Only) throws Exception {
-		return makeTree(concatCogAlignments(useCog103Only));
+		return makeTree(concatCogAlignments(useCog103Only).toMap());
 	}
 	
 	public String makeTree(Map<String, String> aln) throws Exception {
@@ -247,37 +247,28 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return aln;
 	}
 	
-	public Map<String, String> concatCogAlignments(boolean useCog103Only) throws IOException {
+	public AlignConcat concatCogAlignments(boolean useCog103Only) throws IOException {
 		Map<String, Map<String, String>> cogAlignments = new LinkedHashMap<String, Map<String, String>>();
 		for (String cogCode : loadCogsCodes(useCog103Only)) 
 			cogAlignments.put(cogCode, loadCogAlignment(cogCode));
 		return concatCogAlignments(cogAlignments);
 	}
 	
-	private Map<String, String> concatCogAlignments(Map<String, Map<String, String>> alignments) throws IOException {
-		Map<String, String> concat = new TreeMap<String, String>();
+	private AlignConcat concatCogAlignments(Map<String, Map<String, String>> alignments) throws IOException {
+		//Map<String, String> concat = new TreeMap<String, String>();
 		Set<String> commonIdSet = new HashSet<String>();
 		for (String cogCode : alignments.keySet()) {
 			Map<String, String> aln = alignments.get(cogCode);
 			commonIdSet.addAll(aln.keySet());
 		}
+		List<String> cogCodes = new ArrayList<String>();
+		Map<String, List<Integer>> cog2positions = new LinkedHashMap<String, List<Integer>>();
 		for (String cogCode : alignments.keySet()) {
-			Map<String, String> aln = trimAlignment(alignments.get(cogCode));
-			int alnLen = aln.get(aln.keySet().iterator().next()).length();
-			for (String taxId : commonIdSet) {
-				String seq = aln.get(taxId);
-				if (seq == null) {
-					char[] arr = new char[alnLen];
-					Arrays.fill(arr, '-');
-					seq = new String(arr);
-				}
-				String prev = concat.get(taxId);
-				if (prev == null)
-					prev = "";
-				concat.put(taxId, prev + seq);
-			}
+		    cogCodes.add(cogCode);
+			List<Integer> positions = trimAlignment(alignments.get(cogCode));
+			cog2positions.put(cogCode, positions);
 		}
-		return concat;
+		return new AlignConcat(alignments, commonIdSet, cogCodes, cog2positions);
 	}
 
 	public File formatRpsDb(List<File> scorematFiles) throws Exception {
@@ -403,8 +394,33 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		}
 	}
 
-	public Map<String, String> trimAlignment(Map<String, String> aln) {
-		return AlignUtil.trimAlignment(aln, 0.95);
+	public List<Integer> trimAlignment(Map<String, String> aln) {
+		return trimAlignment(aln, 0.95);
+	}
+
+	public static List<Integer> trimAlignment(Map<String, String> aln, double minNonGapPart) {
+	    List<String> tmp = new ArrayList<String>();
+	    for (String key : aln.keySet())
+	        tmp.add(aln.get(key));
+	    String[] arr = tmp.toArray(new String[tmp.size()]);
+	    List<Integer> posList = new ArrayList<Integer>();
+	    for (int pos = 0; pos < arr[0].length(); pos++) {
+	        int nonGaps = 0;
+	        for (int n = 0; n < arr.length; n++) 
+	            if (arr[n].charAt(pos) != '-')
+	                nonGaps++;
+	        if (nonGaps >= minNonGapPart * arr.length)
+	            posList.add(pos);
+	    }
+	    /*Map<String, String> ret = new LinkedHashMap<String, String>();
+	    for (String key : aln.keySet()) {
+	        String seq = aln.get(key);
+	        char[] newSeq = new char[posList.size()];
+	        for (int i = 0; i < posList.size(); i++) 
+	            newSeq[i] = seq.charAt(posList.get(i));
+	        ret.put(key, new String(newSeq));
+	    }*/
+	    return posList;
 	}
 
 	private List<File> listScoreMatrixFiles(boolean useCog103Only) throws IOException {
@@ -468,24 +484,23 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
 		Set<String> seeds = new HashSet<String>();
 
-		Map<String, String> concat = placeUserGenomesIntoAlignment(token,
+		AlignConcat alnConcat = placeUserGenomesIntoAlignment(token,
 				genomeRefList, useCog103Only, idLabelMap, idRefMap, seeds);
 		
 		// Filtering
 		Set<String> nearestNodes = new HashSet<String>();
 		if (!userGenomesOnly) {
 			List<Tuple2<String, Integer>> kbIdToMinDist = sortPublicGenomesByMismatches(
-					seeds, concat, false);
+					seeds, alnConcat, false);
 			if (kbIdToMinDist.size() > nearestGenomeCount)
 				kbIdToMinDist = kbIdToMinDist.subList(0, nearestGenomeCount);
 			for (Tuple2<String, Integer> entry : kbIdToMinDist)
 				nearestNodes.add(entry.getE1());
 		}
-		for (String kbId : new ArrayList<String>(concat.keySet())) {
-			if (!(seeds.contains(kbId) || nearestNodes.contains(kbId))) {
-				concat.remove(kbId);
-			}
-		}
+		Map<String, String> concat = new TreeMap<String, String>();
+		for (String kbId : alnConcat.getGenomeIds())
+			if (seeds.contains(kbId) || nearestNodes.contains(kbId))
+				concat.put(kbId, alnConcat.getSequence(kbId));
 		Map<String, String> kbToNames = loadGenomeKbToNames();
 		Map<String, String> kbToRefs = loadGenomeKbToRefs(token);
 		Map<String, Map<String, List<String>>> idKbMap = new TreeMap<String, Map<String, List<String>>>();
@@ -519,17 +534,18 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	}
 
 	public List<Tuple2<String, Integer>> sortPublicGenomesByMismatches(
-			Set<String> seeds, Map<String, String> concat, boolean stopOnZeroDist) {
+			Set<String> seeds, AlignConcat concat, boolean stopOnZeroDist) {
 		List<Tuple2<String, Integer>> kbIdToMinDist = new ArrayList<Tuple2<String, Integer>>();
-		for (String kbId : concat.keySet()) {
+		Set<String> genomeIds = concat.getGenomeIds();
+		for (String kbId : genomeIds) {
 			if (seeds.contains(kbId))
 				continue;
-			char[] kbSeq = concat.get(kbId).toCharArray();
+			char[] kbSeq = concat.getSequence(kbId).toCharArray();
 			int minDist = -1;
-			for (String userId : concat.keySet()) {
+			for (String userId : genomeIds) {
 				if (!seeds.contains(userId))
 					continue;
-				char[] userSeq = concat.get(userId).toCharArray();
+				char[] userSeq = concat.getSequence(userId).toCharArray();
 				int dist = getDistance(kbSeq, userSeq);
 				minDist = (minDist < 0) ? dist : Math.min(dist, minDist);
 				if (stopOnZeroDist && minDist == 0)
@@ -548,7 +564,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return kbIdToMinDist;
 	}
 
-	public Map<String, String> placeUserGenomesIntoAlignment(String token,
+	public AlignConcat placeUserGenomesIntoAlignment(String token,
 			List<String> genomeRefList, boolean useCog103Only,
 			Map<String, String> idLabelMap,
 			Map<String, Map<String, List<String>>> idRefMap, Set<String> seeds)
@@ -587,8 +603,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 				}
 			}
 		}
-		Map<String, String> concat = concatCogAlignments(cogAlignments);
-		return concat;
+		return concatCogAlignments(cogAlignments);
 	}
 	
 	private int getDistance(char[] s1, char[] s2) {
@@ -689,5 +704,43 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	public static interface RpsBlastCallback {
 		public void next(String query, String subj, int qstart, String qseq, int sstart, String sseq, 
 				String evalue, double bitscore, double ident) throws Exception;
+	}
+	
+	public static class AlignConcat {
+	    private Map<String, Map<String, String>> alignments;
+	    private Set<String> commonIdSet;
+        private List<String> cogCodes;
+        private Map<String, List<Integer>> cog2positions;
+	    
+	    public AlignConcat(Map<String, Map<String, String>> alignments, Set<String> commonIdSet,
+	            List<String> cogCodes, Map<String, List<Integer>> cog2positions) {
+	        this.alignments = alignments;
+	        this.commonIdSet = Collections.unmodifiableSet(commonIdSet);
+	        this.cogCodes = cogCodes;
+	        this.cog2positions = cog2positions;
+	    }
+
+	    public Set<String> getGenomeIds() {
+            return commonIdSet;
+        }
+	    
+	    public String getSequence(String genomeId) {
+	        StringBuilder ret = new StringBuilder();
+	        for (String cogCode : cogCodes) {
+	            String part = alignments.get(cogCode).get(genomeId);
+	            List<Integer> positions = cog2positions.get(cogCode);
+	            for (int pos : positions) {
+	                ret.append(part == null ? '-' : part.charAt(pos));
+	            }
+	        }
+	        return ret.toString();
+	    }
+	    
+	    public Map<String, String> toMap() {
+	        Map<String, String> ret = new TreeMap<String, String>();
+	        for (String genomeId : commonIdSet)
+	            ret.put(genomeId, getSequence(genomeId));
+	        return ret;
+	    }
 	}
 }

@@ -48,7 +48,7 @@ public class SpeciesTreePreparation {
 			os.close();
 			inputFile.delete();
 		}
-		Map<String, String> aln = stb.concatCogAlignments(false);
+		Map<String, String> aln = stb.concatCogAlignments(false).toMap();
 		System.out.println("Genomes in common alignment: " + aln.size());
 		System.out.println("Sequence length in common alignment: " + aln.get(aln.keySet().iterator().next()).length());
 		Map<String, String> kbToNames = stb.loadGenomeKbToNames();

@@ -19,6 +19,8 @@ PERL_SERVICE_NAME = Tree
 PERL_SERVICE_PSGI_FILE = Tree.psgi
 PERL_EXECUTABLE_SCRIPT_NAME = run_$(PERL_SERVICE_NAME)_async_job.sh
 
+REFDATA_INIT_SCRIPT_NAME = run_$(SERVICE_CAPS)_refdata_init.sh
+
 .PHONY: test
 
 default: compile build-startup-script build-executable-script build-test-script
@@ -79,4 +81,10 @@ test:
 
 clean:
 	rm -rfv $(LBIN_DIR)
-	
+
+ref-data:
+	cp -a ./data/* /data/
+	touch /data/__READY__
+	#mkdir -p $(LBIN_DIR)
+	#$(ANT) build-refdata-init-script -Djars.dir=$(JARS_DIR) -Drefdata.init.cmd.file=$(REFDATA_INIT_SCRIPT_NAME)
+	#bash $(LBIN_DIR)/$(REFDATA_INIT_SCRIPT_NAME)

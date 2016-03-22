@@ -71,8 +71,27 @@ public class KBaseTreesServerTest {
         String genomeWsType = "KBaseGenomes.Genome";
         List<ObjectSaveData> objects = new ArrayList<ObjectSaveData>();
         List<String> genomeKbIds = Arrays.asList(
-                "kb|g.2626", "kb|g.2627", "kb|g.25423", "kb|g.1283", "kb|g.27370", 
-                "kb|g.1032", "kb|g.852", "kb|g.20848", "kb|g.371", "kb|g.3779");
+                "kb|g.371",    // Shewanella oneidensis MR-1
+                "kb|g.372",    // Shewanella oneidensis MR-1
+                "kb|g.852",    // Shewanella putrefaciens CN-32
+                "kb|g.1032",   // Shewanella sp. W3-18-1 
+                "kb|g.1283",   // Shewanella baltica OS195
+                "kb|g.1305",   // Shewanella baltica OS185
+                "kb|g.1346",   // Shewanella baltica OS223
+                "kb|g.2626",   // Shewanella sp. MR-4
+                "kb|g.2627",   // Shewanella sp. MR-7
+                "kb|g.2990",   // Shewanella baltica OS117
+                "kb|g.2992",   // Shewanella baltica OS678
+                "kb|g.3779",   // Shewanella sp. ANA-3
+                "kb|g.20848",  // Shewanella oneidensis MR-1
+                "kb|g.25423",  // Shewanella sp. POL2
+                "kb|g.26614",  // Shewanella putrefaciens 200
+                "kb|g.26354",  // Shewanella baltica OS155
+                "kb|g.27369",  // Shewanella baltica OS625
+                "kb|g.27370",  // Shewanella baltica OS678
+                "kb|g.210723", // Shewanella decolorationis S1201
+                "kb|g.242813"  // Shewanella xiamenensis
+                );
         for (String kbId : genomeKbIds) {
             Map<String, Object> data = new LinkedHashMap<String, Object>(4);
             data.put("id", kbId);
@@ -143,13 +162,13 @@ public class KBaseTreesServerTest {
         String genomeRef = getWsName() + "/" + genomeId;
         impl.constructSpeciesTree(new ConstructSpeciesTreeParams().withNewGenomes(
                 Arrays.asList(genomeRef)).withOutWorkspace(getWsName())
-                .withOutTreeId(spTreeId).withUseRibosomalS9Only(0L).withNearestGenomeCount(10L), 
+                .withOutTreeId(spTreeId).withUseRibosomalS9Only(0L).withNearestGenomeCount(20L), 
                 token, getContext());
         String treeRef = getWsName() + "/" + spTreeId;
         Tree tree = getWsObject(treeRef, Tree.class);
         try {
             List<String> nodeIds = impl.extractLeafNodeNames(tree.getTree(), getContext());
-            Assert.assertEquals(11, nodeIds.size());
+            Assert.assertEquals(21, nodeIds.size());
             for (String nodeId : nodeIds) {
                 String label = tree.getDefaultNodeLabels().get(nodeId);
                 Map<String, List<String>> refs = tree.getWsRefs().get(nodeId);

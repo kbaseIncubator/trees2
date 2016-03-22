@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import us.kbase.common.service.Tuple2;
-import us.kbase.common.taskqueue.TaskQueueConfig;
+import us.kbase.kbasetrees.SpeciesTreeBuilder.AlignConcat;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.SubObjectIdentity;
 
@@ -37,7 +37,7 @@ public class CloseGenomesFinder {
 		Map<String, Map<String, List<String>>> idRefMap = 
 				new TreeMap<String, Map<String, List<String>>>();
 		Set<String> seeds = new HashSet<String>();
-		Map<String, String> concat = stb.placeUserGenomesIntoAlignment(token, 
+		AlignConcat concat = stb.placeUserGenomesIntoAlignment(token, 
 				Arrays.asList(params.getQueryGenome()), true, idLabelMap, idRefMap, seeds);
 		List<Tuple2<String, Integer>> kbIdToMinDist = stb.sortPublicGenomesByMismatches(
 				seeds, concat, stopOnZeroDist);

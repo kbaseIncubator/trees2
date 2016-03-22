@@ -108,14 +108,14 @@ commit=${git.commit}</echo>
     <property name="jar.absolute.path" location="${dist}/${jar.file}"/>
     <pathconvert targetos="unix" property="lib.classpath" refid="compile.classpath"/>
     <echo file="${bin}/${exec.cmd.file}">#!/bin/sh
-java -cp ${jar.absolute.path}:${lib.classpath} us.kbase.kbasetrees.KBaseTreesServer $1 $2 $3
+java -Xmx2g -cp ${jar.absolute.path}:${lib.classpath} us.kbase.kbasetrees.KBaseTreesServer $1 $2 $3
     </echo>
     <chmod file="${bin}/${exec.cmd.file}" perm="a+x"/>
   </target>
   
   <target name="test" description="run all tests">
     <junit printsummary="yes" haltonfailure="yes" fork="true">
-      <jvmarg value="-Xmx1g" />
+      <jvmarg value="-Xmx2g" />
       <classpath>
         <pathelement location="${dist}/${jar.file}"/>
         <path refid="compile.classpath"/>

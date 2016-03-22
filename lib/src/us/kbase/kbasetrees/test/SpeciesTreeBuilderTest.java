@@ -15,7 +15,6 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.junit.Test;
 
-import us.kbase.auth.AuthService;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.FastaReader;
@@ -34,26 +33,9 @@ import us.kbase.workspace.SubObjectIdentity;
 
 public class SpeciesTreeBuilderTest {
 	
-	public static void main(String[] args) throws Exception {
-		String ws2url = "https://kbase.us/services/ws/";
-		String userId = "nardevuser1";
-		String pwd = "nardevuser2";
-		String wsId = "nardevuser1:home";
-		List<String> genomeRefs = Arrays.asList(new String[] {
-				wsId + "/Shewanella_ANA_3.genome",
-				wsId + "/Shewanella_MR_7_uid58343.genome", 
-				wsId + "/Burkholderia_383_uid58073.genome",
-		});
-		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(
-				new File("temp_files"), new File("data"), SpeciesTreeBuilder.createDefaultObjectStorage(ws2url));
-		String token = AuthService.login(userId, pwd).getTokenString();
-		Tree tree = stb.placeUserGenomes(token, genomeRefs, true, false, 4);
-		System.out.println(tree.getTree());
-	}
-	
 	@Test
 	public void testOneGenome() throws Exception {
-		FastaReader fr = new FastaReader(new File("data/test", "Shewanella_ANA_3_uid58347.fasta"));
+		FastaReader fr = new FastaReader(new File("test/data", "Shewanella_ANA_3_uid58347.fasta"));
 		List<Feature> features = new ArrayList<Feature>();
 		for (Map.Entry<String, String> entry : fr.readAll().entrySet())
 			features.add(new Feature().withId(entry.getKey()).withProteinTranslation(entry.getValue()));

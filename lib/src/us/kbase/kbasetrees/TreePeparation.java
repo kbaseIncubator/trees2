@@ -15,7 +15,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,16 +46,16 @@ public class TreePeparation {
 	
 	public static final String cddUrlPrefix = "ftp://ftp.ncbi.nlm.nih.gov/pub/mmdb/cdd";
 
-	private static final Map<Integer, Integer> taxSubst = new HashMap<Integer, Integer>();
+	//private static final Map<Integer, Integer> taxSubst = new HashMap<Integer, Integer>();
 	
 	private static final int MIN_COVERAGE = 50;
     private static final int MIN_IDENT = 30;
     private static final int MIN_COGS = 10;
 
 	
-	static {
+	/*static {
 		taxSubst.put(269483, 482957);
-	}
+	}*/
 	
 	public static void main(String[] args) throws Exception {
 	    File rootDir = args.length > 0 ? new File(args[0]) : new File("test_local/workdir");
