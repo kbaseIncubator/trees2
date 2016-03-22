@@ -45,3 +45,5 @@ Thumbs.db
 /dist
 /junitreports
 /classes
+test_local
+lib/src/git.properties
