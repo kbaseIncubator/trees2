@@ -1,6 +1,7 @@
 package us.kbase.kbasetrees;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import us.kbase.auth.AuthToken;
@@ -42,6 +43,9 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
  */
 public class KBaseTreesServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
+    private static final String version = "0.0.1";
+    private static final String gitUrl = "git@github.com:kbaseIncubator/trees2";
+    private static final String gitCommitHash = "e608009083eb1ecdafa46cb2d78768ef6b1f9caa";
 
     //BEGIN_CLASS_HEADER
     public static final String CFG_PROP_WS_SRV_URL = "workspace.srv.url";
@@ -484,6 +488,19 @@ public class KBaseTreesServer extends JsonServerServlet {
         //BEGIN build_genome_set_from_tree
         returnVal = GenomeSetBuilder.buildGenomeSetFromTree(getWorkspaceUrl(), authPart.toString(), params.getTreeRef(), params.getGenomesetRef());
         //END build_genome_set_from_tree
+        return returnVal;
+    }
+    @JsonServerMethod(rpc = "KBaseTrees.status")
+    public Map<String, Object> status() {
+        Map<String, Object> returnVal = null;
+        //BEGIN_STATUS
+        returnVal = new LinkedHashMap<String, Object>();
+        returnVal.put("state", "OK");
+        returnVal.put("message", "");
+        returnVal.put("version", version);
+        returnVal.put("git_url", gitUrl);
+        returnVal.put("git_commit_hash", gitCommitHash);
+        //END_STATUS
         return returnVal;
     }
 

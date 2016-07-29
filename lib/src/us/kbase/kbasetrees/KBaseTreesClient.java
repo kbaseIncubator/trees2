@@ -31,6 +31,7 @@ import us.kbase.common.service.UnauthorizedException;
  */
 public class KBaseTreesClient {
     private JsonClientCaller caller;
+    private String serviceVersion = null;
 
 
     /** Constructs a client with a custom URL and no user credentials.
@@ -149,6 +150,14 @@ public class KBaseTreesClient {
         caller.setFileForNextRpcResponse(f);
     }
 
+    public String getServiceVersion() {
+        return this.serviceVersion;
+    }
+
+    public void setServiceVersion(String newValue) {
+        this.serviceVersion = newValue;
+    }
+
     /**
      * <p>Original spec-file function name: replace_node_names</p>
      * <pre>
@@ -167,7 +176,7 @@ public class KBaseTreesClient {
         args.add(tree);
         args.add(replacements);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.replace_node_names", args, retType, true, false, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.replace_node_names", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -190,7 +199,7 @@ public class KBaseTreesClient {
         args.add(tree);
         args.add(removalList);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.remove_node_names_and_simplify", args, retType, true, false, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.remove_node_names_and_simplify", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -213,7 +222,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.merge_zero_distance_leaves", args, retType, true, false, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.merge_zero_distance_leaves", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -231,7 +240,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_leaf_node_names", args, retType, true, false, jsonRpcContext);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_leaf_node_names", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -251,7 +260,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_node_names", args, retType, true, false, jsonRpcContext);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.extract_node_names", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -269,7 +278,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<Long>> retType = new TypeReference<List<Long>>() {};
-        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_node_count", args, retType, true, false, jsonRpcContext);
+        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_node_count", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -289,7 +298,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(tree);
         TypeReference<List<Long>> retType = new TypeReference<List<Long>>() {};
-        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_leaf_count", args, retType, true, false, jsonRpcContext);
+        List<Long> res = caller.jsonrpcCall("KBaseTrees.get_leaf_count", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -310,7 +319,7 @@ public class KBaseTreesClient {
         args.add(tree);
         args.add(displayOptions);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.draw_html_tree", args, retType, true, false, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.draw_html_tree", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -328,7 +337,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(input);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_species_tree", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_species_tree", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -346,7 +355,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_multiple_alignment", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_multiple_alignment", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -364,7 +373,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_tree_for_alignment", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.construct_tree_for_alignment", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -382,7 +391,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<List<String>>> retType = new TypeReference<List<List<String>>>() {};
-        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.find_close_genomes", args, retType, true, true, jsonRpcContext);
+        List<List<String>> res = caller.jsonrpcCall("KBaseTrees.find_close_genomes", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -400,7 +409,7 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.guess_taxonomy_path", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.guess_taxonomy_path", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -417,7 +426,14 @@ public class KBaseTreesClient {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("KBaseTrees.build_genome_set_from_tree", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("KBaseTrees.build_genome_set_from_tree", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
+        List<Map<String, Object>> res = caller.jsonrpcCall("KBaseTrees.status", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 }

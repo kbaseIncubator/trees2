@@ -3,7 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = "0.1.0";
+our $VERSION = "0.0.1";
+our $GIT_URL = "git@github.com:kbaseIncubator/trees2";
+our $GIT_COMMIT_HASH = "e608009083eb1ecdafa46cb2d78768ef6b1f9caa";
 
 =head1 NAME
 
@@ -2313,9 +2315,9 @@ sub draw_html_tree
 
 
 
-=head2 version 
+=head2 status 
 
-  $return = $obj->version()
+  $return = $obj->status()
 
 =over 4
 
@@ -2337,14 +2339,19 @@ $return is a string
 
 =item Description
 
-Return the module version. This is a Semantic Versioning number.
+Return the module status. This is a structure including Semantic Versioning number, state and git info.
 
 =back
 
 =cut
 
-sub version {
-    return $VERSION;
+sub status {
+    my($return);
+    #BEGIN_STATUS
+    $return = {"state" => "OK", "message" => "", "version" => $VERSION,
+               "git_url" => $GIT_URL, "git_commit_hash" => $GIT_COMMIT_HASH};
+    #END_STATUS
+    return($return);
 }
 
 =head1 TYPES

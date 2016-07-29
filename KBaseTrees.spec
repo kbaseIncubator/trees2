@@ -100,13 +100,8 @@ module KBaseTrees
     */
     typedef string ws_alignment_id;
     
-    /*
-        @id ws KBaseTrees.Tree
-    */
-    typedef string ws_tree_id;
-    
     /* A workspace ID that references a Genome data object.
-        @id ws KBaseGenomes.Genome
+        @id ws KBaseGenomes.Genome KBaseGenomeAnnotations.GenomeAnnotation
     */
     typedef string ws_genome_id;
     
