@@ -44,8 +44,8 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 public class KBaseTreesServer extends JsonServerServlet {
     private static final long serialVersionUID = 1L;
     private static final String version = "0.0.1";
-    private static final String gitUrl = "git@github.com:kbaseIncubator/trees2";
-    private static final String gitCommitHash = "e608009083eb1ecdafa46cb2d78768ef6b1f9caa";
+    private static final String gitUrl = "https://github.com/kbaseIncubator/trees2";
+    private static final String gitCommitHash = "b9acf641e5e16f88fcb92882ee27d6543981096c";
 
     //BEGIN_CLASS_HEADER
     public static final String CFG_PROP_WS_SRV_URL = "workspace.srv.url";
@@ -55,19 +55,19 @@ public class KBaseTreesServer extends JsonServerServlet {
     public static final String CFG_PROP_PUBLIC_GENOMES_WS = "public.genomes.ws";
     public static final String SERVICE_VERSION = "1.0";
     
-    public synchronized void runTask(ConstructSpeciesTreeParams inputData, String token) throws Exception {
+    public synchronized void runTask(ConstructSpeciesTreeParams inputData, AuthToken token) throws Exception {
         SpeciesTreeBuilder runner = new SpeciesTreeBuilder();
         runner.init(getWorkspaceUrl(), config);
         runner.run(token, inputData, runner.getOutRef(inputData));
     }
     
-    public synchronized void runTask(ConstructMultipleAlignmentParams inputData, String token) throws Exception {
+    public synchronized void runTask(ConstructMultipleAlignmentParams inputData, AuthToken token) throws Exception {
         MultipleAlignmentBuilder runner = new MultipleAlignmentBuilder();
         runner.init(getWorkspaceUrl(), config);
         runner.run(token, inputData, runner.getOutRef(inputData));
     }
     
-    public synchronized void runTask(ConstructTreeForAlignmentParams inputData, String token) throws Exception {
+    public synchronized void runTask(ConstructTreeForAlignmentParams inputData, AuthToken token) throws Exception {
         TreeForAlignmentBuilder runner = new TreeForAlignmentBuilder();
         runner.init(getWorkspaceUrl(), config);
         runner.run(token, inputData, runner.getOutRef(inputData));
@@ -402,7 +402,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String constructSpeciesTree(ConstructSpeciesTreeParams input, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         String returnVal = null;
         //BEGIN construct_species_tree
-        runTask(input, authPart.toString());
+        runTask(input, authPart);
         //END construct_species_tree
         return returnVal;
     }
@@ -419,7 +419,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String constructMultipleAlignment(ConstructMultipleAlignmentParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         String returnVal = null;
         //BEGIN construct_multiple_alignment
-        runTask(params, authPart.toString());
+        runTask(params, authPart);
         //END construct_multiple_alignment
         return returnVal;
     }
@@ -436,7 +436,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String constructTreeForAlignment(ConstructTreeForAlignmentParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         String returnVal = null;
         //BEGIN construct_tree_for_alignment
-        runTask(params, authPart.toString());
+        runTask(params, authPart);
         //END construct_tree_for_alignment
         return returnVal;
     }
@@ -453,7 +453,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public List<String> findCloseGenomes(FindCloseGenomesParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         List<String> returnVal = null;
         //BEGIN find_close_genomes
-        returnVal = CloseGenomesFinder.findGenomes(authPart.toString(), params, getWorkspaceUrl(), config);
+        returnVal = CloseGenomesFinder.findGenomes(authPart, params, getWorkspaceUrl(), config);
         //END find_close_genomes
         return returnVal;
     }
@@ -470,7 +470,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String guessTaxonomyPath(GuessTaxonomyPathParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         String returnVal = null;
         //BEGIN guess_taxonomy_path
-        returnVal = CloseGenomesFinder.guessTaxonomy(authPart.toString(), params, getWorkspaceUrl(), config);
+        returnVal = CloseGenomesFinder.guessTaxonomy(authPart, params, getWorkspaceUrl(), config);
         //END guess_taxonomy_path
         return returnVal;
     }
@@ -486,7 +486,7 @@ public class KBaseTreesServer extends JsonServerServlet {
     public String buildGenomeSetFromTree(BuildGenomeSetFromTreeParams params, AuthToken authPart, RpcContext jsonRpcContext) throws Exception {
         String returnVal = null;
         //BEGIN build_genome_set_from_tree
-        returnVal = GenomeSetBuilder.buildGenomeSetFromTree(getWorkspaceUrl(), authPart.toString(), params.getTreeRef(), params.getGenomesetRef());
+        returnVal = GenomeSetBuilder.buildGenomeSetFromTree(getWorkspaceUrl(), authPart, params.getTreeRef(), params.getGenomesetRef());
         //END build_genome_set_from_tree
         return returnVal;
     }

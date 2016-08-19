@@ -14,17 +14,19 @@ import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.UObject;
 import us.kbase.workspace.CopyObjectParams;
 import us.kbase.workspace.GetObjectInfoNewParams;
+import us.kbase.workspace.GetObjects2Params;
 import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ObjectSpecification;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.WorkspaceClient;
 
 public class GenomeSetBuilder {
-	public static String buildGenomeSetFromTree(String wsUrl, String token, String treeRef, String genomeSetRef) throws Exception {
-        WorkspaceClient ws = new WorkspaceClient(new URL(wsUrl), new AuthToken(token));
-		ws.setAuthAllowedForHttp(true);
-		ObjectData data = ws.getObjects(Arrays.asList(new ObjectIdentity().withRef(treeRef))).get(0);
+	public static String buildGenomeSetFromTree(String wsUrl, AuthToken token, String treeRef, String genomeSetRef) throws Exception {
+        WorkspaceClient ws = new WorkspaceClient(new URL(wsUrl), token);
+		ws.setIsInsecureHttpConnectionAllowed(true);
+		ObjectData data = ws.getObjects2(new GetObjects2Params().withObjects(Arrays.asList(new ObjectSpecification().withRef(treeRef)))).getData().get(0);
 		Tree tree = data.getData().asClassInstance(Tree.class);
 		long wsid = data.getInfo().getE7();
 		Map<String, Map<String, List<String>>> refs = tree.getWsRefs();
@@ -37,13 +39,13 @@ public class GenomeSetBuilder {
 		genomeSetData.put("elements", elements);
 	    int gcount = 0;
 	    Set<String> namehash = new TreeSet<String>();
-	    List<ObjectIdentity> objectids = new ArrayList<ObjectIdentity>();
+	    List<ObjectSpecification> objectids = new ArrayList<ObjectSpecification>();
 		for (String key : refs.keySet()) {
 			if (key.length() < 5 || !key.substring(0, 5).equals("kb|g.")) {
 	            String param = "param" + gcount;
 	            gcount++;
 	            String ref = refs.get(key).get("g").get(0);
-	            objectids.add(new ObjectIdentity().withRef(ref));
+	            objectids.add(new ObjectSpecification().withRef(ref));
 	            Map<String, String> element = new TreeMap<String, String>();
 	            element.put("ref", ref);
 	            elements.put(param, element);

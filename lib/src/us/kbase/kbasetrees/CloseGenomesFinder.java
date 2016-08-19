@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple2;
 import us.kbase.kbasetrees.SpeciesTreeBuilder.AlignConcat;
 import us.kbase.workspace.ObjectData;
@@ -16,19 +17,19 @@ import us.kbase.workspace.SubObjectIdentity;
 
 public class CloseGenomesFinder {
 
-	public static List<String> findGenomes(String token, FindCloseGenomesParams params,
+	public static List<String> findGenomes(AuthToken token, FindCloseGenomesParams params,
 			String wsUrl, Map<String, String> configParams) throws Exception {
 		return findGenomes(token, params, DefaultTaskBuilder.getDirParam(configParams, "scratch"), 
 				DefaultTaskBuilder.getDirParam(configParams, "data.dir"), configParams.get("public.genomes.ws"),
 				DefaultTaskBuilder.createDefaultObjectStorage(wsUrl));
 	}
 
-	public static List<String> findGenomes(String token, FindCloseGenomesParams params, 
+	public static List<String> findGenomes(AuthToken token, FindCloseGenomesParams params, 
 			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws) throws Exception {
 		return findGenomes(token, params, tempDir, dataDir, genomeWsName, ws, false);
 	}
 
-	private static List<String> findGenomes(String token, FindCloseGenomesParams params, 
+	private static List<String> findGenomes(AuthToken token, FindCloseGenomesParams params, 
 			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
 		long maxDist = params.getMaxMismatchPercent() == null ? 5L : params.getMaxMismatchPercent();
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder();
@@ -63,7 +64,7 @@ public class CloseGenomesFinder {
 		return ret;
 	}
 	
-	public static String guessTaxonomy(String token, GuessTaxonomyPathParams params,
+	public static String guessTaxonomy(AuthToken token, GuessTaxonomyPathParams params,
             String wsUrl, Map<String, String> configParams) throws Exception {
 		return guessTaxonomy(token, params, DefaultTaskBuilder.getDirParam(configParams, "scratch"), 
 				DefaultTaskBuilder.getDirParam(configParams, "data.dir"), configParams.get("public.genomes.ws"),
@@ -71,7 +72,7 @@ public class CloseGenomesFinder {
 
 	}
 	
-	public static String guessTaxonomy(String token, GuessTaxonomyPathParams params, 
+	public static String guessTaxonomy(AuthToken token, GuessTaxonomyPathParams params, 
 			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws) throws Exception {
 		String ret = guessTaxonomy(token, params, tempDir, dataDir, genomeWsName, ws, true);
 		if (ret == null)
@@ -79,7 +80,7 @@ public class CloseGenomesFinder {
 		return ret;
 	}
 
-	public static String guessTaxonomy(String token, GuessTaxonomyPathParams params, 
+	public static String guessTaxonomy(AuthToken token, GuessTaxonomyPathParams params, 
 			File tempDir, File dataDir, String genomeWsName, ObjectStorage ws, boolean stopOnZeroDist) throws Exception {
 		List<String> genomeRefs = findGenomes(token, new FindCloseGenomesParams().
 				withQueryGenome(params.getQueryGenome()), tempDir, dataDir, genomeWsName, ws, stopOnZeroDist);

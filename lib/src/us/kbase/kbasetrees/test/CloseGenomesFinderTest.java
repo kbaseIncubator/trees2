@@ -11,7 +11,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
+import us.kbase.common.service.Tuple9;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.kbasegenomes.Feature;
@@ -26,6 +28,7 @@ import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.SubObjectIdentity;
+import us.kbase.workspace.WorkspaceIdentity;
 
 public class CloseGenomesFinderTest {
 	
@@ -52,22 +55,22 @@ public class CloseGenomesFinderTest {
 		final List<String> genomeKbIds = new ArrayList<String>(SpeciesTreeBuilder.loadGenomeKbToNames(cogDir).keySet());
 		Map<String, String> allCfg = new LinkedHashMap<String, String>();
 		allCfg.put("temp.dir", "data");
-		return CloseGenomesFinder.findGenomes("token", new FindCloseGenomesParams().withQueryGenome(genomeRef), 
+		return CloseGenomesFinder.findGenomes(null, new FindCloseGenomesParams().withQueryGenome(genomeRef), 
 				new File("temp_files"), new File("data"), null,
 				new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
-							String authToken, SaveObjectsParams params) throws Exception {
+							AuthToken authToken, SaveObjectsParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 					@Override
-					public List<ObjectData> getObjects(String authToken,
+					public List<ObjectData> getObjects(AuthToken authToken,
 							List<ObjectIdentity> objectIds) throws Exception {
 						return Arrays.asList(new ObjectData().withData(new UObject(genome)));
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
-							String authToken, ListObjectsParams params)
+					        AuthToken authToken, ListObjectsParams params)
 							throws Exception {
 						List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> ret =
 								new ArrayList<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>>();
@@ -81,13 +84,18 @@ public class CloseGenomesFinderTest {
 						return ret;
 					}
 					@Override
-					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+					public List<ObjectData> getObjectSubset(AuthToken authToken, List<SubObjectIdentity> objectIds) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> getObjectInfoNew(
-							String authToken, GetObjectInfoNewParams params) throws Exception {
+					        AuthToken authToken, GetObjectInfoNewParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
+					}
+					@Override
+					public Tuple9<Long, String, String, String, Long, String, String, String, Map<String, String>> getWorkspaceInfo(
+					        AuthToken authToken, WorkspaceIdentity wsi) throws Exception {
+                        throw new IllegalStateException("Unsupported method");
 					}
 				});
 	}

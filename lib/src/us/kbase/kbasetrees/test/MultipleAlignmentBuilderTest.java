@@ -12,7 +12,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
+import us.kbase.common.service.Tuple9;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.kbasetrees.ConstructMultipleAlignmentParams;
 import us.kbase.kbasetrees.MSA;
@@ -24,6 +26,7 @@ import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.SubObjectIdentity;
+import us.kbase.workspace.WorkspaceIdentity;
 
 public class MultipleAlignmentBuilderTest {
 
@@ -59,33 +62,38 @@ public class MultipleAlignmentBuilderTest {
 				new File("temp_files"), new File("data"), new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
-							String authToken, SaveObjectsParams params) throws Exception {
+					        AuthToken authToken, SaveObjectsParams params) throws Exception {
 						retWrap[0] = params.getObjects().get(0).getData().asClassInstance(MSA.class);
 						return new ArrayList<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>>();
 					}
 					@Override
-					public List<ObjectData> getObjects(String authToken,
+					public List<ObjectData> getObjects(AuthToken authToken,
 							List<ObjectIdentity> objectIds) throws Exception {
 						throw new IllegalStateException();
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
-							String authToken, ListObjectsParams params)
+					        AuthToken authToken, ListObjectsParams params)
 							throws Exception {
 						throw new IllegalStateException();
 					}
 					@Override
-					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+					public List<ObjectData> getObjectSubset(AuthToken authToken, List<SubObjectIdentity> objectIds) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> getObjectInfoNew(
-							String authToken, GetObjectInfoNewParams params) throws Exception {
+					        AuthToken authToken, GetObjectInfoNewParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
+					}
+					@Override
+					public Tuple9<Long, String, String, String, Long, String, String, String, Map<String, String>> getWorkspaceInfo(
+					        AuthToken authToken, WorkspaceIdentity wsi) throws Exception {
+                        throw new IllegalStateException("Unsupported method");
 					}
 				});
 		Map<String, String> seqs = loadProtSeqs();
-		stb.run("token", new ConstructMultipleAlignmentParams().withAlignmentMethod(method).withGeneSequences(seqs).withOutWorkspace("ws"), "ws/123");
+		stb.run(null, new ConstructMultipleAlignmentParams().withAlignmentMethod(method).withGeneSequences(seqs).withOutWorkspace("ws"), "ws/123");
 		MSA msa = retWrap[0];
 		for (String id : retWrap[0].getRowOrder()) {
 			String seq = retWrap[0].getAlignment().get(id);

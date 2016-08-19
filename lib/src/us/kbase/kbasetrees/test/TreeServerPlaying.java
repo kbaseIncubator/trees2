@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import us.kbase.auth.AuthService;
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple7;
 import us.kbase.common.service.UnauthorizedException;
 import us.kbase.kbasetrees.ConstructSpeciesTreeParams;
@@ -46,7 +47,7 @@ public class TreeServerPlaying {
 				//wsId + "/Shewanella_MR_4_uid58345.genome",
 				//wsId + "/Shewanella_baltica_BA175_uid52601.genome",
 		});
-		String token = AuthService.login(userId, pwd).getTokenString();
+		AuthToken token = AuthService.login(userId, pwd).getToken();
 		stb.run(token, new ConstructSpeciesTreeParams().withNewGenomes(genomeRefs)
 				.withUseRibosomalS9Only(0L).withOutWorkspace(wsId).withNearestGenomeCount(100L), 
 				wsId + "/sptree1");
