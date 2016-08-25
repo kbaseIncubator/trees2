@@ -13,7 +13,9 @@ import org.ini4j.Ini;
 import org.junit.Test;
 
 import us.kbase.auth.AuthService;
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
+import us.kbase.common.service.Tuple9;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.FastaReader;
 import us.kbase.kbasegenomes.Feature;
@@ -28,6 +30,7 @@ import us.kbase.workspace.ObjectData;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.SubObjectIdentity;
+import us.kbase.workspace.WorkspaceIdentity;
 
 public class GuessTaxonomyPathTest {
 	
@@ -56,17 +59,17 @@ public class GuessTaxonomyPathTest {
 		String user = cfg.get("test.user1");
 		String pwd = cfg.get("test.pwd1");
 		String genomeWsName = cfg.get("public.genomes.ws");
-		String token = AuthService.login(user, pwd).getTokenString();
+		AuthToken token = AuthService.login(user, pwd).getToken();
 		final ObjectStorage devStorage = SpeciesTreeBuilder.createDefaultObjectStorage(wsUrl);
 		return CloseGenomesFinder.guessTaxonomy(token, new GuessTaxonomyPathParams().withQueryGenome(genomeRef), 
 				new File("temp_files"), new File("data"), genomeWsName, new ObjectStorage() {
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
-							String authToken, SaveObjectsParams params) throws Exception {
+					        AuthToken authToken, SaveObjectsParams params) throws Exception {
 						throw new IllegalStateException("Unsupported method");
 					}
 					@Override
-					public List<ObjectData> getObjects(String authToken,
+					public List<ObjectData> getObjects(AuthToken authToken,
 							List<ObjectIdentity> objectIds) throws Exception {
 						Assert.assertEquals(1, objectIds.size());
 						Assert.assertEquals(genomeRef, objectIds.get(0).getRef());
@@ -74,18 +77,23 @@ public class GuessTaxonomyPathTest {
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
-							String authToken, ListObjectsParams params) throws Exception {
+					        AuthToken authToken, ListObjectsParams params) throws Exception {
 						return devStorage.listObjects(authToken, params);
 					}
 					@Override
-					public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
+					public List<ObjectData> getObjectSubset(AuthToken authToken, List<SubObjectIdentity> objectIds) throws Exception {
 						return devStorage.getObjectSubset(authToken, objectIds);
 					}
 					@Override
 					public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> getObjectInfoNew(
-							String authToken, GetObjectInfoNewParams params)
+					        AuthToken authToken, GetObjectInfoNewParams params)
 							throws Exception {
 						return devStorage.getObjectInfoNew(authToken, params);
+					}
+					@Override
+					public Tuple9<Long, String, String, String, Long, String, String, String, Map<String, String>> getWorkspaceInfo(
+					        AuthToken authToken, WorkspaceIdentity wsi) throws Exception {
+					    return devStorage.getWorkspaceInfo(authToken, wsi);
 					}
 				});
 	}

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
+import us.kbase.common.service.Tuple9;
 import us.kbase.workspace.ListObjectsParams;
 import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ObjectData;
@@ -14,6 +15,7 @@ import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.SaveObjectsParams;
 import us.kbase.workspace.SubObjectIdentity;
 import us.kbase.workspace.WorkspaceClient;
+import us.kbase.workspace.WorkspaceIdentity;
 
 public abstract class DefaultTaskBuilder<T> {
 
@@ -27,7 +29,7 @@ public abstract class DefaultTaskBuilder<T> {
 
 	public abstract String getOutRef(T inputData);
 
-	public abstract void run(String token, T inputData, String outRef) throws Exception;
+	public abstract void run(AuthToken token, T inputData, String outRef) throws Exception;
 
 	public void init(String wsUrl, Map<String, String> configParams) {
 		init(getDirParam(configParams, KBaseTreesServer.CFG_PROP_TEMP_DIR), 
@@ -40,42 +42,50 @@ public abstract class DefaultTaskBuilder<T> {
 			
 			@Override
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> saveObjects(
-					String authToken, SaveObjectsParams params) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+			        AuthToken authToken, SaveObjectsParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.saveObjects(params);
 			}
 			
 			@Override
-			public List<ObjectData> getObjects(String authToken,
+			public List<ObjectData> getObjects(AuthToken authToken,
 					List<ObjectIdentity> objectIds) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.getObjects(objectIds);
 			}
 			
 			@Override
 			public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String, String>>> listObjects(
-					String authToken, ListObjectsParams params) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+			        AuthToken authToken, ListObjectsParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.listObjects(params);
 			}
 			
 			@Override
-		    public List<ObjectData> getObjectSubset(String authToken, List<SubObjectIdentity> objectIds) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+		    public List<ObjectData> getObjectSubset(AuthToken authToken, List<SubObjectIdentity> objectIds) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.getObjectSubset(objectIds);
 		    }
 
 			@Override
 		    public List<Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>>> getObjectInfoNew(
-		    		String authToken, GetObjectInfoNewParams params) throws Exception {
-				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), new AuthToken(authToken));
-				client.setAuthAllowedForHttp(true);
+		            AuthToken authToken, GetObjectInfoNewParams params) throws Exception {
+				WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+				client.setIsInsecureHttpConnectionAllowed(true);
 				return client.getObjectInfoNew(params);
 		    }
+			
+            @Override
+		    public Tuple9<Long, String, String, String, Long, String, String, String, Map<String,String>> getWorkspaceInfo(
+		            AuthToken authToken, WorkspaceIdentity wsi) throws Exception {
+                WorkspaceClient client = new WorkspaceClient(new URL(wsUrl), authToken);
+                client.setIsInsecureHttpConnectionAllowed(true);
+                return client.getWorkspaceInfo(wsi);
+			}
 		};
 	}
 

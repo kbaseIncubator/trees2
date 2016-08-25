@@ -47,3 +47,4 @@ Thumbs.db
 /classes
 test_local
 lib/src/git.properties
+sdk.cfg

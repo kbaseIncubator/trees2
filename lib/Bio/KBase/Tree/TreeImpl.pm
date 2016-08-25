@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = "0.0.1";
-our $GIT_URL = "git@github.com:kbaseIncubator/trees2";
-our $GIT_COMMIT_HASH = "e608009083eb1ecdafa46cb2d78768ef6b1f9caa";
+our $GIT_URL = "https://github.com/kbaseIncubator/trees2";
+our $GIT_COMMIT_HASH = "b9acf641e5e16f88fcb92882ee27d6543981096c";
 
 =head1 NAME
 

@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.ini4j.Ini;
 
 import us.kbase.auth.AuthService;
+import us.kbase.auth.AuthToken;
 import us.kbase.kbasetrees.ObjectStorage;
 import us.kbase.kbasetrees.SpeciesTreeBuilder;
 
@@ -32,7 +33,7 @@ public class SpeciesTreePreparation {
 		String user = testCfg.get("test.user1");
 		String pwd = testCfg.get("test.pwd1");
 		File cogsDir = new File(dataDir, "cogs");
-		String token = AuthService.login(user, pwd).getTokenString();
+		AuthToken token = AuthService.login(user, pwd).getToken();
 		ObjectStorage storage = SpeciesTreeBuilder.createDefaultObjectStorage(testCfg.get("workspace.srv.url"));
 		SpeciesTreeBuilder stb = new SpeciesTreeBuilder().init(tempDir, dataDir, storage);
 		List<String> cogCodes = stb.loadCogsCodes(false);

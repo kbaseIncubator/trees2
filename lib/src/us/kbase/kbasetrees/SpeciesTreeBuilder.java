@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.Tuple11;
 import us.kbase.common.service.Tuple2;
 import us.kbase.common.service.UObject;
@@ -39,6 +40,7 @@ import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
+import us.kbase.workspace.WorkspaceIdentity;
 
 public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeParams> {
 	
@@ -49,7 +51,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
     private static final int MIN_NEAREST_GENOME_COUNT = 1;
 	private static final int MAX_NEAREST_GENOME_COUNT = 200;
 	private static final String defaultGenomeWsName = "KBasePublicGenomesV3";
-	private static final String genomeWsType = "KBaseGenomes.Genome";
+	private static final String[] genomeWsTypes = {"KBaseGenomes.Genome", "KBaseGenomeAnnotations.GenomeAnnotation"};
 	
 	private Map<String, String> genomeKbToRefMap = null;
 	private String genomeWsName = null;
@@ -90,7 +92,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 	}
 
 	@Override
-	public void run(String token, ConstructSpeciesTreeParams inputData,
+	public void run(AuthToken token, ConstructSpeciesTreeParams inputData,
 			String outRef) throws Exception {
 		boolean useCog103Only = inputData.getUseRibosomalS9Only() != null && 
 				inputData.getUseRibosomalS9Only() == 1L;
@@ -123,7 +125,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		saveResult(inputData.getOutWorkspace(), id, token, tree, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, Tree res,
+	private void saveResult(String ws, String id, AuthToken token, Tree res,
 			ConstructSpeciesTreeParams inputData) throws Exception {
 		Map<String, String> meta = new LinkedHashMap<String, String>();
 		meta.put("type", SPECIES_TREE_TYPE);
@@ -454,31 +456,33 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return ret;
 	}
 	
-	public Map<String, String> loadGenomeKbToRefs(String token) throws Exception {
+	public Map<String, String> loadGenomeKbToRefs(AuthToken token) throws Exception {
 		if (genomeKbToRefMap != null)
 			return genomeKbToRefMap;
 		Map<String, String> ret = new TreeMap<String, String>();
 		ObjectStorage ws = getStorage(); 
 		String wsName = genomeWsName;
-		String wsType = genomeWsType;
-		for (int partNum = 0; ; partNum++) {
-			int sizeOfPart = 0;
-			for (Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>> info : 
-				ws.listObjects(token, new ListObjectsParams().withWorkspaces(Arrays.asList(wsName))
-						.withType(wsType).withLimit(10000L).withSkip(partNum * 10000L))) {
-				String ref = WorkspaceUtil.getRefFromObjectInfo(info);
-				String objectName = info.getE2();
-				ret.put(objectName, ref);
-				sizeOfPart++;
-			}
-			if (sizeOfPart == 0)
-				break;
+		int objectCount = (int)(long)ws.getWorkspaceInfo(token, new WorkspaceIdentity().withWorkspace(wsName)).getE5();
+		int partSize = 10000;
+		int partCount = (objectCount + partSize - 1) / partSize;
+		for (String wsType : genomeWsTypes) {
+		    for (int partNum = 0; partNum < partCount; partNum++) {
+		        long minObjectID = partNum * partSize;
+		        long maxObjectID = (partNum + 1) * partSize - 1;
+		        for (Tuple11<Long, String, String, String, Long, String, Long, String, String, Long, Map<String,String>> info : 
+		            ws.listObjects(token, new ListObjectsParams().withWorkspaces(Arrays.asList(wsName))
+		                    .withType(wsType).withMinObjectID(minObjectID).withMaxObjectID(maxObjectID))) {
+		            String ref = WorkspaceUtil.getRefFromObjectInfo(info);
+		            String objectName = info.getE2();
+		            ret.put(objectName, ref);
+		        }
+		    }
 		}
 		genomeKbToRefMap = ret;
 		return ret;
 	}
 
-	public Tree placeUserGenomes(String token, List<String> genomeRefList, 
+	public Tree placeUserGenomes(AuthToken token, List<String> genomeRefList, 
 			boolean useCog103Only, boolean userGenomesOnly, int nearestGenomeCount) throws Exception {
 		Map<String, String> idLabelMap = new TreeMap<String, String>();
 		Map<String, Map<String, List<String>>> idRefMap = new TreeMap<String, Map<String, List<String>>>();
@@ -564,7 +568,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return kbIdToMinDist;
 	}
 
-	public AlignConcat placeUserGenomesIntoAlignment(String token,
+	public AlignConcat placeUserGenomesIntoAlignment(AuthToken token,
 			List<String> genomeRefList, boolean useCog103Only,
 			Map<String, String> idLabelMap,
 			Map<String, Map<String, List<String>>> idRefMap, Set<String> seeds)
@@ -617,7 +621,7 @@ public class SpeciesTreeBuilder extends DefaultTaskBuilder<ConstructSpeciesTreeP
 		return ret;
 	}
 	
-	private GenomeToCogsAlignment alignGenomeProteins(String token, String genomeRef, final Genome genome,
+	private GenomeToCogsAlignment alignGenomeProteins(AuthToken token, String genomeRef, final Genome genome,
 			boolean useCog103Only, final Map<String, Map<String, String>> cogAlignments) throws Exception {
 		String genomeName = genome.getScientificName();
 		File fastaFile = File.createTempFile("proteome", ".fasta", tempDir);

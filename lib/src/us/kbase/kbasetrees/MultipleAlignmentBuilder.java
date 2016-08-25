@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.Alignment;
 import us.kbase.common.utils.ClustalParser;
@@ -22,6 +23,7 @@ import us.kbase.common.utils.FastaWriter;
 import us.kbase.workspace.GetObjectInfoNewParams;
 import us.kbase.workspace.ObjectIdentity;
 import us.kbase.workspace.ObjectSaveData;
+import us.kbase.workspace.ObjectSpecification;
 import us.kbase.workspace.ProvenanceAction;
 import us.kbase.workspace.SaveObjectsParams;
 
@@ -63,7 +65,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 	}
 	
 	@Override
-	public void run(String token, ConstructMultipleAlignmentParams inputData,
+	public void run(AuthToken token, ConstructMultipleAlignmentParams inputData,
 			String outRef) throws Exception {
 		Map<Integer, String> numToId = new TreeMap<Integer, String>();
 		File inputFasta = File.createTempFile("msaInput", ".fa", getTempDir());
@@ -96,7 +98,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 					if (elem.containsKey("genome_ref")) {
 						String genomeRef = (String)elem.get("genome_ref");
 						String genome_obj_name = storage.getObjectInfoNew(token, new GetObjectInfoNewParams().withObjects(
-								Arrays.asList(new ObjectIdentity().withRef(genomeRef)))).get(0).getE2();
+								Arrays.asList(new ObjectSpecification().withRef(genomeRef)))).get(0).getE2();
 						id = genome_obj_name + '/' + id;
 					}
 					String seq = (String)elem.get("protein_translation");
@@ -171,7 +173,7 @@ public class MultipleAlignmentBuilder extends DefaultTaskBuilder<ConstructMultip
 		saveResult(inputData.getOutWorkspace(), id, token, ret, method, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, MSA res, String method,
+	private void saveResult(String ws, String id, AuthToken token, MSA res, String method,
 			ConstructMultipleAlignmentParams inputData) throws Exception {
 		Map<String, String> seqs = inputData.getGeneSequences();
 		inputData.setGeneSequences(null);

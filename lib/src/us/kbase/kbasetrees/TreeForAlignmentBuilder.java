@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import us.kbase.auth.AuthToken;
 import us.kbase.common.service.UObject;
 import us.kbase.common.utils.AlignUtil;
 import us.kbase.common.utils.CorrectProcess;
@@ -44,7 +45,7 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 	}
 
 	@Override
-	public void run(String token, ConstructTreeForAlignmentParams inputData,
+	public void run(AuthToken token, ConstructTreeForAlignmentParams inputData,
 			String outRef) throws Exception {
 		Long minNongapPercentage = inputData.getMinNongapPercentageForTrim();
 		Map<String, String> preAln = loadAlignment(token, inputData.getMsaRef(), 
@@ -69,7 +70,7 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 		saveResult(inputData.getOutWorkspace(), id, token, tree, method, inputData);
 	}
 	
-	private void saveResult(String ws, String id, String token, Tree res, String method, 
+	private void saveResult(String ws, String id, AuthToken token, Tree res, String method, 
 			ConstructTreeForAlignmentParams inputData) throws Exception {
 		ObjectSaveData data = new ObjectSaveData().withData(new UObject(res))
 				.withType("KBaseTrees.Tree")
@@ -169,13 +170,13 @@ public class TreeForAlignmentBuilder extends DefaultTaskBuilder<ConstructTreeFor
 		return new String(result.toByteArray(), Charset.forName("UTF-8")).trim();
 	}
 	
-	private Map<String, String> loadAlignment(String token, String msaRef, long minNongapPercentage) throws Exception {
+	private Map<String, String> loadAlignment(AuthToken token, String msaRef, long minNongapPercentage) throws Exception {
 		Map<String, String> ret = new LinkedHashMap<String, String>();
 		loadAlignment(token, msaRef, ret);
 		return AlignUtil.trimAlignment(ret, minNongapPercentage / 100.0);
 	}
 	
-	private void loadAlignment(String token, String msaRef, Map<String, String> ret) throws Exception {
+	private void loadAlignment(AuthToken token, String msaRef, Map<String, String> ret) throws Exception {
 		final MSA msa = storage.getObjects(token, Arrays.asList(
 				new ObjectIdentity().withRef(msaRef))).get(0).getData().asClassInstance(MSA.class);
 		if (ret.size() > 0) {
